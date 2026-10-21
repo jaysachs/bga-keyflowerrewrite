@@ -1841,17 +1841,30 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
   }
 
   async notif_returnBiddingMeeple(args: { to_return: { mid: string, player_id: string, card_type: string }[]}) {
+    // The server sends one entry per worker, but a player's bid on a lot is
+    // displayed as a single element with a count, so group the entries first.
+    const returns = new Map<string, { mid: string, player_id: number, card_type: number, count: number }>();
+    for (const meeple of args.to_return) {
+      const key = IDS.worker(meeple.mid, Number(meeple.player_id));
+      const entry = returns.get(key);
+      if (entry) {
+        entry.count++;
+      } else {
+        returns.set(key, { mid: meeple.mid, player_id: Number(meeple.player_id), card_type: Number(meeple.card_type), count: 1 });
+      }
+    }
+
     const anims: AnimationList = [];
     // Return bidding meeple to their owner
-    for (const i in args.to_return) {
-      const meeple = args.to_return[i];
-      const worker = $(IDS.worker(meeple.mid, Number(meeple.player_id)));
-      console.log("worker is ", worker);
+    for (const [key, ret] of returns) {
+      const worker = document.getElementById(key);
+      if (!worker) {
+        continue;
+      }
       const slidesource = worker.parentElement!;
-      console.log("slidesource is", slidesource);
       anims.push(() => this.animationManager.fadeOutAndDestroy(worker));
       anims.push(() => this.animationManager
-        .slideFloatingElement(View.worker_elem({type: Number(meeple.card_type)}), slidesource, $(IDS.playerBoard(Number(meeple.player_id))))
+        .slideFloatingElement(View.worker_elem({type: ret.card_type, num: ret.count}), slidesource, $(IDS.playerBoard(ret.player_id)))
       );
     }
     await this.animationManager.playSequentially(anims);
@@ -1869,7 +1882,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
     // Then, remove all remaining meeples on bidding
     const anims: AnimationList = [];
     document.querySelectorAll("#market_map .worker_hand")
-      .forEach((node: HTMLElement) => () => anims.push(
+      .forEach((node: HTMLElement) => anims.push(
         () => this.animationManager.fadeOutAndDestroy(node/* ,500, 800 */))
       );
     await this.animationManager.playParallel(anims);
