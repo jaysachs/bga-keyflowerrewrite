@@ -31,9 +31,13 @@ export class VillageConstructionAHandler extends BaseHandler {
       if (tiles[tid] == this.bga.gameui.player_id) {
         const telem = $("tile_" + tid);
         telem.classList.add("possibleVillageTile");
-        telem.insertAdjacentHTML('beforeend',
-          View.tile_select(tid)
-        );
+        // This runs on entering the state and again when the player becomes
+        // active: add the selection overlay only once.
+        if (!document.getElementById("tile_select_" + tid)) {
+          telem.insertAdjacentHTML('beforeend',
+            View.tile_select(tid)
+          );
+        }
       }
     }
 
