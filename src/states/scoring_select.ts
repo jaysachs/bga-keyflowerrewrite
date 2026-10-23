@@ -11,6 +11,9 @@ export class ScoringSelectHandler extends BaseHandler {
 
   onPlayerActivationChange(args: any, isCurrentPlayerActive: boolean) {
     if (!isCurrentPlayerActive) { return; }
+    // This runs on entering the state and again when the player becomes
+    // active: start from an empty status bar so buttons aren't doubled.
+    this.bga.statusBar.removeActionButtons();
     this.updateScoringSelectTiles();
     $("market_map").style.display = "none";
 
@@ -38,9 +41,11 @@ export class ScoringSelectHandler extends BaseHandler {
         const id = node.id.substring(5);
         const telem = $("tile_" + id);
         telem.classList.add("possibleScoringDestination");
-        telem.insertAdjacentHTML('beforeend',
-          View.tile_select(id)
-        );
+        if (!document.getElementById("tile_select_" + id)) {
+          telem.insertAdjacentHTML('beforeend',
+            View.tile_select(id)
+          );
+        }
       }
     );
     document.querySelectorAll("#playerArea_" + this.bga.gameui.player_id + " .scored_resource").forEach(
@@ -49,9 +54,11 @@ export class ScoringSelectHandler extends BaseHandler {
         const id = node.id.substring(5);
         const telem = $("tile_" + id);
         telem.classList.add("possibleScoringDestination");
-        telem.insertAdjacentHTML('beforeend',
-          View.tile_select(id)
-        );
+        if (!document.getElementById("tile_select_" + id)) {
+          telem.insertAdjacentHTML('beforeend',
+            View.tile_select(id)
+          );
+        }
       }
     );
     document.querySelectorAll("#playerArea_" + this.bga.gameui.player_id + " .scored_worker").forEach(
@@ -60,9 +67,11 @@ export class ScoringSelectHandler extends BaseHandler {
         const id = node.id.substring(5);
         const telem = $("tile_" + id);
         telem.classList.add("possibleScoringDestination");
-        telem.insertAdjacentHTML('beforeend',
-          View.tile_select(id)
-        );
+        if (!document.getElementById("tile_select_" + id)) {
+          telem.insertAdjacentHTML('beforeend',
+            View.tile_select(id)
+          );
+        }
       }
     );
   }
