@@ -1,0 +1,34 @@
+*** ../zooloretto/bga-framework.d.ts	Tue Feb 24 09:53:45 2026
+--- ./bga-framework.d.ts	Tue Mar  3 13:37:52 2026
+***************
+*** 2,7 ****
+--- 2,15 ----
+  
+  declare const define: Function;
+  
++ declare class ScrollMap {
++   enableScrolling();
++   disableScrolling();
++   scrollto(x: number, y: number);
++   setupOnScreenArrows(size: number);
++   create(container: HTMLElement, scrollable: HTMLElement, surface: HTMLElement, oversurface: HTMLElement);
++ }
++ 
+  declare const ebg: {
+    core: {
+      gamegui: any;
+***************
+*** 11,16 ****
+--- 19,30 ----
+    };
+    popindialog: {
+      new (): PopinDialog;
++   };
++   stock: {
++     new (): Stock;
++   }
++   scrollmap: {
++     new (): ScrollMap;
+    };
+  };
+  

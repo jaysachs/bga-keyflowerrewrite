@@ -1,0 +1,22 @@
+{
+    "publisher": "R&D Games",
+    "publisher_website": "http:\/\/boardgamegeek.com\/boardgamepublisher\/83\/rd-games",
+    "publisher_bgg_id": 83,
+    "bgg_id": 122515,
+    "players": [
+        2,
+        3,
+        4,
+        5,
+        6
+    ],
+    "suggest_player_number": null,
+    "not_recommend_player_number": null,
+    "estimated_duration": 90,
+    "fast_additional_time": 60,
+    "medium_additional_time": 80,
+    "slow_additional_time": 100,
+    "tie_breaker_description": "",
+    "is_coop": 0,
+    "exception_on_warning": true
+}

@@ -1,0 +1,75 @@
+{
+    "table": [],
+    "player": {
+        "points_tile": {
+            "id": 10,
+            "name": "Points on tiles printed value",
+            "type": "int"
+        },
+        "points_workers": {
+            "id": 11,
+            "name": "Points from tiles scoring workers",
+            "type": "int"
+        },
+        "points_skills": {
+            "id": 12,
+            "name": "Points from tiles scoring skills",
+            "type": "int"
+        },
+        "points_resource": {
+            "id": 13,
+            "name": "Points from tiles scoring resources",
+            "type": "int"
+        },
+        "points_winterboats": {
+            "id": 14,
+            "name": "Points from winter boats (and turn order tile)",
+            "type": "int"
+        },
+        "points_gold": {
+            "id": 15,
+            "name": "Points from remaining gold",
+            "type": "int"
+        },
+        "village_size": {
+            "id": 16,
+            "name": "Village size",
+            "type": "int"
+        },
+        "tile_flipped": {
+            "id": 17,
+            "name": "Tiles upgraded",
+            "type": "int"
+        },
+        "transport_capacity": {
+            "id": 18,
+            "name": "Final transport capacity",
+            "type": "int"
+        },
+        "meeple_bid": {
+            "id": 19,
+            "name": "Meeple used for bidding",
+            "type": "int"
+        },
+        "meeple_action": {
+            "id": 20,
+            "name": "Meeple used for actions",
+            "type": "int"
+        },
+        "meeple_foreignaction": {
+            "id": 21,
+            "name": "Meeple used for actions on opponent's villages",
+            "type": "int"
+        },
+        "meeple_bidaction": {
+            "id": 22,
+            "name": "Meeple used for actions on market's tiles",
+            "type": "int"
+        },
+        "resource_produced": {
+            "id": 23,
+            "name": "Number of resources produced",
+            "type": "int"
+        }
+    }
+}
