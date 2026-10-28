@@ -1840,31 +1840,15 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
     ]);
   }
 
-  async notif_returnBiddingMeeple(args: { to_return: { mid: string, player_id: string, card_type: string }[]}) {
-    // The server sends one entry per worker, but a player's bid on a lot is
-    // displayed as a single element with a count, so group the entries first.
-    const returns = new Map<string, { mid: string, player_id: number, card_type: number, count: number }>();
-    for (const meeple of args.to_return) {
-      const key = IDS.worker(meeple.mid, Number(meeple.player_id));
-      const entry = returns.get(key);
-      if (entry) {
-        entry.count++;
-      } else {
-        returns.set(key, { mid: meeple.mid, player_id: Number(meeple.player_id), card_type: Number(meeple.card_type), count: 1 });
-      }
-    }
-
+  async notif_returnBiddingMeeple(args: { to_return: { mid: number, player_id: number, card_type: number, count: number }[]}) {
     const anims: AnimationList = [];
-    // Return bidding meeple to their owner
-    for (const [key, ret] of returns) {
-      const worker = document.getElementById(key);
-      if (!worker) {
-        continue;
-      }
+    // Return each losing bid to its owner: one entry per bid, with its number of workers.
+    for (const bid of args.to_return) {
+      const worker = $(IDS.worker(String(bid.mid), bid.player_id));
       const slidesource = worker.parentElement!;
       anims.push(() => this.animationManager.fadeOutAndDestroy(worker));
       anims.push(() => this.animationManager
-        .slideFloatingElement(View.worker_elem({type: ret.card_type, num: ret.count}), slidesource, $(IDS.playerBoard(ret.player_id)))
+        .slideFloatingElement(View.worker_elem({type: bid.card_type, num: bid.count}), slidesource, $(IDS.playerBoard(bid.player_id)))
       );
     }
     await this.animationManager.playSequentially(anims);
