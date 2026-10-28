@@ -26,6 +26,9 @@ import { VillageUpgradeChoiceHandler } from "./states/village_upgrade_choice";
 import { WinterSelectionHandler } from "./states/winter_selection";
 import { IDS, View } from "./view";
 
+// URL of BGA's site theme (shared interface images); not in bga-framework.d.ts.
+declare const g_themeurl: string;
+
 await importDojoLibs(["ebg/counter", "ebg/stock", "ebg/scrollmap"]);
 
 type locationType = 'bid' | 'action' | 'assski' | 'assign';
@@ -1047,8 +1050,8 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
       html +=
         "<p>" +
         "<img class='imgtext' src='" +
-        g_gamethemeurl +
-        "img/layout/help_click.png' alt='action' />" +
+        g_themeurl +
+        "img/layout/help_click.png' alt='' />" +
         _("Place a worker here to activate the tile") +
         "</p>";
     }
