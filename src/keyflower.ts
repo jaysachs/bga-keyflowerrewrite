@@ -1368,8 +1368,8 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
     });
     this.bga.statusBar.addActionButton(_("Cancel"), () => {
       document.querySelectorAll(".pendingAction").forEach(e => e.classList.remove("pendingAction"));
-      this.bga.states.restoreServerGameState(), { color: 'secondary'}
-    });
+      this.bga.states.restoreServerGameState();
+    }, { color: 'secondary' });
   }
 
   private async onVillageClick(evt: Event) {
