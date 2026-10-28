@@ -10,10 +10,12 @@ export class ScoringSelectHandler extends BaseHandler {
   }
 
   onPlayerActivationChange(args: any, isCurrentPlayerActive: boolean) {
-    if (!isCurrentPlayerActive) { return; }
-    // This runs on entering the state and again when the player becomes
-    // active: start from an empty status bar so buttons aren't doubled.
+    // This runs on entering the state and again when the player's activation
+    // changes (on page load, both): start without overlays or buttons, and
+    // leave none once the player is done.
+    this.removeTileSelects();
     this.bga.statusBar.removeActionButtons();
+    if (!isCurrentPlayerActive) { return; }
     this.updateScoringSelectTiles();
     $("market_map").style.display = "none";
 
@@ -41,11 +43,9 @@ export class ScoringSelectHandler extends BaseHandler {
         const id = node.id.substring(5);
         const telem = $("tile_" + id);
         telem.classList.add("possibleScoringDestination");
-        if (!document.getElementById("tile_select_" + id)) {
-          telem.insertAdjacentHTML('beforeend',
-            View.tile_select(id)
-          );
-        }
+        telem.insertAdjacentHTML('beforeend',
+          View.tile_select(id)
+        );
       }
     );
     document.querySelectorAll("#playerArea_" + this.bga.gameui.player_id + " .scored_resource").forEach(
@@ -54,11 +54,9 @@ export class ScoringSelectHandler extends BaseHandler {
         const id = node.id.substring(5);
         const telem = $("tile_" + id);
         telem.classList.add("possibleScoringDestination");
-        if (!document.getElementById("tile_select_" + id)) {
-          telem.insertAdjacentHTML('beforeend',
-            View.tile_select(id)
-          );
-        }
+        telem.insertAdjacentHTML('beforeend',
+          View.tile_select(id)
+        );
       }
     );
     document.querySelectorAll("#playerArea_" + this.bga.gameui.player_id + " .scored_worker").forEach(
@@ -67,11 +65,9 @@ export class ScoringSelectHandler extends BaseHandler {
         const id = node.id.substring(5);
         const telem = $("tile_" + id);
         telem.classList.add("possibleScoringDestination");
-        if (!document.getElementById("tile_select_" + id)) {
-          telem.insertAdjacentHTML('beforeend',
-            View.tile_select(id)
-          );
-        }
+        telem.insertAdjacentHTML('beforeend',
+          View.tile_select(id)
+        );
       }
     );
   }

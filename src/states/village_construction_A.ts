@@ -10,6 +10,10 @@ export class VillageConstructionAHandler extends BaseHandler {
   }
 
   onPlayerActivationChange(args: any, isCurrentPlayerActive: boolean) {
+    // This runs on entering the state and again when the player's activation
+    // changes (on page load, both): start without overlays, and leave none
+    // once the player is done.
+    this.removeTileSelects();
     if (!isCurrentPlayerActive) { return; }
     // Remove eventual remaining bids
     document.querySelectorAll(".biddingGlow").forEach((e:HTMLElement) => e.style.display = "none");
@@ -31,13 +35,9 @@ export class VillageConstructionAHandler extends BaseHandler {
       if (tiles[tid] == this.bga.gameui.player_id) {
         const telem = $("tile_" + tid);
         telem.classList.add("possibleVillageTile");
-        // This runs on entering the state and again when the player becomes
-        // active: add the selection overlay only once.
-        if (!document.getElementById("tile_select_" + tid)) {
-          telem.insertAdjacentHTML('beforeend',
-            View.tile_select(tid)
-          );
-        }
+        telem.insertAdjacentHTML('beforeend',
+          View.tile_select(tid)
+        );
       }
     }
 
