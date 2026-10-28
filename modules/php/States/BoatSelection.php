@@ -69,6 +69,16 @@ class BoatSelection extends AbstractState
     }
 
 
+    public function onEnteringState(int $activePlayerId): mixed {
+        // The last player to choose has no choice left: give them the last
+        // boat instead of waiting for them to click it.
+        $boats = $this->game->getRemainingBoats();
+        if (count($boats) == 1) {
+            return $this->actSelectBoat($activePlayerId, (int) array_key_first($boats));
+        }
+        return null;
+    }
+
 	function zombie(int $player_id): mixed {
         // Select first boat
         $sql = "SELECT tile_id FROM tile WHERE (tile_type='boat' AND tile_location_arg='0') LIMIT 1";
