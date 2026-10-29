@@ -10,6 +10,11 @@ export class ScoringSelectHandler extends BaseHandler {
   }
 
   onPlayerActivationChange(args: any, isCurrentPlayerActive: boolean) {
+    // This runs on entering the state and again when the player's activation
+    // changes (on page load, both): start without overlays or buttons, and
+    // leave none once the player is done.
+    this.removeTileSelects();
+    this.bga.statusBar.removeActionButtons();
     if (!isCurrentPlayerActive) { return; }
     this.updateScoringSelectTiles();
     $("market_map").style.display = "none";

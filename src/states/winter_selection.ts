@@ -12,6 +12,10 @@ export class WinterSelectionHandler extends BaseHandler {
     if (!isCurrentPlayerActive) { return; }
 
     this.game.winterTiles.setSelectionMode(2);
+    // This runs on entering the state and again when the player's activation
+    // changes (on page load, both): start from an empty status bar so the
+    // button isn't doubled.
+    this.bga.statusBar.removeActionButtons();
     this.bga.statusBar.addActionButton(_("Confirm Winter Selection"), e => this.onConfirmWinter(e));
   }
 

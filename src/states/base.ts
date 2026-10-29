@@ -9,7 +9,11 @@ export abstract class BaseHandler {
     console.log("Leaving state: " + this.constructor.name);
 
     document.querySelectorAll(".bidbutton").forEach(e => e.remove());
-    document.querySelectorAll(".tile_select").forEach(e => e.remove());
+    this.removeTileSelects();
     document.querySelectorAll("#worker_panel").forEach(e => e.remove());
+  }
+
+  protected removeTileSelects(): void {
+    document.querySelectorAll(".tile_select").forEach(e => e.remove());
   }
 }
