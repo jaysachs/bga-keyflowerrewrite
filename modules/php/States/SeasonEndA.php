@@ -112,11 +112,18 @@ class SeasonEndA extends AbstractState
                 $this->notify->all('removeMarketTile', '', array('lot_id' => $lot['mid']));
             } else {
                 // other bids need returning.
-                $sql = "SELECT card_id, card_type, card_location_arg player_id, " . $lot['mid'] . " mid FROM  worker WHERE (card_type_arg='" . $lot['mid'] . "') AND (card_location='bid') AND (card_location_arg <> '" . $winning_pid . "')";
-                $workers_to_return = $this->game->getObjectListFromDB($sql);
+                // One entry per losing bid, with its number of workers: the client
+                // shows each player's bid on a lot as one element with a count.
+                // A bid is all one colour, so MIN() just picks that colour.
+                $sql = "SELECT card_location_arg player_id, MIN(card_type) card_type, COUNT(*) num FROM worker WHERE (card_type_arg='" . $lot['mid'] . "') AND (card_location='bid') AND (card_location_arg <> '" . $winning_pid . "') GROUP BY card_location_arg";
+                $bids_to_return = array_map(fn($bid) => array(
+                    'mid' => intval($lot['mid']),
+                    'player_id' => intval($bid['player_id']),
+                    'card_type' => intval($bid['card_type']),
+                    'count' => intval($bid['num']),
+                ), $this->game->getObjectListFromDB($sql));
 
-                // FIXME: return typed info, numbers should be numbers.
-                $this->notify->all('returnBiddingMeeple', '', array('to_return' => $workers_to_return));
+                $this->notify->all('returnBiddingMeeple', '', array('to_return' => $bids_to_return));
 
                 $sql = "UPDATE worker SET card_type_arg='0', card_location='hand' WHERE (card_type_arg='" . $lot['mid'] . "') AND (card_location='bid') AND (card_location_arg <> '" . $winning_pid . "')";
                 $this->game->DbQuery($sql);

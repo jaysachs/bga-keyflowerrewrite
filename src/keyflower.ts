@@ -1843,18 +1843,15 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
     ]);
   }
 
-  async notif_returnBiddingMeeple(args: { to_return: { mid: string, player_id: string, card_type: string }[]}) {
+  async notif_returnBiddingMeeple(args: { to_return: { mid: number, player_id: number, card_type: number, count: number }[]}) {
     const anims: AnimationList = [];
-    // Return bidding meeple to their owner
-    for (const i in args.to_return) {
-      const meeple = args.to_return[i];
-      const worker = $(IDS.worker(meeple.mid, Number(meeple.player_id)));
-      console.log("worker is ", worker);
+    // Return each losing bid to its owner: one entry per bid, with its number of workers.
+    for (const bid of args.to_return) {
+      const worker = $(IDS.worker(String(bid.mid), bid.player_id));
       const slidesource = worker.parentElement!;
-      console.log("slidesource is", slidesource);
       anims.push(() => this.animationManager.fadeOutAndDestroy(worker));
       anims.push(() => this.animationManager
-        .slideFloatingElement(View.worker_elem({type: Number(meeple.card_type)}), slidesource, $(IDS.playerBoard(Number(meeple.player_id))))
+        .slideFloatingElement(View.worker_elem({type: bid.card_type, num: bid.count}), slidesource, $(IDS.playerBoard(bid.player_id)))
       );
     }
     await this.animationManager.playSequentially(anims);
@@ -1872,7 +1869,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
     // Then, remove all remaining meeples on bidding
     const anims: AnimationList = [];
     document.querySelectorAll("#market_map .worker_hand")
-      .forEach((node: HTMLElement) => () => anims.push(
+      .forEach((node: HTMLElement) => anims.push(
         () => this.animationManager.fadeOutAndDestroy(node/* ,500, 800 */))
       );
     await this.animationManager.playParallel(anims);
