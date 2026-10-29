@@ -77,10 +77,10 @@ class SeasonEndC extends AbstractState
         // Calculate the score for each tile.
         foreach ($village_data as $tile) {
 
-            // Get tile data.
-            $tid = $tile['tid'];
+            // Get tile data. The DB returns strings; updateScoreOnTile() takes ints.
+            $tid = intval($tile['tid']);
             $side = $tile['side'];
-            $pid = $tile['pid'];
+            $pid = intval($tile['pid']);
 
             // Get the victory conditions for the tile.
             $sql = "SELECT * FROM victory WHERE (victory_tile_id = '" . $tid . "') AND (victory_tile_side = '" . $side . "')";
