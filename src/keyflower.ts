@@ -1360,22 +1360,15 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
       ` <span id='${confirmTileId}' style='display:inline-block; float:none; position: static; height: 32px; width: auto; aspect-ratio: 1.14; vertical-align: middle;' class='tile_background orientation1 tile_${tile_id}_0'></span>`;
     if (args.type == "bid") {
       // Show the resulting bid, not just the workers being added: a raise
-      // from 1 to 3 should read "3", with where the workers come from.
+      // from 1 to 3 should read "3", whether the workers come from the hand
+      // or from outbid tiles.
       const existing = Number(document.getElementById(IDS.worker(args.id, this.bga.gameui.player_id))?.innerText || 0);
       const added = args.count + moved;
       const totalSpan = workersHtml(existing + added);
-      let title: string;
-      if (existing > 0) {
-        title = moved > 0
-          ? _("Raise your bid for ${tileSpan} to ${totalSpan}? (${count} from your supply, ${moved} moved from outbid tiles)")
-          : _("Raise your bid for ${tileSpan} to ${totalSpan}? (${count} more)");
-      } else {
-        title = moved > 0
-          ? _("Bid ${totalSpan} for ${tileSpan}? (${count} from your supply, ${moved} moved from outbid tiles)")
-          : _("Bid ${totalSpan} for ${tileSpan}?");
-      }
-      this.bga.statusBar.setTitle(title,
-      { totalSpan: totalSpan, tileSpan: tileSpan, count: args.count, moved: moved });
+      const title = existing > 0
+        ? _("Raise your bid on ${tileSpan} to ${workersSpan}?")
+        : _("Bid ${workersSpan} for ${tileSpan}?");
+      this.bga.statusBar.setTitle(title, { workersSpan: totalSpan, tileSpan: tileSpan });
     } else if (args.type == "action") {
       this.bga.statusBar.setTitle(_("Place ${workersSpan} on ${tileSpan}?"),
       { workersSpan: workersSpan, tileSpan: tileSpan });
