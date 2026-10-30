@@ -161,6 +161,31 @@
     position: relative;
     display: inline-block;
 }
+/* A lot won at the end of the season: the winner's name as its heading, and
+   a border in their colour. */
+.marketLot.kf_lot_won {
+    /* Drawn inside the lot, so it doesn't change its size. */
+    outline: 3px dotted var(--kf-winner);
+    outline-offset: -3px;
+    border-radius: 8px;
+}
+.kf_lot_winner {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    max-width: calc(100% - 24px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0 8px;
+    border-radius: 0 0 8px 8px;
+    background: var(--kf-winner);
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 20px;
+}
 #market_map .boattile {
     display: inline-block;
     float: left;
