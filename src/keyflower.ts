@@ -1302,9 +1302,12 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
       // Get outbids
       const outbids = document.querySelectorAll(".outbid_item.selected");
       let outbids_ids : number[] = [];
+      let moved = 0;
       outbids.forEach(outbid => {
         // outbid_item_<id>
-        outbids_ids.push(Number(outbid.id.substring(12)));
+        const outbid_id = outbid.id.substring(12);
+        outbids_ids.push(Number(outbid_id));
+        moved += Number($("worker_outbid_" + outbid_id).innerHTML);
       });
 
       console.log("onWorkerClick", this.lastSelectedLocation);
@@ -1335,7 +1338,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
         colors: colors,
         counts: counts,
         outbids: outbids_ids,
-      });
+      }, moved);
     }
 
     if (typeof this.placeWorkerPopup != "undefined") {
@@ -1343,19 +1346,31 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
     }
   }
 
-  private async confirmPlay(tile_id: string, args: { type: locationType, id: string, color_id: number, count: number, outbids: number[], colors: number[], counts: number[]}) {
+  // `moved` is the number of outbid workers taken back from other lots and
+  // added to this placement, on top of `args.count` workers from the hand.
+  private async confirmPlay(tile_id: string, args: { type: locationType, id: string, color_id: number, count: number, outbids: number[], colors: number[], counts: number[]}, moved: number = 0) {
     this.bga.statusBar.removeActionButtons();
-    const workersSpan =
-      `<span style='display: inline-block; float:none' class='worker_hand worker${args.color_id}'>${args.count}</span>`;
+    const workersHtml = (num: number) =>
+      `<span style='display: inline-block; float:none' class='worker_hand worker${args.color_id}'>${num}</span>`;
     const confirmTileId = 'confirm_tile';
-    const tileSpan =
-      `<span id='${confirmTileId}' style='display:inline-block; float:none; position: static; height: 32px; width: auto; aspect-ratio: 1.14; vertical-align: middle;' class='tile_background orientation1 tile_${tile_id}_0'></span>`;
+    // The tile's name followed by its picture, e.g. "Woodcutter [icon]".
+    const tileName = _(this.bga.gameui.gamedatas.tiles[Number(tile_id)]?.name ?? "");
+    const tileSpan = tileName +
+      ` <span id='${confirmTileId}' style='display:inline-block; float:none; position: static; height: 32px; width: auto; aspect-ratio: 1.14; vertical-align: middle;' class='tile_background orientation1 tile_${tile_id}_0'></span>`;
     if (args.type == "bid") {
-      this.bga.statusBar.setTitle(_("Bid ${workersSpan} for ${tileSpan}?"),
-      { workersSpan: workersSpan, tileSpan: tileSpan });
+      // Show the resulting bid, not just the workers being added: a raise
+      // from 1 to 3 should read "3", whether the workers come from the hand
+      // or from outbid tiles.
+      const existing = Number(document.getElementById(IDS.worker(args.id, this.bga.gameui.player_id))?.innerText || 0);
+      const added = args.count + moved;
+      const totalSpan = workersHtml(existing + added);
+      const title = existing > 0
+        ? _("Raise your bid on ${tileSpan} to ${workersSpan}?")
+        : _("Bid ${workersSpan} for ${tileSpan}?");
+      this.bga.statusBar.setTitle(title, { workersSpan: totalSpan, tileSpan: tileSpan });
     } else if (args.type == "action") {
       this.bga.statusBar.setTitle(_("Place ${workersSpan} on ${tileSpan}?"),
-      { workersSpan: workersSpan, tileSpan: tileSpan });
+      { workersSpan: workersHtml(args.count), tileSpan: tileSpan });
     } else {
       // FIXME?? This is for assigning workers during scoring? maybe?
     }
