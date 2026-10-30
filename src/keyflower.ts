@@ -1352,7 +1352,6 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
     this.bga.statusBar.removeActionButtons();
     const workersHtml = (num: number) =>
       `<span style='display: inline-block; float:none' class='worker_hand worker${args.color_id}'>${num}</span>`;
-    const workersSpan = workersHtml(args.count);
     const confirmTileId = 'confirm_tile';
     // The tile's name followed by its picture, e.g. "Woodcutter [icon]".
     const tileName = _(this.bga.gameui.gamedatas.tiles[Number(tile_id)]?.name ?? "");
@@ -1371,7 +1370,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
       this.bga.statusBar.setTitle(title, { workersSpan: totalSpan, tileSpan: tileSpan });
     } else if (args.type == "action") {
       this.bga.statusBar.setTitle(_("Place ${workersSpan} on ${tileSpan}?"),
-      { workersSpan: workersSpan, tileSpan: tileSpan });
+      { workersSpan: workersHtml(args.count), tileSpan: tileSpan });
     } else {
       // FIXME?? This is for assigning workers during scoring? maybe?
     }
