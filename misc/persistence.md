@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS `pieces` (
 
   -- tile: the tile name, lowercase no spaces: 'home4', 'keymine', 'wainwright', 'boat4a'
   -- worker: the worker color: 'yellow', 'red', 'green', 'blue', 'purple'
-  -- resource: 'stone', 'wood', 'ore', 'gold'
+  -- resource: 'stone', 'wood', 'iron', 'gold'
   piece_subtype varchar(20),
 
   loc_type varchar(12) NOT NULL,
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS `pieces` (
   -- loc_id / loc_pos / player_id, using 0 to mean "unset"
   -- It will also require specifying "positions" or a "loc_id" for
   -- locations like "box", and means that skills in the skill pile
-  --   and resources in the bag also need "positions" or "loc_id"s.
+  --   and resources in the resource stocks also need "positions" or "loc_id"s.
   -- UNIQUE(`loc_type`, `loc_id`, `loc_pos`, `player_id`),
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 ```
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS `pieces` (
 | ------------ | ------------------------- |
 | `worker` | `blue`, `red`, `yellow`, `green`, `purple` |
 | `resource` | `iron`, `stone`, `wood`, `gold` |
-| `tile`   | `boat`, `land`, `home`, `standardboat`, `startplayer` |
+| `tile`   | `boat1a`, `home1`, `goldmine`, `keythedral`, `startplayer1` |
 | `skill`  | `pickaxe`, `anvil`, `saw` |
 
 | `piece_type` | `loc_type` | what | meaning of `loc_id` | meaning of `loc_pos` | requires `player_id`|
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS `pieces` (
 |  `tile`  | `spring` | tile in spring stock | - | position in pile | |
 |  `tile`  | `summer` | tile in summer stock | - | position in pile | |
 |  `tile`  | `fall` | tile in fall stock | - | position in pile | |
-|  `tile`  | `winter` | tile in winter stock or player house | - | position in selecteds | *: if specified, player selected|
+|  `tile`  | `winter` | tile in winter stock or player house | - | position | *: if specified, Y (the selecting player) |
 |  `tile`  | `won` | won tile not yet placed in village  | - | position | Y |
 |  `tile`  | `box` | out of play | - | "position"? | |
 |  `worker`  |  `bid` | worker in bid | tile_id in market | position in the bidgroup | Y |
@@ -103,3 +103,4 @@ Questions:
 3. should we require player_id for things for which it can be inferred? e.g. skills on a tile at end of game ... the skills belong to the tile's owner.
 4. ~~should we have a separate "winter tiles in hand" location? or can we depend on the existence/absence of player_id along with the "winter" location?~~  **NO**, we'll use `player_id` non-zero for this.
 5. Can we eliminate `upgraded`? It's only for tiles and boats. We can't use e.g. negation of id, because that breaks the piece identity. We could, though, use the `piece_subtype` (append a trailing "_u"?)
+6. Is unset (for e.g. `player_id`) NULL or 0? Relates on whether we want to include a `UNIQUE` constraint or not.
