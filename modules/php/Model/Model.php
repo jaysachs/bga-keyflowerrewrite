@@ -158,7 +158,11 @@ class Model {
         */
     }
 
-    public function __construct(private int $activePlayerId)
+    /**
+     * note that activePlayerId may be the current active player in a
+     * multiplayer active state.
+     */
+    public function __construct(public readonly int $activePlayerId)
     {
     }
 
@@ -168,8 +172,8 @@ class Model {
     public function bid(int $market_tile_id, array $moved_bid_ids, int $numWorkersFromStock, WorkerType $workerType): void {
         /*
          verify:
-            1. market lot id is a lot
-            2. moved_bid_ids refer to active player's bids
+            1. market_tile_id is in the market
+            2. moved_bid_ids refer to tiles in the market
             3. moved_bid_ids are currently losing
             4. moved_bid_ids are unique
             5. if there already is a bid on this lot, by this player, add it to moved_bid_ids ??
