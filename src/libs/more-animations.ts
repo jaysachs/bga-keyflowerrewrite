@@ -1,4 +1,4 @@
-import { BgaAnimations } from './libs';
+import { BgaAnimations } from "../bgalibs/bga-animations";
 
 export type AnimationList = (() => Promise<any>)[];
 
@@ -16,10 +16,12 @@ export class MoreAnimations {
     }
 
     async slideAndAttach(elem: HTMLElement, newParent: HTMLElement,
-        settings?: { bump?: number,
-                     duration?: number,
-                     toPlaceholder?: 'on' | 'grow' |  'off',
-                     fromPlaceholder?: 'on' | 'shrink' | 'off' }): Promise<any> {
+        settings?: {
+            bump?: number,
+            duration?: number,
+            toPlaceholder?: 'on' | 'grow' | 'off',
+            fromPlaceholder?: 'on' | 'shrink' | 'off'
+        }): Promise<any> {
         if (elem.parentElement == newParent) {
             return Promise.resolve();
         }
@@ -39,7 +41,7 @@ export class MoreAnimations {
             elems.forEach(e => e?.classList.add(css));
             return this.wait(400);
         }
-        const off =  () => {
+        const off = () => {
             elems.forEach(e => e?.classList.remove(css));
             return this.wait(400);
         }
@@ -60,8 +62,8 @@ export class MoreAnimations {
             return Promise.resolve(null);
         }
         return this.animateAndCommit(
-            el.animate({ transform: [ `rotate(${degrees}deg)`] },{ duration: 700 }
-        ));
+            el.animate({ transform: [`rotate(${degrees}deg)`] }, { duration: 700 }
+            ));
     }
 
     async slideToObject(el: HTMLElement, target: HTMLElement, duration: number = 500): Promise<any> {
@@ -75,7 +77,7 @@ export class MoreAnimations {
             return Promise.resolve(null);
         }
         return this.animateAndCommit(
-            el.animate({ left: newX + "px", top: newY + "px" }, { duration: duration  })
+            el.animate({ left: newX + "px", top: newY + "px" }, { duration: duration })
         );
     }
 
@@ -97,7 +99,7 @@ export class MoreAnimations {
         Object.assign(back.style, flipStyles);
         Object.assign(front.style, flipStyles);
 
-        const liftAndFlip = (el : Element, start: string, end: string) => {
+        const liftAndFlip = (el: Element, start: string, end: string) => {
             const anim = el.animate([
                 { transform: start },
                 { transform: lift + start },
@@ -112,44 +114,44 @@ export class MoreAnimations {
         ]);
     }
 
-    async fadeOutIn(element: HTMLElement, iterations: number = 1, durationSeconds: number = 0.7) : Promise<any> {
+    async fadeOutIn(element: HTMLElement, iterations: number = 1, durationSeconds: number = 0.7): Promise<any> {
         if (!this.animationManager.animationsActive()) {
             return Promise.resolve(null);
         }
-        return element.animate({ opacity: [ 1.0, 0.0, 1.0 ], offset: [0, 0.5, 1.0] }, // easing: [ "ease-in", "ease-in", "ease-in" ]},
-                               { duration: durationSeconds * 1000, iterations: iterations }).finished;
+        return element.animate({ opacity: [1.0, 0.0, 1.0], offset: [0, 0.5, 1.0] }, // easing: [ "ease-in", "ease-in", "ease-in" ]},
+            { duration: durationSeconds * 1000, iterations: iterations }).finished;
     }
 
-    async fadeOut(element: HTMLElement, durationSeconds: number = 0.3) : Promise<any> {
+    async fadeOut(element: HTMLElement, durationSeconds: number = 0.3): Promise<any> {
         if (!this.animationManager.animationsActive()) {
             element.style.opacity = '0.0';
             return Promise.resolve(null);
         }
         return this.animateAndCommit(
-            element.animate({ opacity: [ 0.0 ], easing: 'linear' },
-                            { duration: durationSeconds * 1000 })
+            element.animate({ opacity: [0.0], easing: 'linear' },
+                { duration: durationSeconds * 1000 })
         );
     }
 
-    async fadeIn(element: HTMLElement, durationSeconds: number = 0.3) : Promise<any> {
+    async fadeIn(element: HTMLElement, durationSeconds: number = 0.3): Promise<any> {
         if (!this.animationManager.animationsActive()) {
             element.style.opacity = '';
             return Promise.resolve(null);
         }
         return this.animateAndCommit(
-            element.animate({ opacity: [ 1.0 ], easing: 'linear' },
-                            { duration: durationSeconds * 1000 })
+            element.animate({ opacity: [1.0], easing: 'linear' },
+                { duration: durationSeconds * 1000 })
         );
     }
 
-    async slideToDefaultPos(element: HTMLElement, durationSeconds: number = 0.5) : Promise<any> {
+    async slideToDefaultPos(element: HTMLElement, durationSeconds: number = 0.5): Promise<any> {
         if (!this.animationManager.animationsActive()) {
             Object.assign(element.style, { left: '0', top: '0' });
             return Promise.resolve(null);
         }
         return this.animateAndCommit(
-            element.animate({ left: [ 0.0 ], top: [ 0.0 ], easing: 'linear' },
-                            { duration: durationSeconds * 1000 })
+            element.animate({ left: [0.0], top: [0.0], easing: 'linear' },
+                { duration: durationSeconds * 1000 })
         );
     }
 
@@ -157,13 +159,13 @@ export class MoreAnimations {
         const ghost1 = elem.firstElementChild ? null : elem.appendChild(document.createElement('span'));
         const ghost2 = other.firstElementChild ? null : other.appendChild(document.createElement('span'));
         return this.animationManager.swap([elem.firstElementChild as HTMLElement,
-                                           other.firstElementChild as HTMLElement], {})
+        other.firstElementChild as HTMLElement], {})
             .then(() => { ghost1?.remove(); ghost2?.remove(); });
     }
 
-    playInterval(animations: ((i:number) => Promise<any>)[],
-                 // cast to any is to get access to private field
-                 interval = (this.animationManager as any).animationSettings.duration / 4) {
+    playInterval(animations: ((i: number) => Promise<any>)[],
+        // cast to any is to get access to private field
+        interval = (this.animationManager as any).animationSettings.duration / 4) {
         return new Promise<void>((resolve) => {
             if (animations.length === 0) {
                 resolve();
@@ -174,11 +176,11 @@ export class MoreAnimations {
                 animations[index]!(index),
             ];
             index++;
-            if (! this.animationManager.animationsActive()) {
+            if (!this.animationManager.animationsActive()) {
                 interval = 0;
             }
             const intervalId = setInterval(() => {
-                if (! this.animationManager.animationsActive()) {
+                if (!this.animationManager.animationsActive()) {
                     while (index < animations.length) {
                         promises.push(animations[index]!(index));
                         index++;
@@ -194,5 +196,4 @@ export class MoreAnimations {
             }, interval);
         });
     }
-
 }

@@ -3,7 +3,7 @@
 /**
  *------
  * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
- * babylonia implementation : © Jay Sachs <vagabond@covariant.org>
+ * zooloretto implementation : © Jay Sachs <vagabond@covariant.org>
  *
  * Copyright 2025 Jay Sachs <vagabond@covariant.org>
  *
@@ -27,81 +27,62 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\States;
 
-use Bga\GameFramework\Actions\Types\IntArrayParam;
 use Bga\GameFramework\StateType;
+use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
+use Bga\GameFramework\Table;
+use Bga\GameFramework\UserException;
 use Bga\Games\keyflowerrewrite\Game;
+use Bga\Games\keyflowerrewrite\Model\Model;
+use Bga\Games\keyflowerrewrite\Model\WorkerType;
+use Override;
 
-    /*
-    30 => array(
-    		"name" => "playerTurn",
-    		"description" => clienttranslate('${actplayer} must either bid for a tile, activate a tile, or pass.'),
-    		"descriptionmyturn" => clienttranslate('${you} must either bid for a tile, activate a tile, or '),
-    		"type" => "activeplayer",
-            "args" => "argPlayerTurn",
-    		"possibleactions" => array(
-                "actPlaceWorkersWithLocation",
-                "actPass"
-            ),
-            "updateGameProgression" => true,
-            "transitions" => array( "workersPlaced" => 40, "pass" => 50)
-    ),
-    */
-
-class PlayerTurn extends AbstractState
-{
-    function __construct(Game $game)
+class PlayerTurn extends GameState {
+    public function __construct(Table $game)
     {
         parent::__construct(
             game: $game,
-            id: 30,
+            id: 200,
             type: StateType::ACTIVE_PLAYER,
-    		description: clienttranslate('${actplayer} must either bid for a tile, activate a tile, or pass.'),
-    		descriptionMyTurn: clienttranslate('${you} must either bid for a tile, activate a tile, or '),
-            updateGameProgression: true,
-        );
+            name: null,
+            description: _('${actplayer} must either bid for a tile, activate a tile, or pass.'),
+            descriptionMyTurn: _('${you} must either bid for a tile, activate a tile, or pass'),
+            updateGameProgression: true);
     }
 
-    public function getArgs(int $active_player_id): array
-    {
-        // Return possible location for a worker to be placed.
-        return [
-            'possibleLocations' => $this->getPossibleLocations(),
-            'possibleBids' => $this->getPossibleBids(),
-            'outbid' => $this->getOutbidWorkers($active_player_id)
-        ];
-    }
-
-	function zombie(int $player_id): mixed {
-        return $this->actPass();
-    }
-
+    /**
+     * @param list<int> $moved_bid_ids the tiles to move bids from
+     */
     #[PossibleAction]
-    public function actPass(): mixed
-    {
-        $this->notify->all("playerPass", clienttranslate('${player_name} passes.'), array('player_name' => $this->game->getActivePlayerName()));
-        $sql = "UPDATE player SET player_passed = TRUE WHERE player_id = '" . $this->game->getActivePlayerId() . "'";
-        $this->game->DbQuery($sql);
-        return EndTurn::class;
+    public function actActivate(int $active_player_id, int $tile_id,array $moved_bid_ids, int $workersFromStock, WorkerType $workerType): void {
+        /*
+         verify:
+            1. tile_id is a tile in some village
+            2. the tile has an activation reward
+            3. moved_bid_ids refer to active player's bids
+            4. moved_bid_ids are currently losing
+            5. moved_bid_ids are unique
+            6. all moved_bid groups have the same type
+            7. worker_type is same as all moved_bid groups
+            8. if there are already activations or bids on this tile, worker type should match
+                unless player has boat4b
+        */
     }
 
+    /**
+     * @param list<int> $moved_bid_ids the tiles to move bids from
+     */
     #[PossibleAction]
-    public function actPlaceWorkersWithLocation(int $active_player_id, string $type, int $id, int $color_id, int $count, #[IntArrayParam()] ?array $colors, #[IntArrayParam()] ?array $counts, #[IntArrayParam()] ?array $outbids): mixed
-    {
-        return $this->doPlaceWorkersWithLocation(false, $active_player_id, $type, $id, $color_id, $count, $colors ?? [], $counts ?? [], $outbids ?? []);
-    }
+    public function actBid(int $active_player_id, int $market_tile_id, array $moved_bid_ids, int $numWorkersFromStock, WorkerType $workerType): void {
+        $model = new Model($active_player_id);
 
-    private function getPossibleLocations()
-    {
-        // This will essentially be all of the village tiles and the seasons new stock.
-        $sql = "SELECT tile_id id FROM tile WHERE (tile_location = 'village') OR (tile_type = '" . $this->getSeasonString($this->game->getSeason()) . "')";
-        return $this->game->getCollectionFromDb($sql);
-    }
+        $model->bid($market_tile_id, $moved_bid_ids, $numWorkersFromStock, $workerType);
 
-    private function getPossibleBids(): array
-    {
-        // This will essentially be all of the market tiles.
-        $sql = "SELECT market_id id FROM market";
-        return $this->game->getCollectionFromDb($sql);
+        /*
+        $this->game->notify(...);
+
+        $this->game->activeNextPlayer();
+        */
+
     }
 }

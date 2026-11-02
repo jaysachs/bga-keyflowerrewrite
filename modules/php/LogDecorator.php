@@ -37,7 +37,7 @@ class LogDecorator {
      * @return array<string,string|int|list<string>>
      */
 	public function playerNames(string $message, array $args): array {
-        foreach (["", "1", "2", "3", "4", "5", "6"] as $suffix) {
+        foreach (["", "1", "2", "3", "4", "5"] as $suffix) {
             $pid = "player_id{$suffix}";
             $pnm = "player_name{$suffix}";
             if (isset($args[$pid])) {
@@ -46,6 +46,7 @@ class LogDecorator {
                     if (!isset($args['i18n'])) {
                         $args['i18n'] = [];
                     }
+                    // @phpstan-ignore offsetAccess.nonOffsetAccessible
                     $args['i18n'][] = $pnm;
                 }
             }

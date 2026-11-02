@@ -10,9 +10,9 @@
 
 // replacements for format_block
 
-import { BaseGame } from "./basegame";
 import { KFGameDatas, KFPlayer } from "./kfdata";
-import { AnimationList } from "./more-animations";
+import { BaseGame } from "./libs/basegame";
+import { AnimationList } from "./libs/more-animations";
 import { BoatSelectionHandler } from "./states/boat_selection";
 import { PlayerTurnHandler } from "./states/player_turn";
 import { ProductionChoiceHandler } from "./states/production_choice";

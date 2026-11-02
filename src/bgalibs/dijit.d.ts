@@ -5,9 +5,12 @@ declare namespace dijit {
   }
   class Popup {}
   namespace popup {
-    function open({ popup: TooltipDialog,
+    function open(args: { popup: TooltipDialog,
         around: HTMLElement,
         closable: boolean }): Popup;
     function close(p: Popup): void;
+  }
+  class Tooltip { 
+    constructor(args: {connectId: string[], getContent: (x: string) => string });
   }
 }

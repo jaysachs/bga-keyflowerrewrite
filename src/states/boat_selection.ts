@@ -1,5 +1,5 @@
 import { Game } from "../keyflower";
-import { AnimationList } from "../more-animations";
+import { AnimationList } from "../libs/more-animations";
 import { IDS } from "../view";
 import { BaseHandler } from "./base";
 

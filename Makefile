@@ -10,7 +10,7 @@ WORK=work
 STUBS=$(WORK)/module/table/table.game.php
 TS_STUBS=src/bga-framework.d.ts
 JS=modules/js/Game.js
-PHPSTAN_LEVEL=5
+PHPSTAN_LEVEL=10
 
 .PHONY: build test phpstan deploy clean
 
@@ -33,10 +33,10 @@ $(STUBS): $(WORK) _ide_helper.php Makefile
 	perl -p -e 's/type_arg=null,/type_arg,/;' -e 's/  exit/\/\/ exit/;' -e 's/APP_GAMEMODULE_PATH = ""/APP_GAMEMODULE_PATH = "work\/"/;' -e 's/{}\(\)\;/{}\;/;' _ide_helper.php > $(STUBS)
 
 test: build
-#	phpunit --bootstrap misc/autoload.php misc --testdox
+	phpunit --bootstrap misc/autoload.php misc --testdox
 
 phpstan: build $(STUBS)
-	phpstan --autoload-file=$(STUBS) --level=$(PHPSTAN_LEVEL) --memory-limit=1G analyse modules/php modules/php/States
+	phpstan --autoload-file=$(STUBS) --level=$(PHPSTAN_LEVEL) --memory-limit=1G analyse modules/php modules/php/Model misc/tests/php
 
 deploy: test
 	lftp -e 'cd $(GAME); mirror -e -R --exclude .vscode/ --exclude .git/ --exclude work/ --exclude local/ --exclude bga-framework.d.ts --exclude node_modules/ --exclude _ide_helper.php; exit' $(SFTP)

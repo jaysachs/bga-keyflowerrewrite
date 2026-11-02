@@ -1,0 +1,399 @@
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:og="http://ogp.me/ns#" xmlns:fb="http://www.facebook.com/2008/fbml"
+  xml:lang="en" lang="en" dir="ltr" class="notranslate" translate="no">
+
+  <head>
+    <!--
+        <link rel="stylesheet" type="text/css"
+        href="https://studio.boardgamearena.com/data/themereleases/260507-0859/css/common.css" />
+        <link rel="stylesheet" type="text/css"
+        href="https://studio.boardgamearena.com/data/themereleases/260507-0859/css/gameserver.css" />
+        <link rel="stylesheet" type="text/css"
+        href="https://studio.boardgamearena.com/data/themereleases/current/css/libraries.css?2" />
+  <link rel="stylesheet" type="text/css" href="../zooloretto.css" />
+
+  <script src="mockup.js"></script>
+      -->
+    <!-- this gives an error but harmless -->
+    <!--  <script src="../modules/js/Game.js"></script> -->
+
+    <script>
+
+      function angleFor(orient) {
+          return (orient - 1) * 60;
+      }
+
+      const timingSettings =
+            {
+                duration: 500,
+                /* easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)'*/
+            };
+
+
+      async function flipTile(hd) {
+          const oa = angleFor(Number(hd.getAttribute("orientation") ?? 1));
+          const rotateY = (deg) => {
+              const rad = (oa) * Math.PI / 180;
+              const x = Math.sin(-rad);
+              const y = Math.cos(-rad);
+              return {
+                  transform: ` rotate3d(${x}, ${y}, 0, ${deg}deg) rotateZ(${oa}deg) `
+              }
+          };
+          hd.animate([rotateY(0), rotateY(90)], timingSettings)
+              .finished
+              .then(
+                  () => hd.setAttribute("side", String(3 - (hd.getAttribute("side") ?? 1))))
+              .then(
+                  () => hd.animate([rotateY(90), rotateY(0)], timingSettings).finished)
+          ;
+      }
+
+      async function rotateTile(hd, reverse) {
+          const orient = Number(hd.getAttribute("orientation") ?? 1);
+          let next = orient;
+          if (reverse) {
+              next--;
+          } else {
+              next++;
+          }
+          const degrees = angleFor(next);
+          if (next == 0) { next = 6; }
+          else if (next == 7) { next = 1; }
+          const anims = [];
+          const rotate = (deg) => {
+              return {
+                  transform: [`rotate(${deg}deg)`]
+              }
+          };
+          // rotate the tile
+          anims.push(hd.animate(rotate(degrees), timingSettings));
+          Promise.all(anims.map(a => a.finished))
+              .then(() => hd.setAttribute('orientation', String(next)));
+      }
+
+      async function handleClick(event) {
+          let hd = event.target;
+          if (!hd.getAttribute('tile')) {
+              return false;
+          }
+          if (event.metaKey) {
+              return flipTile(hd);
+          }
+          return rotateTile(hd, event.shiftKey);
+      }
+
+      const size = 200;
+      const xh = size/2;
+      const xw = xh * Math.sqrt(3);
+
+      function setLoc(hexdiv, row, col) {
+          hexdiv.style.top = `${row * xh}px`;
+          hexdiv.style.left = `${col * xw}px`;
+      }
+
+      function setAllLoc() {
+          document.documentElement.style = `--hex-size: ${size}px`;
+          document.querySelectorAll(".village [tile]").forEach(e => {
+              const r = Number(e.getAttribute("r"));
+              const c = Number(e.getAttribute("c"));
+              e.onclick = (ev) => handleClick(ev);
+              setLoc(e, r, c);
+          });
+          season('spring');
+      }
+
+      const seasonColors = {
+          spring: '#8aa14e',
+          summer: '#d0ca72',
+          fall: '#b7793b',
+          winter: '#aaaaaa'
+      }
+
+      function season(s) {
+          document.documentElement.style
+              .setProperty('--season-color', seasonColors[s]);
+      }
+    </script>
+
+    <style>
+      :root {
+          --hex-size: 200px;
+          --hex-ratio: calc(2/sqrt(3));
+          --season-color: transparent;
+          --component-background: radial-gradient( closest-side, #ffffff60, #ffffff30 80%, #ffffff00);
+      }
+
+      body {
+          /* background: linear-gradient(45deg, gainsboro, tan); */
+          background-color: var(--season-color);
+          transition-property: background-color;
+          transition-duration: 2s;
+      }
+
+      .villages {
+          display: flex;
+      }
+
+      #market {
+          --hex-size: 100px;
+          width: 100%;
+          display: flex;
+          gap: 10px;
+          margin-bottom: 40px;
+      }
+
+      #boats {
+          background: var(--component-background);
+          display: flex;
+          flex-grow: 0.1;
+          flex-wrap: wrap;
+          border-radius: 5px;
+          justify-content: space-evenly;
+          align-items: center;
+      }
+
+      #markettiles {
+          background: var(--component-background);
+          border-radius: 5px;
+          flex-grow: 1.0;
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: space-evenly;
+          align-items: center;
+          column-gap: 10px;
+      }
+
+      #markettiles > .tile {
+          height: var(--hex-size);
+      }
+
+      #villages {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+      }
+
+      .village {
+          /* zoom: 200%; */
+          background: var(--component-background);
+          position: relative;
+          flex-shrink: 0;
+          /* border: 1px dashed #444444; */
+          transition-property: border-color;
+          transition-duration: 2s;
+          /* border-radius: 5px; */
+          /* padding: 10px; */
+          overflow: hidden;
+        }
+
+      .villageheader {
+        position: relative;
+        width: 100%;
+        z-index: 10;
+        display: flex;
+        }
+
+        .villagetools {
+        display: flex;
+        }
+
+      .villageplayer {
+          display: inline;
+          font-size: 12pt;
+          background: #fff3;
+      }
+
+      .villagecanvas {
+          height: 100%;
+      }
+
+      [kf-tool] {
+        background-image: url('img/tiles-symbols.png');
+        background-repeat: no-repeat;
+        background-size: calc(100% * 2064/34) calc(100% * 113/34);
+        background-origin: border-box;
+
+        /*        display: inline-block; */
+        background-repeat: no-repeat;
+        width: auto;
+        aspect-ratio: 1.0;
+        height: 34px; /* use var? */
+        float: left;
+        color: white; /* set this here? for count text? */
+        text-align: center;
+        vertical-align: middle;
+        line-height: 34px;
+      }
+      [kf-tool=""] {
+        background-position: -468px -66px;
+      }
+      [kf-tool="anvil"] {
+        background-position: -402px -15px;
+      }
+      [kf-tool="pickaxe"] {
+        background-position: 23.05% 18.95%;
+      }
+      [kf-tool="saw"] {
+        background-position:
+            /* calc(100% * (408.2/2064)) */ 19.78%
+        calc(100% * ((93.7/113))) /* 83.5% */
+        /* either 100px to bottom or 66px to top ... how to get to 83.5%? */
+        ;
+      }
+
+      [tile] {
+          background-image: url(img/tiles-large.jpg);
+          background-size: 1600% 800%;
+          /* so picked up for floating (animated) pieces */
+          display: inline-block;
+          /* move in from 25/75 to account for non-transparent white background */
+          clip-path: polygon(1% 50%, 25.5% 99%, 74.5% 99%, 99% 50%, 74.5% 1%, 25.5% 1%);
+          width: auto;
+          aspect-ratio: var(--hex-ratio);
+          height: var(--hex-size);
+      }
+
+      .village [tile] {
+          position: absolute;
+          display: inline-block;
+      }
+
+      [tile][orientation="1"] {
+          transform: rotate(0deg);
+      }
+      [tile][orientation="2"] {
+          transform: rotate(60deg);
+      }
+      [tile][orientation="3"] {
+          transform: rotate(120deg);
+      }
+      [tile][orientation="4"] {
+          transform: rotate(180deg);
+      }
+      [tile][orientation="5"] {
+          transform: rotate(240deg);
+      }
+      [tile][orientation="6"] {
+          transform: rotate(300deg);
+      }
+
+      [tile="alehouse"] {
+          background-position: 0% -400%;
+      }
+      [tile="alehouse"][side="2"] {
+          background-position: -100% -400%;
+      }
+      [tile="stable"] {
+          background-position: -200% -500%;
+      }
+      [tile="stable"][side="2"] {
+          background-position: -300% -500%;
+      }
+      [tile="quarryman"] {
+          background-position: 0% -500%;
+      }
+      [tile="quarryman"][side="2"] {
+          background-position: -100% -500%;
+      }
+      [tile="goldmine"] {
+          background-position: -400% -400%;
+      }
+      [tile="goldmine"][side="2"] {
+          background-position: -500% -400%;
+      }
+      [tile="keyflower"] {
+          background-position: 0% -200%;
+      }
+      [tile="seabastion"] {
+          background-position: -200% -200%;
+      }
+      [tile="keymine"] {
+          background-position: -600% -400%;
+      }
+      [tile="workshop"] {
+          background-position: -600% -500%;
+      }
+      [tile="keywood"] {
+          background-position: -1000% -400%;
+      }
+      [tile="miner"] {
+          background-position: -1200% -400%;
+      }
+      [tile="peddlar"] {
+          background-position: -1400% -400%;
+      }
+
+      .bidbox {
+          display: flex;
+          justify-content: center;
+      }
+
+    </style>
+
+    <title>hex mockup for KF villages</title>
+  </head>
+  <body class="nodebug" onLoad="setAllLoc()">
+    <div>
+      <button type="button" onclick="season('spring')">spring</button>
+      <button type="button" onclick="season('summer')">summer</button>
+      <button type="button" onclick="season('fall')">fall</button>
+      <button type="button" onclick="season('winter')">winter</button>
+    </div>
+    <br/>
+    <div id="market">
+      <div id="boats">
+        <div tile="keyflower"></div>
+        <div tile="seabastion"></div>
+      </div>
+      <div id="markettiles">
+        <div>
+          <div tile="keymine"></div>
+          <div class="bidbox"><button type="button">Bid</button></div>
+        </div>
+        <div>
+          <div tile="workshop"></div>
+          <div class="bidbox"><button type="button">Bid</button></div>
+        </div>
+        <div>
+          <div tile="keywood"></div>
+          <div class="bidbox"><button type="button">Bid</button></div>
+        </div>
+        <div>
+          <div tile="miner"></div>
+          <div class="bidbox"><button type="button">Bid</button></div>
+        </div>
+        <div>
+          <div tile="peddlar"></div>
+          <div class="bidbox"><button type="button">Bid</button></div>
+        </div>
+      </div>
+    </div>
+    <div id="villages">
+      <div id="village-1" class="village" style="width: 640px; height: 540px;">
+        <div class="villageheader">
+          <div class="villageplayer" style="color: red;">playerName1</div>
+          <div class="villagetools">
+            <span kf-tool="saw">1</span>
+            <span kf-tool="pickaxe">2</span>
+          </div>
+        </div>
+        <div class="villagecanvas" style="transform: translateX(200px) translateY(100px);">
+          <div tile="alehouse" r="0" c="0"></div>
+          <div orientation="3" tile="quarryman" r="2" c="0"></div>
+          <div tile="goldmine" r="-1" c="-1"></div>
+          <div tile="stable" r="1" c="1"></div>
+        </div>
+      </div>
+      <div id="village-2" class="village" style="width: 280px; height: 260px;">
+        <div class="villageheader">
+          <div class="villageplayer" style="color: blue;">playerName2</div>
+        </div>
+        <div class="villagecanvas" style="transform: translateX(20px) translateY(10px);">
+          <div tile="workshop" r="0" c="0"></div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
