@@ -734,8 +734,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
       $("tile_" + m.tile_id).onclick = this.onActionTileSelect.bind(this);
 
       if (m.pid != 0) {
-        $("marketLot_" + m.mid).style.backgroundColor =
-          this.hexToRgba(this.bga.gameui.gamedatas.players[m.pid]!.color);
+        this.markLotWon(m.mid, Number(m.pid));
       } else {
         for (let player_num = 1; player_num <= numPlayers; player_num++) {
           this.displayBiddingBox(player_num, m.mid);
@@ -754,6 +753,31 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
     return result
       ? "rgba(" + parseInt(result[1]!, 16) + "," + parseInt(result[2]!, 16) + "," + parseInt(result[3]!, 16) + ",0.2)"
       : "default";
+  }
+
+  /** Mark a market lot as won: the winner's name as its heading, and a border in their colour. */
+  private markLotWon(mid: string, pid: number): void {
+    const lot = $("marketLot_" + mid);
+    const player = this.bga.gameui.gamedatas.players[pid]!;
+    lot.classList.add("kf_lot_won");
+    lot.style.setProperty("--kf-winner", "#" + player.color);
+    lot.querySelector(".kf_lot_winner")?.remove();
+    const label = document.createElement("div");
+    label.className = "kf_lot_winner";
+    label.style.color = this.textColorOn(player.color);
+    label.textContent = player.name;
+    lot.prepend(label);
+  }
+
+  /** Black or white, whichever reads better on the colour (hex, without #). */
+  private textColorOn(hex: string): string {
+    const channel = (i: number) => {
+      const c = parseInt(hex.substring(i, i + 2), 16) / 255;
+      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    };
+    const luminance = 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
+    // Where white and black give the same contrast (WCAG).
+    return luminance > 0.179 ? "#000000" : "#ffffff";
   }
 
   private displayBiddingBox(player_num: number, mid: string): void {
@@ -1877,8 +1901,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
 
     for (const mid in args) {
       const pid = args[mid];
-      $("marketLot_" + mid).style.backgroundColor =
-        this.hexToRgba(this.bga.gameui.gamedatas.players[pid]!.color);
+      this.markLotWon(mid, Number(pid));
     }
 
     // Then, remove all remaining meeples on bidding
