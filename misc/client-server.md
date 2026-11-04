@@ -6,7 +6,7 @@
 2. Server must offer "all possible legal moves"; avoid allowing client interactions that are not legal.
 3. Minimize the number of back/forth communications. Specifically, prefer to send all legal moves for all pieces in one request, rather than offering "here are pieces with legal moves" and then when a piece is selected, send the legal moves for that piece. This may not be feasible, for example due to excessive payload size.
 
-## Specific interactiosn
+## Specific interactions
 
 ### Player turn to bid or activate or pass
 
