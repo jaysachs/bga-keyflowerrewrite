@@ -88,7 +88,7 @@ These payloads will be private. I believe there is an approximately 72MB max siz
 
 For several tiles a player needs to supply a component (resource, skill, worker) to activate it. For resource and skill, these are *independent* of the workers used to pay the activation cost. For the tiles with worker costs, Fair, Peddlar and Store require a specific color worker, and this will be easy to build into the existing option bundles, and will not increase the cardinality of bundles. The Tavern, however, has the greatest freedom (any one worker). We can put those choices into the option bundles, which will potentially quadruple the number options (red/green/blue/yellow). Alternatively, we could make this a client-server interaction point; we'd only have to prune the option bundles to include paying the activation cost. There's no need to do this outside of the Tavern, but it might "feel odd" to have those tiles be a special case. It's possibly they could be handled readily client-side, since the client can "know" if there are no more available workers of an existing color.
 
-**Need to analyze Alehouse/Inn activation more closely.**
+**Need to analyze Tavern activation more closely.**
 
 #### An alternative (or two)
 
