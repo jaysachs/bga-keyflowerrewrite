@@ -74,6 +74,10 @@ which is about 400 bytes. With 12 potential tiles to bid on, that's about 4k pay
 
 However, now we need to handle activations. Assuming the payload-per-activatable tile is about the same (400 bytes), and let's say we have 20 activatable tiles, puts us a bit over 10k. That's large but not impossible to deal with.
 
+*A note on activations*
+
+The "possible activation" data sent back from the server needs to include, for each possible activation, which positions (1-6) the activating worker group should take.
+
 *Is this feasible to support?*
 
 These payloads will be private. I believe there is an approximately 72MB max size on the gamelog. That leaves us roughly 7200 player actions if the gamelog only consisted of possible moves. With 6 players, that's 1200 possible-move payloads per player, or 300 payloads per season per player. How many "rounds" is a KF season? 20? 30? So for 6p, there are 180 "turns" per player?
@@ -82,9 +86,9 @@ These payloads will be private. I believe there is an approximately 72MB max siz
 
 #### Activation costs
 
-For several tiles a player needs to supply a component (resource, skill, worker) to activate it. For resource and skill, these are *independent* of the workers used to pay the activation cost. For the tiles with worker costs, Fair, Peddlar and Store require a specific color worker, and this will be easy to build into the existing option bundles, and will not increase the cardinality of bundles. The Alehouse and Inn, however have the greatest freedom (any one worker). We can put those choices into the option bundles, which will potentially quadruple the number options (red/green/blue/yellow). Alternatively, we could make this a client-server interaction point; we'd only have to prune the option bundles to include paying the activation cost. There's no need to do this outside of the alehouse and inn, but it might "feel odd" to have those tiles be a special case. It's possibly they could be handled readily client-side, since the client can "know" if there are no more available workers of an existing color.
+For several tiles a player needs to supply a component (resource, skill, worker) to activate it. For resource and skill, these are *independent* of the workers used to pay the activation cost. For the tiles with worker costs, Fair, Peddlar and Store require a specific color worker, and this will be easy to build into the existing option bundles, and will not increase the cardinality of bundles. The Tavern, however, has the greatest freedom (any one worker). We can put those choices into the option bundles, which will potentially quadruple the number options (red/green/blue/yellow). Alternatively, we could make this a client-server interaction point; we'd only have to prune the option bundles to include paying the activation cost. There's no need to do this outside of the Tavern, but it might "feel odd" to have those tiles be a special case. It's possibly they could be handled readily client-side, since the client can "know" if there are no more available workers of an existing color.
 
-**Need to analyze Alehouse/Inn activation more closely.**
+**Need to analyze Tavern activation more closely.**
 
 #### An alternative (or two)
 
@@ -92,8 +96,14 @@ Suppose we decide to let the client do the addition arithmetic to determin if a 
 
 ### Moving resources
 
-Initial idea is that each hex moved is a separate client/server interaction point, so we return a list of "potential resource moves", updated after each move.
+For each hex with resources, server provides
+
+```map<srcTileId,list<pair<list<resourceIds>,list<pair<destinationTileId,int>>>>```
+
+which maps tiles with resources to the resources on those tiles, and the from tiles to a list of reachable destinations with cost. It would also return "total movement points remaining". After moving a resource (a server interaction), an updated map is returned.
 
 ### Placing tiles
 
 Initial idea is that we return "which tiles can be placed where in what orientation". Each time a tile is placed, we hit the server for updated possibilities.
+
+Placement of any tile is a server action, returning a new "set of possible placements". Note that moving a tile just placed will need to obey placement constraints. If you need to place a tile where prior placements make it conflict, those prior placements need to be moved first. Perhaps during placement we permit an "un-place", which moves a tile back to the pending set.
