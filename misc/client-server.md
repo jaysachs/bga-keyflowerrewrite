@@ -100,10 +100,10 @@ For each hex with resources, server provides
 
 ```map<srcTileId,list<pair<list<resourceIds>,list<pair<destinationTileId,int>>>>```
 
-which maps tiles with resources to the resources on those tiles, and the from tiles to a list of reachable destinations with cost. It would also return "total movement points remaining". After moving a resource (a server interaction), an updated map is returned.
+which maps tiles with resources to the resources on those tiles, and then from tiles to a list of reachable destinations with cost. It would also return "total movement points remaining". After moving a resource (a server interaction), an updated map is returned.
 
 ### Placing tiles
 
 Initial idea is that we return "which tiles can be placed where in what orientation". Each time a tile is placed, we hit the server for updated possibilities.
 
-Placement of any tile is a server action, returning a new "set of possible placements". Note that moving a tile just placed will need to obey placement constraints. If you need to place a tile where prior placements make it conflict, those prior placements need to be moved first. Perhaps during placement we permit an "un-place", which moves a tile back to the pending set.
+Placement of any tile is a server action, returning a new "set of possible placements". Note that moving a tile just placed will need to obey placement constraints. If you need to place a tile where prior placements make it conflict, those prior placements need to be moved first. During placement we permit an "un-place", which moves a tile back to the pending set. If "un-placement" would cause disconnection of one or more other tiles, that would be not permitted, with a message indicating why not (e.g. "Brewer cannot be returned to won tiles because it would disconnect Carpenter").
