@@ -29,43 +29,37 @@ namespace Bga\Games\keyflowerrewrite\States;
 
 use Bga\GameFramework\StateType;
 use Bga\Games\keyflowerrewrite\Game;
+use Bga\Games\keyflowerrewrite\Model\Marshaller;
 
-    /*
-    74 => array("name" => "seasonEndB",
-                "description" => '',
-                "type" => "game",
-                "action" => "stSeasonEndB",
-                "transitions" => array( "startConstruction" => 75, "finishSeasonB" => 80 )
-                ),
-                */
-
-class SeasonEndB extends AbstractState
+class SeasonSetup extends AbstractState
 {
     function __construct(Game $game)
     {
         parent::__construct(
             game: $game,
-            id: 74,
+            id: 21,
             type: StateType::GAME,
+            description: clienttranslate('Setting up season'),
             updateGameProgression: false,
         );
     }
 
-    public function onEnteringState(): mixed {
-        $sql = "SELECT COUNT(*) FROM market m LEFT JOIN tile t ON (m.market_tile_id = t.tile_id) WHERE (t.tile_location='village')";
-        $remainingInMarket = $this->game->getUniqueValueFromDB($sql);
+    function onEnteringState(int $active_player_id): mixed {
+        $model = $this->createModel(0);
+        $seasonChangeData = $model->nextSeason();
 
-        if ($remainingInMarket > 0) {
-            // Tiles still to be added to the villages.
-            while ($this->game->getUniqueValueFromDB("SELECT COUNT(*) FROM market m LEFT JOIN tile t ON (m.market_tile_id = t.tile_id) WHERE (t.tile_location='village') AND (t.tile_location_arg='" . $this->game->getActivePlayerId() . "')") == 0) {
-                $this->game->activeNextPlayer();
-            }
-            // Active player has a tile to be added.
-            return VillageConstructionA::class;
-        } else {
-            // Building complete
-            $this->gamestate->changeActivePlayer($this->game->getStarter());
-            return SeasonEndC::class;
-        }
+        $startPlayerId = $seasonChangeData['startPlayerId'];
+
+        $this->game->gamestate->changeActivePlayer($startPlayerId);
+
+        // notify, specifically the dock and market changes
+        $this->game->notify->all('newSeason', 'Change of season to ${season}', [
+            'season' => $seasonChangeData['season']->value,
+            'startPlayerId' => $startPlayerId,
+            'dock' => Marshaller::dock($model->allData()->dock),
+            'market' => Marshaller::market($model->allData()->market),
+        ]);
+
+        return PlayerTurn::class;
     }
 }

@@ -27,22 +27,33 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
+use Bga\Games\keyflowerrewrite\Utils\Arrays;
 
-class Tile {
-    /**
-     * @param list<WorkerGroup> $activations
-     * @param list<Resource> $resources
-     * @param list<Skill> $skills
-     */
-    public function __construct(
-        public readonly int $id,
-        public readonly TileType $type,
-        public bool $upgraded = false,
-        public array $activations = [],
-        // for boats and activations
-        public array $resources = [],
-        // for boats
-        public array $skills = []
-    ) {
+class SkillPile {
+    /** @param list<Skill> $skills */
+    public function __construct(public array $skills)
+    {
+    }
+
+    public static function forNewGame() : SkillPile {
+        $lastId = 100;
+        /** @var list<Skill> */
+        $skills = [];
+        foreach (SkillType::cases() as $st) {
+            for ($i = 0; $i < 20; ++$i) {
+                $skills[] = new Skill(++$lastId, $st);
+            }
+        }
+        Arrays::shuffle($skills);
+        return new SkillPile($skills);
+    }
+
+    /** @return list<Skill> */
+    public function take(int $n): array {
+        return array_splice($this->skills, 0, $n);
+    }
+
+    public function size(): int {
+        return count($this->skills);
     }
 }

@@ -1,20 +1,67 @@
-export interface KFPlayer extends Player {
-  bottom: number;
-  top: number;
+export interface KFPlayer extends Player {}
+
+export type TileType = string; // TODO: enum this here?
+
+export type WorkerColor = 'red' | 'blue' | 'yellow' | 'green'  /* | 'purple' */;
+export interface Worker {
+    id: number;
+    color: WorkerColor;
+}
+export type SkillType = 'pickaxe' | 'saw' | 'anvil';
+export interface Skill {
+    id: number;
+    type: SkillType;
+}
+export interface Activations {
+    // TODO flesh this out
+}
+export interface VillageTile {
+    tile_id: number;
+    tiletype: TileType;
+    rowcol: number;
+    orientation: number; // 1-6
+    activations: Activations;
+}
+export type Season = 'spring' | 'summer' | 'fall' | 'winter';
+export interface MarketTile {
+    id: number;
+    tiletype: TileType;
+    bids: {
+        player_id: number;
+        workers: Worker[];
+    }
+    activations: Activations;
+}
+export type Market = MarketTile[];
+export interface Boat {
+    id: number;
+    boattype: string;
+    passengers: Worker[];
+    cargo: {id:number; type: SkillType}[];
+}
+export type Dock = Boat[];
+
+export interface StockTile {
+    id: number;
+    tiletype: TileType;
+}
+
+export interface Village {
+    player_id: number;
+    tiles: VillageTile[];
+    workers: Worker[] | undefined;
+    winter_tiles: StockTile[] | undefined;
+    skills: Skill[] | undefined;
 }
 
 export interface KFGameDatas extends Gamedatas<KFPlayer> {
-  playerorder: number[];
-  starter: number;
-  hand: { skills: { number: number }, workers: { number: number } };
-  moves: {type: number, move: {} };
-  bids: { mid: string, pid: number, type: number }[];
-  actions: { wid: string, tile_id: string, type: string, action_num: number}[];
-  tiles: { name: string, score: string, description: string }[];
-  assignedSkills: { wid: string, type: string, action_num: number, tile_id: string}[];
-  villages: {}[];
-  market: { mid: string, tile_id: number, side: number };
-  cargo: { workers:{ id: string, type: string }[], skills:{id: string}[], side: number }[];
-  winter: number[];
-  resources: { id: string, type: string }[];
+    season: Season;
+    startPlayerId: number;
+    dock: Dock;
+    market: Market;
+    // key is player_id
+    villages: Record<number,Village>;
+    skillCount: number;
+    bagCount: number;
+    greenCount: number;
 }

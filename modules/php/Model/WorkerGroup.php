@@ -31,9 +31,11 @@ use InvalidArgumentException;
 
 class WorkerGroup {
     /** @param list<Worker> $workers */
-    public function __construct(public array $workers)
+    public function __construct(public readonly int $playerId, public array $workers)
     {
         $color = null;
+        // FIXME: if boat4b in play, need to by pass this check if making
+        //   a group for activation
         foreach ($workers as $worker) {
             if ($color === null) {
                 $color = $worker->type;
@@ -55,6 +57,9 @@ class WorkerGroup {
     }
 
     public function combineWith(WorkerGroup $other): void {
+        if ($other->playerId != $this->playerId) {
+            throw new InvalidArgumentException("can't combine worker groups owned by different players");
+        }
         if ($other->workers[0]->type != $this->workers[0]->type) {
             throw new InvalidArgumentException("can't combine workers of different colors");
         }

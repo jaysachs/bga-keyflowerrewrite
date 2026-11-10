@@ -379,6 +379,42 @@ enum TileType: string {
         };
     }
 
+    public function passengerCapacity(bool $upgraded): int {
+        return match ($this) {
+            TileType::KEYFLOWER => $upgraded ? 3 : 7,
+            TileType::SEABASTION => $upgraded ? 0 : 6,
+            TileType::SEABREESE => $upgraded ? 4 : 6,
+            TileType::FLIPPER => $upgraded ? 2 : 5,
+            TileType::INVINCIBLE => $upgraded ? 3 : 5,
+            TileType::WHITEWIND => 4,
+            default => 0,
+        };
+    }
+
+    public function cargoCapacity(bool $upgraded): int {
+        return match ($this) {
+            TileType::KEYFLOWER => $upgraded ? 2 : 1,
+            TileType::SEABASTION => $upgraded ? 0 : 2,
+            TileType::SEABREESE => 1,
+            TileType::FLIPPER => 2,
+            TileType::INVINCIBLE => 1,
+            TileType::WHITEWIND => $upgraded ? 1 : 2,
+            default => 0,
+        };
+    }
+
+    public function flipsIn(Season $season): bool {
+        return match ($this) {
+            TileType::KEYFLOWER => $season == Season::FALL,
+            TileType::SEABASTION => $season == Season::WINTER,
+            TileType::SEABREESE => $season == Season::SUMMER,
+            TileType::FLIPPER => $season == Season::FALL,
+            TileType::INVINCIBLE => $season == Season::FALL,
+            TileType::WHITEWIND => $season == Season::FALL,
+            default => false,
+        };
+    }
+
     /** @return list<int> */
     public function roads(): array {
         return match ($this) {

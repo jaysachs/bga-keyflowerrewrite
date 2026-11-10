@@ -73,15 +73,15 @@ CREATE TABLE IF NOT EXISTS `pieces` (
 | -------- | ------ | ------- | ------- | ------ | ----- |
 |  `tile`  | `village` | tile placed in a village | encoded rowcol | tile orientation | Y |
 |  `tile`  | `market` | tile in market | - | position in market | |
-|  `tile`  | `port`   | tile in port | - | position in port | |
+|  `tile`  | `dock`   | boat tile at dock | - | position in dock | |
 |  `tile`  | `spring` | tile in spring stock | - | position in pile | |
 |  `tile`  | `summer` | tile in summer stock | - | position in pile | |
 |  `tile`  | `fall` | tile in fall stock | - | position in pile | |
 |  `tile`  | `winter` | tile in winter stock or player house | - | position | *: if specified, Y (the selecting player) |
 |  `tile`  | `won` | won tile not yet placed in village  | - | position | Y |
 |  `tile`  | `box` | out of play | - | "position"? | |
-|  `worker`  |  `bid` | worker in bid | tile_id in market | position in the bidgroup | Y |
-|  `worker`  |  `act` | worker in an activation | tile_id in some village | position (1-6) in the activation spots | |
+|  `worker`  | `market` | worker in bid | `tile_id` in market | position in the bidgroup | Y |
+|  `worker`  | `tile` | worker in an activation | `tile_id` in some village or market | position (1-6) in the activation spots | |
 | `worker` | `village` | (hidden) worker in a player's house | - | position | Y |
 | `worker` | `bag` | worker in the bag | - | position | |
 | `worker` | `greens` | green worker stock | - | position | |
@@ -89,13 +89,13 @@ CREATE TABLE IF NOT EXISTS `pieces` (
 | `skill` | `village` | (hidden) skill in player's house | - | position | Y |
 | `skill` | `skillpile` | skill in skill stock | - | position | |
 | `skill` | `boat` | new skills on boat | boat id | position | |
-| `resource` | `ironstock` | iron resource in stock | - | position | |
-| `resource` | `woodstock` | wood resource in stock | - | position | |
-| `resource` | `stonestock` | stone resource in stock | - | position | |
-| `resource` | `goldstock` | gold resource in stock | - | position | |
+| `resource` | `stock` | iron resource in stock | - | position | |
+| `resource` | `stock` | wood resource in stock | - | position | |
+| `resource` | `stock` | stone resource in stock | - | position | |
+| `resource` | `stock` | gold resource in stock | - | position | |
 | `resource` | `tile` | resource on a tile | tile id | position | |
-| `skill` | `tile` | end-game scoring assignment  | tile id | position | |
-| `worker` | `tile` | end-game scoring assignment | tile_id | position | |
+| `skill` | `scoring` | end-game scoring assignment  | tile id | position | |
+| `worker` | `scoring` | end-game scoring assignment | tile_id | position | |
 
 Questions:
 1. should we have a separate "scoring" location for resources/skills/workers assigned at the end of the game?

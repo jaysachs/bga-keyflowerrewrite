@@ -28,25 +28,19 @@ declare(strict_types=1);
 namespace Bga\Games\keyflowerrewrite\States;
 
 use Bga\GameFramework\StateType;
-use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
-use Bga\GameFramework\Table;
-use Bga\GameFramework\UserException;
 use Bga\Games\keyflowerrewrite\Game;
-use Bga\Games\keyflowerrewrite\Model\Model;
 use Bga\Games\keyflowerrewrite\Model\WorkerType;
-use Override;
 
-class PlayerTurn extends GameState {
-    public function __construct(Table $game)
+class PlayerTurn extends AbstractState {
+    public function __construct(Game $game)
     {
         parent::__construct(
             game: $game,
-            id: 200,
+            id: 22,
             type: StateType::ACTIVE_PLAYER,
-            name: null,
-            description: _('${actplayer} must either bid for a tile, activate a tile, or pass.'),
-            descriptionMyTurn: _('${you} must either bid for a tile, activate a tile, or pass'),
+            description: clienttranslate('${actplayer} must either bid for a tile, activate a tile, or pass.'),
+            descriptionMyTurn: clienttranslate('${you} must either bid for a tile, activate a tile, or pass'),
             updateGameProgression: true);
     }
 
@@ -74,15 +68,39 @@ class PlayerTurn extends GameState {
      */
     #[PossibleAction]
     public function actBid(int $active_player_id, int $market_tile_id, array $moved_bid_ids, int $numWorkersFromStock, WorkerType $workerType): void {
-        $model = new Model($active_player_id);
+        $model = $this->createModel($active_player_id);
 
-        $model->bid($market_tile_id, $moved_bid_ids, $numWorkersFromStock, $workerType);
+        $bid = $model->bid($market_tile_id, $moved_bid_ids, $numWorkersFromStock, $workerType);
 
-        /*
-        $this->game->notify(...);
+        $this->game->notify->all(
+            'bidMade',
+            '${player_name} bid ${num} ${color} workers on ${tiletype}',
+            [
+                'player_id' => $active_player_id,
+                'markettileid' => $market_tile_id,
+                'num' => count($bid->workers),
+                'color' => $bid->workers[0]->type->value,
+                // @phpstan-ignore property.nonObject
+                'tiletype' => $model->market()->marketTileById($market_tile_id)->type->value,
+                'bid' => array_map(fn ($w) => [
+                    // FIXME: do we need position too?
+                    'id' => $w->id,
+                    'type' => $w->type->value
+                ], $bid->workers)
+            ]
+        );
 
         $this->game->activeNextPlayer();
-        */
 
     }
+
+    public function actPass(): mixed {
+        // TODO
+        return [];
+    }
+
+    public function zombie(int $playerId): mixed {
+        return 99;
+    }
+
 }

@@ -1,19 +1,22 @@
-import { Game } from "../keyflower";
+import { AnimationManager } from "../bgalibs/bga-animations";
 import { KFGameDatas, KFPlayer } from "../kfdata";
 
-export abstract class BaseHandler {
-  protected bga: Bga<KFPlayer, KFGameDatas>
-  constructor(protected game: Game) { this.bga = game.bga; }
+export abstract class BaseState {
+    constructor(protected bga: Bga<KFPlayer, KFGameDatas>,
+        protected readonly animationManager: AnimationManager) {
+    }
 
-  onLeavingState(): void {
-    console.log("Leaving state: " + this.constructor.name);
+    public onEnteringState(args: any, isCurrentPlayerActive: boolean) { }
 
-    document.querySelectorAll(".bidbutton").forEach(e => e.remove());
-    this.removeTileSelects();
-    document.querySelectorAll("#worker_panel").forEach(e => e.remove());
-  }
+    public onLeavingState(args: any, isCurrentPlayerActive: boolean) { }
 
-  protected removeTileSelects(): void {
-    document.querySelectorAll(".tile_select").forEach(e => e.remove());
-  }
+    /*
+    protected autoConfirmEnabled(): boolean {
+        let p = this.bga.userPreferences.get(100);
+        if (p == 0) {
+            return this.bga.gameui.bRealtime;
+        }
+        return p == 2;
+    }
+    */
 }

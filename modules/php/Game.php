@@ -17,19 +17,58 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite;
 
+use Bga\GameFramework\Table as GameFrameworkTable;
+use Bga\Games\keyflowerrewrite\Model\AllGameData;
+use Bga\Games\keyflowerrewrite\Model\Marshaller;
+use Bga\Games\keyflowerrewrite\Model\Model;
+use Bga\Games\keyflowerrewrite\Model\PersistentStore;
+use Bga\Games\keyflowerrewrite\States\SeasonSetup;
+use Bga\Games\keyflowerrewrite\Utils\Arrays;
+use Bga\Games\keyflowerrewrite\Utils\DefaultDb;
+use Bga\Games\keyflowerrewrite\Utils\Log;
+use Bga\Games\keyflowerrewrite\Utils\Logger;
+
+class GameLogger implements Logger {
+	function __construct(private GameFrameworkTable $table) { }
+
+	public function debug(string $msg): void {
+		$this->table->debug($msg);
+	}
+
+	public function dump(string $prefix, mixed $obj): void {
+		$this->table->dump($prefix, $obj);
+	}
+
+	public function error(string $msg): void {
+		$this->table->error($msg);
+	}
+
+	public function trace(string $msg): void {
+		$this->table->trace($msg);
+	}
+
+	public function warn(string $msg): void {
+		$this->table->warn($msg);
+	}
+}
+
 class Game extends \Bga\GameFramework\Table
 {
+	// private Stats $stats;
+    private PersistentStore $ps;
+
     function __construct()
     {
         parent::__construct();
 
+		Log::setImpl(new GameLogger($this));
 		$logDecorator = new LogDecorator(\Closure::fromCallable($this->getPlayerNameById(...)));
 		$this->notify->addDecorator($logDecorator->playerNames(...));
+        $this->bga->notify->alwaysMergePrivate();
+ 		// $this->stats = Stats::createForGame($this);
+        $this->ps = new PersistentStore(new DefaultDb(), $this->globals);
 
-        self::initGameStateLabels(array(
-            "season" => 10
-        ));
-
+		$this->initGameStateLabels([]);
     }
 
     /*
@@ -52,19 +91,20 @@ class Game extends \Bga\GameFramework\Table
         // The default below is red/green/blue/orange/brown
         // The number of colors defined here must correspond to the maximum number of players allowed for the gams
         //                        red,   green, blue, brown, orange, black
-        $default_colors = array("ff0000", "00d27f", "00aedb", "ffa500", "a200ff", "000000");
-
+        $default_colors = ["ff0000", "00d27f", "00aedb", "ffa500", "a200ff", "000000"];
+        $colors = $default_colors;
+        Arrays::shuffle($colors);
         // Create players
         // Note: if you added some extra field on "player" table in the database (dbmodel.sql), you can initialize it there.
         $sql = "INSERT INTO player (player_id, player_color, player_name) VALUES ";
-        $values = array();
+        $values = [];
         foreach ($players as $player_id => $player) {
-            $color = array_shift($default_colors);
+            $color = array_shift($colors);
             $values[] = "('" . $player_id . "','$color','" . addslashes($player['player_name']) . "')";
         }
         $sql .= implode(',', $values);
         self::DbQuery($sql);
-        self::reattributeColorsBasedOnPreferences($players, array("ff0000", "00d27f", "00aedb", "ffa500", "a200ff", "000000"));
+        self::reattributeColorsBasedOnPreferences($players, $default_colors);
         self::reloadPlayersBasicInfos();
 
         /************ Start the game initialization *****/
@@ -89,40 +129,45 @@ class Game extends \Bga\GameFramework\Table
             0
         );
 
-        // TODO: setup the initial game situation here
+        $data = AllGameData::newGameDataFor(array_keys($players));
+        $this->ps->saveAllData($data);
 
-        self::setGameStateInitialValue('season', 0);
-
-        /************ End of the game initialization *****/
-        return 10;
+        return SeasonSetup::class;
     }
-    /*
-        getAllDatas:
 
-        Gather all informations about current game situation (visible by the current player).
+    public function createModel(int $active_player_id): Model {
+        return new Model($active_player_id, $this->ps);
+    }
 
-        The method is called each time the game interface is displayed to a player, ie:
-        _ when the game starts
-        _ when a player refreshes the game page (F5)
-    */
-        /**
-         * @return array<string,mixed>
-         */
+    /**
+     * @return array<string,mixed>
+     */
     protected function getAllDatas(int $current_player_id): array
     {
-        return [];
+        $model = $this->createModel($current_player_id);
+        $data = $model->allData();
+
+        $startPlayerId = 0;
+        $sv = [];
+        foreach ($data->villages as $village) {
+            $playerId = $village->playerId;
+            if ($village->hasStartPlayer()) {
+                $startPlayerId = $playerId;
+            }
+            $sv[$playerId] = Marshaller::village($village, $current_player_id == $playerId);
+        }
+        return [
+            'season' => $data->season?->value,
+            'startPlayerId' => $startPlayerId,
+            'dock' => Marshaller::dock($data->dock),
+            'market' => Marshaller::market($data->market),
+            'skillCount' => $data->skills->size(),
+            'greenCount' => count($data->greens),
+            'bagCount' => $data->bagWorkers->size(),
+            'villages' => $sv,
+        ];
     }
 
-    /*
-        getGameProgression:
-
-        Compute and return the current game progression.
-        The number returned must be an integer beween 0 (=the game just started) and
-        100 (= the game is finished or almost finished).
-
-        This method is called each time we are in a game state with the "updateGameProgression" property set to true
-        (see states.inc.php)
-    */
     function getGameProgression(): int
     {
         return 0;

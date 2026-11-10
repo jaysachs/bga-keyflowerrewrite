@@ -3,9 +3,9 @@
 /**
  *------
  * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
- * babylonia implementation : © Jay Sachs <vagabond@covariant.org>
+ * zooloretto implementation : © Jay Sachs <vagabond@covariant.org>
  *
- * Copyright 2025 Jay Sachs <vagabond@covariant.org>
+ * Copyright 2026 Jay Sachs <vagabond@covariant.org>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,26 +25,11 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\keyflowerrewrite\States;
+namespace Bga\Games\keyflowerrewrite\Model;
 
-use Bga\GameFramework\StateType;
-use Bga\Games\keyflowerrewrite\Game;
+use InvalidArgumentException;
 
-
-class LegacyLocationSelected extends AbstractState
-{
-    function __construct(Game $game)
-    {
-        parent::__construct(
-            game: $game,
-            id: 35,
-            type: StateType::GAME,
-            description: clienttranslate('Legacy state, transitioning ...'),
-            updateGameProgression: false,
-        );
-    }
-
-    public function onEnteringState(): mixed {
-        return WorkersPlaced::class;
-    }
+// FIXME: use this as base class for others?
+class StockTile {
+    public function __construct(public readonly int $id, public TileType $type) {}
 }

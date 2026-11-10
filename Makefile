@@ -38,7 +38,7 @@ test: build
 phpstan: build $(STUBS)
 	phpstan --autoload-file=$(STUBS) --level=$(PHPSTAN_LEVEL) --memory-limit=1G analyse modules/php modules/php/Model misc/tests/php
 
-deploy: test
+deploy: test phpstan
 	lftp -e 'cd $(GAME); mirror -e -R --exclude .vscode/ --exclude .git/ --exclude work/ --exclude local/ --exclude bga-framework.d.ts --exclude node_modules/ --exclude _ide_helper.php; exit' $(SFTP)
 
 clean:

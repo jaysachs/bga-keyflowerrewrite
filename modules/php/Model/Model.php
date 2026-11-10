@@ -28,168 +28,159 @@ declare(strict_types=1);
 namespace Bga\Games\keyflowerrewrite\Model;
 
 use InvalidArgumentException;
+use UnexpectedValueException;
 
 class Model {
-    /**
-     * @param non-empty-list<int> $playerIds
-     */
-    public static function newGame(array $playerIds): void {
-        $numPlayers = count($playerIds);
-
-        $lastId = 0;
-
-        // workers
-        $bagWorkers = [];
-        foreach ([WorkerType::RED, WorkerType::BLUE, WorkerType::YELLOW] as $wt) {
-            for ($i = 0; $i < 40; $i++) {
-                $bagWorkers[] = new Worker(++$lastId, $wt);
-            }
-        }
-        shuffle($bagWorkers);
-
-        $startPlayerWorker = new Worker(++$lastId, WorkerType::PURPLE);
-
-        $greens = [];
-        for ($i = 0; $i < 20; ++$i) {
-            $greens[] = new Worker(++$lastId, WorkerType::GREEN);
-        }
-
-        // skills
-        $lastId = 100;
-        $skills = [];
-        foreach (SkillType::cases() as $st) {
-            for ($i = 0; $i < 20; ++$i) {
-                $skills[] = new Skill(++$lastId, $st);
-            }
-        }
-
-        // resources
-        $lastId = 200;
-        // FIXME: create a ResourceStock / ResourceGroup class?
-        $resources = [];
-        foreach (ResourceType::cases() as $rt) {
-            $c = $rt == ResourceType::GOLD ? 48 : 24;
-            $r = [];
-            for ($i = 0; $i < $c; ++$i) {
-                $r[] = new Resource(++$lastId, $rt);
-            }
-            $resources[$rt->value] = $r;
-        }
-
-        // tiles
-        $lastId = 300;
-        $springTypes = TileType::springTiles();
-        shuffle($springTypes);
-        array_splice($springTypes, $numPlayers + 4);
-        $springTiles = [];
-        foreach ($springTypes as $tt) {
-            $springTiles[] = new Tile($lastId++, $tt);
-        }
-
-        $summerTypes = TileType::summerTiles();
-        shuffle($summerTypes);
-        array_splice($summerTypes, $numPlayers + 4);
-        $summerTiles = [];
-        foreach ($summerTypes as $tt) {
-            $summerTiles[] = new Tile($lastId++, $tt);
-        }
-
-        $fallTypes = TileType::fallTiles();
-        shuffle($fallTypes);
-        array_splice($fallTypes, $numPlayers + 4);
-        $fallTiles = [];
-        foreach ($fallTypes as $tt) {
-            $fallTiles[] = new Tile($lastId++, $tt);
-        }
-
-        $winterTypes = TileType::winterTiles();
-        shuffle($winterTypes);
-        $perPlayer = $numPlayers < 5 ? 3 : 2;
-        array_splice($winterTypes, $numPlayers * $perPlayer);
-        $winterTiles = [];
-        foreach ($winterTypes as $tt) {
-            $winterTiles[] = new Tile($lastId++, $tt);
-        }
-
-        $boatTiles = [];
-        foreach (TileType::standardBoats($numPlayers) as $tt) {
-            $boatTiles[] = new Tile(++$lastId, $tt);
-        }
-
-        $startTiles = [];
-        foreach (TileType::startPlayerTiles($numPlayers) as $tt) {
-            $startTiles[] = new Tile(++$lastId, $tt);
-        }
-
-        $homes = TileType::homeTiles();
-        shuffle($homes);
-        array_splice($homes, $numPlayers);
-        $min = min($homes, TileType::HOME6);
-
-        $villages = [];
-        foreach ($playerIds as $playerId) {
-            $workers = array_splice($bagWorkers, 0, 8);
-            $wts = array_splice($winterTiles, 0, $perPlayer);
-            $home = array_splice($homes, 0, 1)[0];
-            if ($home == $min) {
-                $workers[] = new Worker(++$lastId, WorkerType::PURPLE);
-            }
-            $villages[] = new Village(
-                $playerId,
-                [new Tile(++$lastId, $home)],
-                $workers,
-                [],
-                $wts);
-        }
-
-        /*
-         At this point, we have:
-          $bagWorkers - bag of workers
-          $greens - green worker stock
-          $skills - pile of skills
-          $villages - village for each player
-             which includes initial workers, initial winter tiles (before selection)
-                   and starting home tile
-          $boatTiles - the available standard boats
-          $startTiles - the avialable start tiles
-          $springTiles
-          $summerTiles
-          $fallTiles   - the tiles to be used in the various seasons
-        */
-    }
 
     /**
      * note that activePlayerId may be the current active player in a
      * multiplayer active state.
      */
-    public function __construct(public readonly int $activePlayerId)
-    {
+    public function __construct(private readonly int $activePlayerId, private PersistentStore $ps) {}
+
+    private ?AllGameData $_allData = null;
+
+    public function allData(): AllGameData {
+        if ($this->_allData === null) {
+            $this->_allData = $this->ps->readAllData();
+        }
+        return $this->_allData;
+    }
+
+    static string $foo = "";
+    /** @return array{startPlayerId:int,season:Season} */
+    public function nextSeason(): array {
+
+        $curr = $this->allData()->season;
+        self::$foo = self::$foo . "," . ($curr === null ? "null" : $curr->value);
+        $foo = self::$foo;
+        $season = match ($curr) {
+            null => Season::SPRING,
+            Season::SPRING => Season::SUMMER,
+            Season::SUMMER => Season::FALL,
+            Season::FALL => Season::WINTER,
+            default => throw new UnexpectedValueException("no next season after {$foo} {$curr->value}")
+        };
+        $this->allData()->season = $season;
+
+        $this->dock()->flipForSeason($season);
+
+        // shuffle bag workers?
+
+        $this->dock()->replenish($this->allData()->bagWorkers, $this->allData()->skills);
+
+        $this->market()->replenish($season, $this->allData()->tilesStock);
+
+        $startPlayerId = 0;
+        foreach ($this->allData()->villages as $village) {
+            if ($village->hasStartPlayer()) {
+                if ($startPlayerId <> 0) {
+                    throw new InvalidArgumentException("two players have start player?!");
+                }
+                $startPlayerId = $village->playerId;
+            }
+        }
+        if ($startPlayerId == 0) {
+            // throw new InvalidArgumentException("no players have start player?!");
+            $startPlayerId = $this->allData()->playerIds[0];
+        }
+
+        $this->ps->saveAllData($this->allData());
+
+        return [
+            'season' => $season,
+            'startPlayerId' => $startPlayerId
+        ];
+    }
+
+    public function season(): ?Season {
+        return $this->allData()->season;
+    }
+
+    public function dock(): Dock {
+        return $this->allData()->dock;
+    }
+
+    public function market(): Market {
+        return $this->allData()->market;
+    }
+
+    /** @return array<int,Village> */
+    private function & villages(): array {
+        return $this->allData()->villages;
+    }
+
+    private function villageFor(int $playerId): Village {
+        $villages = & $this->villages();
+        return $villages[$playerId];
+    }
+
+    private function village(): Village {
+        return $this->villageFor($this->activePlayerId);
     }
 
     /**
      * @param list<int> $moved_bid_ids the tiles to move bids from
+     * @return WorkerGroup the workers that were newly bid / bid changed
      */
-    public function bid(int $market_tile_id, array $moved_bid_ids, int $numWorkersFromStock, WorkerType $workerType): void {
-        /*
-         verify:
-            1. market_tile_id is in the market
-            2. moved_bid_ids refer to tiles in the market
-            3. moved_bid_ids are currently losing
-            4. moved_bid_ids are unique
-            5. if there already is a bid on this lot, by this player, add it to moved_bid_ids ??
-            6. all moved_bid groups have the same type
-            7. worker_type is same as all moved_bid groups
-            8. if there are already activations or other player's bids on this tile, worker type should match
-                unless player has boat4a
-        */
-        /*
-        Assuming we pass verification:
-            1. combine all moved bids into one bid group, removing them from the current lot
-            2. from player's stock, move workers of appropriate type into the bid group
-            3. set the bid group on the market lot
-        */
-            /*
-            Update the DB.
-            */
+    public function bid(int $market_tile_id, array $moved_bid_ids, int $numWorkersFromStock, WorkerType $workerType): WorkerGroup {
+
+        $hasBoat4a = $this->village()->hasTileType(TileType::BOAT4A);
+        $market = $this->market();
+
+        $bidTile = $market->marketTileById($market_tile_id);
+        if ($bidTile === null) {
+            throw new InvalidArgumentException("no market tile {$market_tile_id}");
         }
+
+        $currentColor = $bidTile->biddingColor();
+        if ($workerType != $currentColor && !$hasBoat4a) {
+            throw new InvalidArgumentException("bids must match bid color");
+        }
+
+        if (count(array_unique($moved_bid_ids)) != count($moved_bid_ids)) {
+            throw new InvalidArgumentException("cannot move the same bid multiple times");
+        }
+
+        /** @var list<WorkerGroup> */
+        $movedBids = [];
+        foreach ($moved_bid_ids as $movedBidTileId) {
+            $movedBidTile = $market->marketTileById($movedBidTileId);
+            if ($movedBidTile === null) {
+                throw new InvalidArgumentException("no market tile {$movedBidTileId}");
+            }
+            if ($movedBidTile == $bidTile) {
+                // TODO: figure out if this should be ok; if it is allowed, the
+                //       subsequent validations will need adjustment.
+                throw new InvalidArgumentException("cannot move bid onto itself");
+            }
+            $bid = $movedBidTile->bidBy($this->activePlayerId);
+            if ($bid === null) {
+                throw new InvalidArgumentException("no bid to move on market tile {$movedBidTileId}");
+            }
+            if ($bid === $movedBidTile->highBid()) {
+                throw new InvalidArgumentException("cannot move a high bid {$movedBidTileId}");
+            }
+            if ($bid->color() != $workerType) {
+                throw new InvalidArgumentException("cannot mix colors in a bid");
+            }
+            $movedBids[] = $bid;
+        }
+
+        $newBid = $this->village()->takeWorkersFromStock($workerType, $numWorkersFromStock);
+
+        foreach ($movedBids as $movedBid) {
+            $newBid->combineWith($movedBid);
+        }
+
+        $bidTile->bid($this->activePlayerId, $newBid);
+
+        /* Update the DB */
+        $this->ps->updateBidWorkerLocations($bidTile, $newBid);
+        // Just update locations of all workers involved in the bid
+        // Can we be "sloppy" and just reassign them all to positions 1-n?
+        // Or do we "dance around" workers already bid?
+
+        return $newBid;
+    }
 }
