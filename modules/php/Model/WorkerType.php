@@ -33,5 +33,4 @@ enum WorkerType: string {
     case RED = "red";
     case YELLOW = "yellow";
     case GREEN = "green";
-    case PURPLE = "purple";
 }

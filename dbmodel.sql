@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS `pieces` (
 
   -- 'tile', 'worker', 'resource', 'skill'
-  piece_type varchar(10) NOT NULL,
+  piece_type varchar(12) NOT NULL,
 
   id int unsigned NOT NULL,
 
