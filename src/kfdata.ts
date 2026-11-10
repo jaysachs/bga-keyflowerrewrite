@@ -1,5 +1,7 @@
 export interface KFPlayer extends Player {}
 
+export type TileType = string; // TODO: enum this here?
+
 export type WorkerColor = 'red' | 'blue' | 'yellow' | 'green'  /* | 'purple' */;
 export interface Worker {
     id: number;
@@ -10,19 +12,25 @@ export interface Skill {
     id: number;
     type: SkillType;
 }
+export interface Activations {
+    // TODO flesh this out
+}
 export interface VillageTile {
-    tiletype: string;
+    tile_id: number;
+    tiletype: TileType;
     rowcol: number;
     orientation: number; // 1-6
+    activations: Activations;
 }
 export type Season = 'spring' | 'summer' | 'fall' | 'winter';
 export interface MarketTile {
     id: number;
-    tiletype: string;
+    tiletype: TileType;
     bids: {
         player_id: number;
         workers: Worker[];
     }
+    activations: Activations;
 }
 export type Market = MarketTile[];
 export interface Boat {
@@ -33,10 +41,17 @@ export interface Boat {
 }
 export type Dock = Boat[];
 
+export interface StockTile {
+    id: number;
+    tiletype: TileType;
+}
+
 export interface Village {
+    player_id: number;
     tiles: VillageTile[];
-    workers: Worker[];
-    skills: Skill[];
+    workers: Worker[] | undefined;
+    winter_tiles: StockTile[] | undefined;
+    skills: Skill[] | undefined;
 }
 
 export interface KFGameDatas extends Gamedatas<KFPlayer> {

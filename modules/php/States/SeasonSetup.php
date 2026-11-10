@@ -30,7 +30,6 @@ namespace Bga\Games\keyflowerrewrite\States;
 use Bga\GameFramework\StateType;
 use Bga\Games\keyflowerrewrite\Game;
 use Bga\Games\keyflowerrewrite\Model\Marshaller;
-use Bga\Games\keyflowerrewrite\Utils\Log;
 
 class SeasonSetup extends AbstractState
 {

@@ -39,8 +39,8 @@ class PlayerTurn extends AbstractState {
             game: $game,
             id: 22,
             type: StateType::ACTIVE_PLAYER,
-            description: _('${actplayer} must either bid for a tile, activate a tile, or pass.'),
-            descriptionMyTurn: _('${you} must either bid for a tile, activate a tile, or pass'),
+            description: clienttranslate('${actplayer} must either bid for a tile, activate a tile, or pass.'),
+            descriptionMyTurn: clienttranslate('${you} must either bid for a tile, activate a tile, or pass'),
             updateGameProgression: true);
     }
 
@@ -74,10 +74,12 @@ class PlayerTurn extends AbstractState {
 
         $this->game->notify->all(
             'bidMade',
-            '${playerName} bid on ${markettile}',
+            '${player_name} bid ${num} ${color} workers on ${tiletype}',
             [
-                'playerId' => $active_player_id,
+                'player_id' => $active_player_id,
                 'markettileid' => $market_tile_id,
+                'num' => count($bid->workers),
+                'color' => $bid->workers[0]->type->value,
                 // @phpstan-ignore property.nonObject
                 'tiletype' => $model->market()->marketTileById($market_tile_id)->type->value,
                 'bid' => array_map(fn ($w) => [
@@ -90,6 +92,11 @@ class PlayerTurn extends AbstractState {
 
         $this->game->activeNextPlayer();
 
+    }
+
+    public function actPass(): mixed {
+        // TODO
+        return [];
     }
 
     public function zombie(int $playerId): mixed {

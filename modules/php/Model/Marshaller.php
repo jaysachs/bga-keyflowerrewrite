@@ -30,7 +30,6 @@ namespace Bga\Games\keyflowerrewrite\Model;
 use Bga\Games\keyflowerrewrite\Model\Dock;
 use Bga\Games\keyflowerrewrite\Model\Market;
 use Bga\Games\keyflowerrewrite\Model\Village;
-use Closure;
 
 class Marshaller {
 
@@ -54,7 +53,7 @@ class Marshaller {
     private static function skill(Skill $s): array {
         return [
             'id' => $s->id,
-            'color' => $s->type->value,
+            'type' => $s->type->value,
         ];
     }
 
