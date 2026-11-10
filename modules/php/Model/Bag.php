@@ -30,7 +30,16 @@ namespace Bga\Games\keyflowerrewrite\Model;
 
 class Bag {
     /** @param list<Worker> $workers */
-    public function __construct(readonly array $workers)
+    public function __construct(public array $workers)
     {
+    }
+
+    /** @return list<Worker> */
+    public function take(int $n): array {
+        return array_splice($this->workers, 0, $n);
+    }
+
+    public function size(): int {
+        return count($this->workers);
     }
 }

@@ -49,16 +49,20 @@ class Arrays
 
     /**
      * @template T
-     * @param array<int,T> $arr
+     * @param list<T> $arr
+     * @param-out list<T> $arr
      */
     public static function shuffle(array &$arr): void
     {
         $e = sizeof($arr) - 1;
+        /** @phpstan-ignore paramOut.type */
         for ($i = 0; $i < $e; $i++) {
             $j = random_int($i, $e);
             if ($j <> $i) {
                 $tmp = $arr[$j];
+                /** @phpstan-ignore paramOut.type */
                 $arr[$j] = $arr[$i];
+                /** @phpstan-ignore paramOut.type */
                 $arr[$i] = $tmp;
             }
         }

@@ -1,20 +1,52 @@
-export interface KFPlayer extends Player {
-  bottom: number;
-  top: number;
+export interface KFPlayer extends Player {}
+
+export type WorkerColor = 'red' | 'blue' | 'yellow' | 'green'  /* | 'purple' */;
+export interface Worker {
+    id: number;
+    color: WorkerColor;
+}
+export type SkillType = 'pickaxe' | 'saw' | 'anvil';
+export interface Skill {
+    id: number;
+    type: SkillType;
+}
+export interface VillageTile {
+    tiletype: string;
+    rowcol: number;
+    orientation: number; // 1-6
+}
+export type Season = 'spring' | 'summer' | 'fall' | 'winter';
+export interface MarketTile {
+    id: number;
+    tiletype: string;
+    bids: {
+        player_id: number;
+        workers: Worker[];
+    }
+}
+export type Market = MarketTile[];
+export interface Boat {
+    id: number;
+    boattype: string;
+    passengers: Worker[];
+    cargo: {id:number; type: SkillType}[];
+}
+export type Dock = Boat[];
+
+export interface Village {
+    tiles: VillageTile[];
+    workers: Worker[];
+    skills: Skill[];
 }
 
 export interface KFGameDatas extends Gamedatas<KFPlayer> {
-  playerorder: number[];
-  starter: number;
-  hand: { skills: { number: number }, workers: { number: number } };
-  moves: {type: number, move: {} };
-  bids: { mid: string, pid: number, type: number }[];
-  actions: { wid: string, tile_id: string, type: string, action_num: number}[];
-  tiles: { name: string, score: string, description: string }[];
-  assignedSkills: { wid: string, type: string, action_num: number, tile_id: string}[];
-  villages: {}[];
-  market: { mid: string, tile_id: number, side: number };
-  cargo: { workers:{ id: string, type: string }[], skills:{id: string}[], side: number }[];
-  winter: number[];
-  resources: { id: string, type: string }[];
+    season: Season;
+    startPlayerId: number;
+    dock: Dock;
+    market: Market;
+    // key is player_id
+    villages: Record<number,Village>;
+    skillCount: number;
+    bagCount: number;
+    greenCount: number;
 }

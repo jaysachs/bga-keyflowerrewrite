@@ -29,22 +29,38 @@ namespace Bga\Games\keyflowerrewrite\States;
 
 use Bga\GameFramework\StateType;
 use Bga\Games\keyflowerrewrite\Game;
+use Bga\Games\keyflowerrewrite\Model\Marshaller;
+use Bga\Games\keyflowerrewrite\Utils\Log;
 
-
-class LegacyLocationSelected extends AbstractState
+class SeasonSetup extends AbstractState
 {
     function __construct(Game $game)
     {
         parent::__construct(
             game: $game,
-            id: 35,
+            id: 21,
             type: StateType::GAME,
-            description: clienttranslate('Legacy state, transitioning ...'),
+            description: clienttranslate('Setting up season'),
             updateGameProgression: false,
         );
     }
 
-    public function onEnteringState(): mixed {
-        return WorkersPlaced::class;
+    function onEnteringState(int $active_player_id): mixed {
+        $model = $this->createModel(0);
+        $seasonChangeData = $model->nextSeason();
+
+        $startPlayerId = $seasonChangeData['startPlayerId'];
+
+        $this->game->gamestate->changeActivePlayer($startPlayerId);
+
+        // notify, specifically the dock and market changes
+        $this->game->notify->all('newSeason', 'Change of season to ${season}', [
+            'season' => $seasonChangeData['season']->value,
+            'startPlayerId' => $startPlayerId,
+            'dock' => Marshaller::dock($model->allData()->dock),
+            'market' => Marshaller::market($model->allData()->market),
+        ]);
+
+        return PlayerTurn::class;
     }
 }

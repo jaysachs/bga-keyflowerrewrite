@@ -27,12 +27,48 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
+use InvalidArgumentException;
+
 class Village {
     /**
-     * @param array<int,Tile> $tiles  key is encoded row/col
+     * @param list<VillageTile> $tiles  key is encoded row/col
      * @param list<Worker> $workers FIXME: for now this includes start player
      * @param list<Skill> $skills
-     * @param list<Tile> $winterTiles
+     * @param list<StockTile> $winterTiles
      */
-    public function __construct(public readonly int $playerId, public readonly array $tiles, public readonly array $workers, public readonly array $skills, public readonly array $winterTiles) {}
+    public function __construct(public readonly int $playerId, public array $tiles, public array $workers, public array $skills, public array $winterTiles) {}
+
+    /** @return WorkerGroup */
+    public function takeWorkersFromStock(WorkerType $type, int $num): WorkerGroup {
+        $result = [];
+        $workers = $this->workers;
+        for ($i = 0; $i < $num; ++$i) {
+            $idx = array_find_key($workers, fn ($w) => $w->type == $type);
+            if ($idx !== null) {
+                $result[] = array_slice($workers, $idx, 1)[0];
+            }
+        }
+        if (count($result) != $num) {
+            throw new InvalidArgumentException("Not enough workers of type {$type->value} in stock");
+        }
+        return new WorkerGroup($this->playerId, $workers);
+    }
+
+    public function hasStartPlayer(): bool {
+        foreach ($this->workers as $worker) {
+            if ($worker->type == WorkerType::PURPLE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function hasTileType(TileType $tileType): bool {
+        foreach ($this->tiles as $vtile) {
+            if ($vtile->type == $tileType) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

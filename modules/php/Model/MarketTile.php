@@ -27,23 +27,61 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
+use InvalidArgumentException;
 
 class MarketTile {
     /**
-     * @param array<int,WorkerGroup> $bids key is player position (id?!)
+     * @param list<WorkerGroup> $activations
+     * @param array<int,WorkerGroup> $bids key is playerId
      */
-    public function __construct(public readonly Tile $tile, private array $bids) {}
+    public function __construct(
+        public readonly int $id,
+        public TileType $type,
+        public array $activations,
+        public array $bids = []) {
+    }
 
-    public function bid(int $pos, WorkerGroup $bid): void {
-        if (isset($this->bids[$pos])) {
-            $this->bids[$pos]->combineWith($bid);
+    public static function fromStock(StockTile $st): MarketTile {
+        return new MarketTile($st->id, $st->type, [], []);
+    }
+
+    public function bid(int $playerId, WorkerGroup $bid): void {
+        if (isset($this->bids[$playerId])) {
+            $this->bids[$playerId]->combineWith($bid);
         } else {
-            $this->bids[$pos] = $bid;
+            $this->bids[$playerId] = $bid;
+        }
+        if ($this->bids[$playerId] != $this->highBid()) {
+            throw new InvalidArgumentException("new bid must be high bid");
         }
     }
 
-    /** @return array<int,WorkerGroup>  keyed by playerId */
-    public function bids(): array {
-        return $this->bids;
+    public function bidBy(int $playerId): ?WorkerGroup {
+        if (isset($this->bids[$playerId])) {
+            return $this->bids[$playerId];
+        }
+        return null;
+    }
+
+    public function biddingColor(): ?WorkerType {
+        // color of lowest bid is the bid color
+        $lowest = null;
+        foreach ($this->bids as $playerId => $bid) {
+            if ($lowest === null || $bid->size() < $lowest->size()) {
+                $lowest = $bid;
+            }
+        }
+        return $lowest === null ? null : $lowest->color();
+    }
+
+    public function highBid(): ?WorkerGroup {
+        /** @var WorkerGroup|null */
+        $winner = null;
+        foreach ($this->bids as $playerId => $bid) {
+            if ($winner === null || $bid->size() > $winner->size()) {
+                $winner = $bid;
+            }
+        }
+        return $winner;
     }
 }

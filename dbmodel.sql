@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS `pieces` (
   -- 'tile', 'worker', 'resource', 'skill'
   piece_type varchar(10) NOT NULL,
 
-  id int unsigned NOT NULL AUTO_INCREMENT,
+  id int unsigned NOT NULL,
 
   -- tile: the tile name, lowercase no spaces: 'home4', 'keymine', 'wainwright', 'boat4a'
   -- worker: the worker color: 'yellow', 'red', 'green', 'blue', 'purple'
@@ -11,14 +11,14 @@ CREATE TABLE IF NOT EXISTS `pieces` (
   piece_subtype varchar(20),
 
   loc_type varchar(12) NOT NULL,
-  loc_id: int,
-  loc_pos: int,
+  loc_id int,
+  loc_pos int,
   player_id int,
 
   -- only for village tiles and standard boats; can we encode this somewhere else?
-  upgraded: tinyint,
+  upgraded tinyint,
 
-  PRIMARY KEY(`piece_type`, `id`),
+  PRIMARY KEY(`piece_type`, `id`)
 
   -- TODO: consider this constraint ... may have to have non-null
   -- loc_id / loc_pos / player_id, using 0 to mean "unset"
@@ -26,4 +26,4 @@ CREATE TABLE IF NOT EXISTS `pieces` (
   -- locations like "box", and means that skills in the skill pile
   --   and resources in the resource stocks also need "positions" or "loc_id"s.
   -- UNIQUE(`loc_type`, `loc_id`, `loc_pos`, `player_id`),
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

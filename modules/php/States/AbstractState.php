@@ -3,7 +3,7 @@
 /**
  *------
  * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
- * babylonia implementation : © Jay Sachs <vagabond@covariant.org>
+ * zooloretto implementation : © Jay Sachs <vagabond@covariant.org>
  *
  * Copyright 2025 Jay Sachs <vagabond@covariant.org>
  *
@@ -28,32 +28,31 @@ declare(strict_types=1);
 namespace Bga\Games\keyflowerrewrite\States;
 
 use Bga\GameFramework\StateType;
+use Bga\GameFramework\States\GameState;
 use Bga\Games\keyflowerrewrite\Game;
+use Bga\Games\keyflowerrewrite\Model\Model;
 
-
-    /*
-    148 => array("name" => "villageUpgradePayment",
-                "description" => clienttranslate('Village upgrades'),
-                "type" => "game",
-                "action" => "stVillageUpgradeFreePayment",
-                "transitions" => array( "payForUpgrade" => 71 )
-    ),
-    */
-class VillageUpgradeFreePayment extends AbstractState
+abstract class AbstractState extends GameState
 {
-    function __construct(Game $game)
-    {
+    function __construct(
+        protected Game $game,
+        int $id,
+        StateType $type,
+        string $description = '',
+        string $descriptionMyTurn = '',
+        bool $updateGameProgression = false
+    ) {
         parent::__construct(
             game: $game,
-            id: 148,
-            type: StateType::GAME,
-            description: clienttranslate('Village upgrades'),
-            updateGameProgression: false,
-        );
+            id: $id,
+            type: $type,
+            name: null,
+            description: $description,
+            descriptionMyTurn: $descriptionMyTurn,
+            updateGameProgression: $updateGameProgression);
     }
 
-    public function onEnteringState(): mixed {
-        $this->game->payForTileUpgrade(intval($this->game->getCurrentPlayerId()), []);
-        return TurnOrder::class;
+    protected function createModel(int $active_player_id): Model {
+        return $this->game->createModel($active_player_id);
     }
 }

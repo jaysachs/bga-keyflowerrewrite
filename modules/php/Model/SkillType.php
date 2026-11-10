@@ -30,6 +30,6 @@ namespace Bga\Games\keyflowerrewrite\Model;
 
 enum SkillType: string {
     case ANVIL = "anvil";
-    case PICKAXE = "pickaxes";
+    case PICKAXE = "pickaxe";
     case SAW = "saw";
 }
