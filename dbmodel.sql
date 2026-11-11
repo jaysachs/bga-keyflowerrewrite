@@ -1,12 +1,12 @@
 CREATE TABLE IF NOT EXISTS `pieces` (
 
-  -- 'tile', 'worker', 'resource', 'skill'
-  piece_type varchar(10) NOT NULL,
+  -- 'tile', 'worker', 'resource', 'skill', 'startplayer'
+  piece_type varchar(12) NOT NULL,
 
   id int unsigned NOT NULL,
 
   -- tile: the tile name, lowercase no spaces: 'home4', 'keymine', 'wainwright', 'boat4a'
-  -- worker: the worker color: 'yellow', 'red', 'green', 'blue', 'purple'
+  -- worker: the worker color: 'yellow', 'red', 'green', 'blue'
   -- resource: 'stone', 'wood', 'iron', 'gold'
   piece_subtype varchar(20),
 

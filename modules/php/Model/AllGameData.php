@@ -125,17 +125,13 @@ class AllGameData {
             $wts = array_splice($winterTiles, 0, $perPlayer);
             /** @var TileType */
             $home = array_shift($homes);
-            if ($home == $min) {
-                // start player
-                // FIXME: id should be distinguished, or start player shouldn't even be a worker
-                $workers[] = new Worker(++$lastId, WorkerType::PURPLE);
-            }
             $result->villages[] = new Village(
                 $playerId,
                 [new VillageTile(++$lastTileId, $home, RowCol::fromRowCol(0, 0), 1, false, [], [])],
                 $workers,
                 [],
-                $wts);
+                $wts,
+                $home == $min);
         }
 
         $result->dock = Dock::forNewGame($numPlayers);

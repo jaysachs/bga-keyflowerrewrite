@@ -36,7 +36,7 @@ class Village {
      * @param list<Skill> $skills
      * @param list<StockTile> $winterTiles
      */
-    public function __construct(public readonly int $playerId, public array $tiles, public array $workers, public array $skills, public array $winterTiles) {}
+    public function __construct(public readonly int $playerId, public array $tiles, public array $workers, public array $skills, public array $winterTiles, public bool $hasStartPlayer) {}
 
     /** @return WorkerGroup */
     public function takeWorkersFromStock(WorkerType $type, int $num): WorkerGroup {
@@ -55,12 +55,7 @@ class Village {
     }
 
     public function hasStartPlayer(): bool {
-        foreach ($this->workers as $worker) {
-            if ($worker->type == WorkerType::PURPLE) {
-                return true;
-            }
-        }
-        return false;
+        return $this->hasStartPlayer;
     }
 
     public function hasTileType(TileType $tileType): bool {

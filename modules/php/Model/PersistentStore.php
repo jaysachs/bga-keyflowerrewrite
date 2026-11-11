@@ -39,6 +39,7 @@ class PersistentStore {
         $this->RESOURCE = 'resource';
         $this->SKILL = 'skill';
         $this->WORKER = 'worker';
+        $this->STARTPLAYER = 'startplayer';
 
         $this->VILLAGE = 'village';
         $this->MARKET = 'market';
@@ -57,6 +58,7 @@ class PersistentStore {
     private readonly string $RESOURCE;
     private readonly string $SKILL;
     private readonly string $WORKER;
+    private readonly string $STARTPLAYER;
 
     private readonly string $VILLAGE;
     private readonly string $MARKET;
@@ -67,6 +69,7 @@ class PersistentStore {
     private readonly string $BOAT;
     private readonly string $SKILLPILE;
     private readonly string $STOCK;
+
     // private readonly string $SCORING;
     // private readonly string $BOX;
     // private readonly string $WON;
@@ -95,7 +98,7 @@ class PersistentStore {
         /** @var array<int,Village> */
         $villages = [];
         foreach ($playerIds as $pid) {
-            $villages[$pid] = new Village($pid, [], [], [], []);
+            $villages[$pid] = new Village($pid, [], [], [], [], false);
         }
 
         foreach ($this->db->getObjectList(
@@ -113,6 +116,9 @@ class PersistentStore {
             $loc_id = intval($row['loc_id']);
             $loc_pos = intval($row['loc_pos']);
             switch ($piece_type) {
+                case $this->STARTPLAYER:
+                    $villages[$pid]->hasStartPlayer = true;
+                    break;
                 case $this->TILE:
                     $type = TileType::from($subtype);
                     $up = $row['upgraded'] == "1";
@@ -299,6 +305,9 @@ class PersistentStore {
             }
             array_push($values, ... $this->workervals($this->VILLAGE, $village->workers, null, $village->playerId));
             array_push($values, ... $this->skillVals($this->VILLAGE, $village->skills, null, $village->playerId));
+            if ($village->hasStartPlayer()) {
+                array_push($values, "('{$this->STARTPLAYER}', 0, NULL, '{$this->VILLAGE}', 0, 0, {$village->playerId}, 0)");
+            }
         }
 
         foreach (Season::cases() as $season) {

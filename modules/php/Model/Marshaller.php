@@ -80,6 +80,7 @@ class Marshaller {
                 $village->tiles
             ),
             'player_id' => $village->playerId,
+            'has_start_player' => $village->hasStartPlayer(),
         ];
         if ($allData) {
             $result['workers'] = self::workers($village->workers);

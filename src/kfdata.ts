@@ -2,7 +2,7 @@ export interface KFPlayer extends Player {}
 
 export type TileType = string; // TODO: enum this here?
 
-export type WorkerColor = 'red' | 'blue' | 'yellow' | 'green'  /* | 'purple' */;
+export type WorkerColor = 'red' | 'blue' | 'yellow' | 'green';
 export interface Worker {
     id: number;
     color: WorkerColor;
@@ -47,6 +47,7 @@ export interface StockTile {
 }
 
 export interface Village {
+    has_start_player: boolean;
     player_id: number;
     tiles: VillageTile[];
     workers: Worker[] | undefined;
