@@ -20,6 +20,7 @@ export interface VillageTile {
     tiletype: TileType;
     rowcol: number;
     orientation: number; // 1-6
+    upgraded: boolean;
     activations: Activations;
 }
 export type Season = 'spring' | 'summer' | 'fall' | 'winter';
