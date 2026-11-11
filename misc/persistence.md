@@ -31,13 +31,13 @@ which tiles are in that "pending" state.
 ```sql
 CREATE TABLE IF NOT EXISTS `pieces` (
 
-  -- 'tile', 'worker', 'resource', 'skill'
-  piece_type varchar(10) NOT NULL,
+  -- 'tile', 'worker', 'resource', 'skill', 'startplayer'
+  piece_type varchar(12) NOT NULL,
 
   id int unsigned NOT NULL AUTO_INCREMENT,
 
   -- tile: the tile name, lowercase no spaces: 'home4', 'keymine', 'wainwright', 'boat4a'
-  -- worker: the worker color: 'yellow', 'red', 'green', 'blue', 'purple'
+  -- worker: the worker color: 'yellow', 'red', 'green', 'blue'
   -- resource: 'stone', 'wood', 'iron', 'gold'
   piece_subtype varchar(20),
 
@@ -64,13 +64,15 @@ CREATE TABLE IF NOT EXISTS `pieces` (
 
 | `piece_type` | possible `piece_subtype`s |
 | ------------ | ------------------------- |
-| `worker` | `blue`, `red`, `yellow`, `green`, `purple` |
+| `worker` | `blue`, `red`, `yellow`, `green` |
 | `resource` | `iron`, `stone`, `wood`, `gold` |
 | `tile`   | `boat1a`, `home1`, `goldmine`, `keythedral`, `startplayer1` |
 | `skill`  | `pickaxe`, `anvil`, `saw` |
+| `startplayer` | none |
 
 | `piece_type` | `loc_type` | what | meaning of `loc_id` | meaning of `loc_pos` | requires `player_id`|
 | -------- | ------ | ------- | ------- | ------ | ----- |
+| `startplayer` | `village` | startplayer token | - | - | Y |
 |  `tile`  | `village` | tile placed in a village | encoded rowcol | tile orientation | Y |
 |  `tile`  | `market` | tile in market | - | position in market | |
 |  `tile`  | `dock`   | boat tile at dock | - | position in dock | |
