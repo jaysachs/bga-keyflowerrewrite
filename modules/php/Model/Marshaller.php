@@ -76,7 +76,6 @@ class Marshaller {
                     'tiletype' => $vt->type->value,
                     'rowcol' => $vt->rowcol,
                     'orientation' => $vt->orientation,
-                    'upgraded' => $vt->upgraded,
                 ],
                 $village->tiles
             ),

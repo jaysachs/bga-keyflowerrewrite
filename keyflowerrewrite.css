@@ -6,6 +6,9 @@
     /* One tile's size; everything on the board scales from it. */
     --kf-tile-w: 128px;
     --kf-tile-h: 112px;
+    /* Flat-topped hexes in doubled coordinates: a column is 3/4 of a tile wide, a row half a tile high */
+    --kf-col-step: 0.75;
+    --kf-row-step: 0.5;
 }
 
 /* Villages: yours first, then the others in turn order */
@@ -29,24 +32,24 @@
     margin-bottom: 8px;
 }
 
+/* Sized to the village's span of rows and columns */
 .kf_village_map {
     position: relative;
-    width: calc(var(--kf-map-w) * var(--kf-tile-w));
-    height: calc(var(--kf-map-h) * var(--kf-tile-h));
+    width: calc((var(--kf-col-span) * var(--kf-col-step) + 1) * var(--kf-tile-w));
+    height: calc((var(--kf-row-span) * var(--kf-row-step) + 1) * var(--kf-tile-h));
 }
 
-/* Home's top-left corner: every tile is placed from its row and column relative to it */
-.kf_village_origin {
+/* Where tiles are drawn: its corner is Home's, moved in by the smallest row and column */
+.kf_village_canvas {
     position: absolute;
-    left: calc(var(--kf-origin-x) * var(--kf-tile-w));
-    top: calc(var(--kf-origin-y) * var(--kf-tile-h));
+    left: calc(var(--kf-min-col) * var(--kf-col-step) * var(--kf-tile-w) * -1);
+    top: calc(var(--kf-min-row) * var(--kf-row-step) * var(--kf-tile-h) * -1);
 }
 
-/* A village tile: a column is 3/4 of a tile wide, a row half a tile high (doubled coordinates) */
-.kf_village_origin .kf_tile {
+.kf_village_canvas .kf_tile {
     position: absolute;
-    left: calc(var(--kf-col) * 0.75 * var(--kf-tile-w));
-    top: calc(var(--kf-row) * 0.5 * var(--kf-tile-h));
+    left: calc(var(--kf-col) * var(--kf-col-step) * var(--kf-tile-w));
+    top: calc(var(--kf-row) * var(--kf-row-step) * var(--kf-tile-h));
 }
 
 .kf_tile {
@@ -56,9 +59,16 @@
     transform: rotate(var(--kf-turn, 0deg));
 }
 
+/* Orientation 1 is the tile as printed; each step after it turns the tile 60 degrees counter-clockwise */
+[data-kf-orientation="2"] { --kf-turn: -60deg; }
+[data-kf-orientation="3"] { --kf-turn: -120deg; }
+[data-kf-orientation="4"] { --kf-turn: -180deg; }
+[data-kf-orientation="5"] { --kf-turn: -240deg; }
+[data-kf-orientation="6"] { --kf-turn: -300deg; }
+
 /*
- * Tile art: any element with data-kf-tile="<tile type>" shows that tile's face, and its upgraded
- * face with data-kf-upgraded. The sprite has 16 x 8 tiles; positions are from the old game's CSS.
+ * Tile art: any element with data-kf-tile="<tile type>" shows that tile's face; upgraded faces
+ * are their own types (keymine_u). The sprite has 16 x 8 tiles; positions are from the old game's CSS.
  */
 [data-kf-tile] {
     background-image: url('img/tiles-large.jpg');
@@ -66,81 +76,81 @@
 }
 
 [data-kf-tile="home1"] { background-position: -1300% -200%; }
-[data-kf-tile="home1"][data-kf-upgraded] { background-position: -1400% -200%; }
+[data-kf-tile="home1_u"] { background-position: -1400% -200%; }
 [data-kf-tile="home2"] { background-position: -1500% -200%; }
-[data-kf-tile="home2"][data-kf-upgraded] { background-position: 0 -300%; }
+[data-kf-tile="home2_u"] { background-position: 0 -300%; }
 [data-kf-tile="home3"] { background-position: -100% -300%; }
-[data-kf-tile="home3"][data-kf-upgraded] { background-position: -200% -300%; }
+[data-kf-tile="home3_u"] { background-position: -200% -300%; }
 [data-kf-tile="home4"] { background-position: -300% -300%; }
-[data-kf-tile="home4"][data-kf-upgraded] { background-position: -400% -300%; }
+[data-kf-tile="home4_u"] { background-position: -400% -300%; }
 [data-kf-tile="home5"] { background-position: -500% -300%; }
-[data-kf-tile="home5"][data-kf-upgraded] { background-position: -600% -300%; }
+[data-kf-tile="home5_u"] { background-position: -600% -300%; }
 [data-kf-tile="home6"] { background-position: -700% -300%; }
-[data-kf-tile="home6"][data-kf-upgraded] { background-position: -800% -300%; }
+[data-kf-tile="home6_u"] { background-position: -800% -300%; }
 [data-kf-tile="alehouse"] { background-position: 0 -400%; }
-[data-kf-tile="alehouse"][data-kf-upgraded] { background-position: -100% -400%; }
+[data-kf-tile="alehouse_u"] { background-position: -100% -400%; }
 [data-kf-tile="apprenticehall"] { background-position: -200% -400%; }
-[data-kf-tile="apprenticehall"][data-kf-upgraded] { background-position: -300% -400%; }
+[data-kf-tile="apprenticehall_u"] { background-position: -300% -400%; }
 [data-kf-tile="goldmine"] { background-position: -400% -400%; }
-[data-kf-tile="goldmine"][data-kf-upgraded] { background-position: -500% -400%; }
+[data-kf-tile="goldmine_u"] { background-position: -500% -400%; }
 [data-kf-tile="keymine"] { background-position: -600% -400%; }
-[data-kf-tile="keymine"][data-kf-upgraded] { background-position: -700% -400%; }
+[data-kf-tile="keymine_u"] { background-position: -700% -400%; }
 [data-kf-tile="keystonequarry"] { background-position: -800% -400%; }
-[data-kf-tile="keystonequarry"][data-kf-upgraded] { background-position: -900% -400%; }
+[data-kf-tile="keystonequarry_u"] { background-position: -900% -400%; }
 [data-kf-tile="keywood"] { background-position: -1000% -400%; }
-[data-kf-tile="keywood"][data-kf-upgraded] { background-position: -1100% -400%; }
+[data-kf-tile="keywood_u"] { background-position: -1100% -400%; }
 [data-kf-tile="miner"] { background-position: -1200% -400%; }
-[data-kf-tile="miner"][data-kf-upgraded] { background-position: -1300% -400%; }
+[data-kf-tile="miner_u"] { background-position: -1300% -400%; }
 [data-kf-tile="peddlar"] { background-position: -1400% -400%; }
-[data-kf-tile="peddlar"][data-kf-upgraded] { background-position: -1500% -400%; }
+[data-kf-tile="peddlar_u"] { background-position: -1500% -400%; }
 [data-kf-tile="quarryman"] { background-position: 0 -500%; }
-[data-kf-tile="quarryman"][data-kf-upgraded] { background-position: -100% -500%; }
+[data-kf-tile="quarryman_u"] { background-position: -100% -500%; }
 [data-kf-tile="stable"] { background-position: -200% -500%; }
-[data-kf-tile="stable"][data-kf-upgraded] { background-position: -300% -500%; }
+[data-kf-tile="stable_u"] { background-position: -300% -500%; }
 [data-kf-tile="woodcutter"] { background-position: -400% -500%; }
-[data-kf-tile="woodcutter"][data-kf-upgraded] { background-position: -500% -500%; }
+[data-kf-tile="woodcutter_u"] { background-position: -500% -500%; }
 [data-kf-tile="workshop"] { background-position: -600% -500%; }
-[data-kf-tile="workshop"][data-kf-upgraded] { background-position: -700% -500%; }
+[data-kf-tile="workshop_u"] { background-position: -700% -500%; }
 [data-kf-tile="brewer"] { background-position: -800% -500%; }
-[data-kf-tile="brewer"][data-kf-upgraded] { background-position: -900% -500%; }
+[data-kf-tile="brewer_u"] { background-position: -900% -500%; }
 [data-kf-tile="carpenter"] { background-position: -1000% -500%; }
-[data-kf-tile="carpenter"][data-kf-upgraded] { background-position: -1100% -500%; }
+[data-kf-tile="carpenter_u"] { background-position: -1100% -500%; }
 [data-kf-tile="farrier"] { background-position: -1200% -500%; }
-[data-kf-tile="farrier"][data-kf-upgraded] { background-position: -1300% -500%; }
+[data-kf-tile="farrier_u"] { background-position: -1300% -500%; }
 [data-kf-tile="hiringfair"] { background-position: -1400% -500%; }
-[data-kf-tile="hiringfair"][data-kf-upgraded] { background-position: -1500% -500%; }
+[data-kf-tile="hiringfair_u"] { background-position: -1500% -500%; }
 [data-kf-tile="mason"] { background-position: 0 -600%; }
-[data-kf-tile="mason"][data-kf-upgraded] { background-position: -100% -600%; }
+[data-kf-tile="mason_u"] { background-position: -100% -600%; }
 [data-kf-tile="smelter"] { background-position: -200% -600%; }
-[data-kf-tile="smelter"][data-kf-upgraded] { background-position: -300% -600%; }
+[data-kf-tile="smelter_u"] { background-position: -300% -600%; }
 [data-kf-tile="store"] { background-position: -400% -600%; }
-[data-kf-tile="store"][data-kf-upgraded] { background-position: -500% -600%; }
+[data-kf-tile="store_u"] { background-position: -500% -600%; }
 [data-kf-tile="tavern"] { background-position: -600% -600%; }
-[data-kf-tile="tavern"][data-kf-upgraded] { background-position: -700% -600%; }
+[data-kf-tile="tavern_u"] { background-position: -700% -600%; }
 [data-kf-tile="barn"] { background-position: 0 0; }
-[data-kf-tile="barn"][data-kf-upgraded] { background-position: -100% 0; }
+[data-kf-tile="barn_u"] { background-position: -100% 0; }
 [data-kf-tile="blacksmith"] { background-position: -200% 0; }
-[data-kf-tile="blacksmith"][data-kf-upgraded] { background-position: -300% 0; }
+[data-kf-tile="blacksmith_u"] { background-position: -300% 0; }
 [data-kf-tile="fair"] { background-position: -400% 0; }
-[data-kf-tile="fair"][data-kf-upgraded] { background-position: -500% 0; }
+[data-kf-tile="fair_u"] { background-position: -500% 0; }
 [data-kf-tile="forge"] { background-position: -600% 0; }
-[data-kf-tile="forge"][data-kf-upgraded] { background-position: -700% 0; }
+[data-kf-tile="forge_u"] { background-position: -700% 0; }
 [data-kf-tile="goldsmith"] { background-position: -800% 0; }
-[data-kf-tile="goldsmith"][data-kf-upgraded] { background-position: -900% 0; }
+[data-kf-tile="goldsmith_u"] { background-position: -900% 0; }
 [data-kf-tile="inn"] { background-position: -1000% 0; }
-[data-kf-tile="inn"][data-kf-upgraded] { background-position: -1100% 0; }
+[data-kf-tile="inn_u"] { background-position: -1100% 0; }
 [data-kf-tile="sawmill"] { background-position: -1200% 0; }
-[data-kf-tile="sawmill"][data-kf-upgraded] { background-position: -1300% 0; }
+[data-kf-tile="sawmill_u"] { background-position: -1300% 0; }
 [data-kf-tile="sculptor"] { background-position: -1400% 0; }
-[data-kf-tile="sculptor"][data-kf-upgraded] { background-position: -1500% 0; }
+[data-kf-tile="sculptor_u"] { background-position: -1500% 0; }
 [data-kf-tile="stoneyard"] { background-position: 0 -100%; }
-[data-kf-tile="stoneyard"][data-kf-upgraded] { background-position: -100% -100%; }
+[data-kf-tile="stoneyard_u"] { background-position: -100% -100%; }
 [data-kf-tile="timberyard"] { background-position: -200% -100%; }
-[data-kf-tile="timberyard"][data-kf-upgraded] { background-position: -300% -100%; }
+[data-kf-tile="timberyard_u"] { background-position: -300% -100%; }
 [data-kf-tile="wainwright"] { background-position: -400% -100%; }
-[data-kf-tile="wainwright"][data-kf-upgraded] { background-position: -500% -100%; }
+[data-kf-tile="wainwright_u"] { background-position: -500% -100%; }
 [data-kf-tile="well"] { background-position: -600% -100%; }
-[data-kf-tile="well"][data-kf-upgraded] { background-position: -700% -100%; }
+[data-kf-tile="well_u"] { background-position: -700% -100%; }
 [data-kf-tile="apothecary"] { background-position: -900% -600%; }
 [data-kf-tile="craftsmansguild"] { background-position: -1000% -600%; }
 [data-kf-tile="jeweller"] { background-position: -1100% -600%; }
@@ -162,11 +172,17 @@
 [data-kf-tile="boat4a"] { background-position: -1400% -100%; }
 [data-kf-tile="boat5b"] { background-position: -1500% -100%; }
 [data-kf-tile="keyflower"] { background-position: 0 -200%; }
+[data-kf-tile="keyflower_u"] { background-position: -100% -200%; }
 [data-kf-tile="seabastion"] { background-position: -200% -200%; }
+[data-kf-tile="seabastion_u"] { background-position: -300% -200%; }
 [data-kf-tile="seabreese"] { background-position: -400% -200%; }
+[data-kf-tile="seabreese_u"] { background-position: -500% -200%; }
 [data-kf-tile="flipper"] { background-position: -600% -200%; }
+[data-kf-tile="flipper_u"] { background-position: -700% -200%; }
 [data-kf-tile="invincible"] { background-position: -800% -200%; }
+[data-kf-tile="invincible_u"] { background-position: -900% -200%; }
 [data-kf-tile="whitewind"] { background-position: -1000% -200%; }
+[data-kf-tile="whitewind_u"] { background-position: -1100% -200%; }
 [data-kf-tile="start2"] { background-position: -900% -300%; }
 [data-kf-tile="start3"] { background-position: -1100% -300%; }
 [data-kf-tile="start4"] { background-position: -1300% -300%; }
