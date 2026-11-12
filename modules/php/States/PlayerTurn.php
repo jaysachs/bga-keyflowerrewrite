@@ -63,10 +63,17 @@ class PlayerTurn extends AbstractState {
                 function (MarketTile $mt) use (&$active_player_id) : array {
                     $hb = $mt->highBid();
                     $bc = $mt->biddingColor();
+                    $bid = $mt->bidBy($active_player_id);
                     return [
                         "color" => $bc === null ? null : $bc->value,
                         "min" => $hb->size()+1,
                         "moveable" => $mt->hasNonWinningBid($active_player_id),
+                        // TODO: determine if this is needed
+                        "current_bid" => $bid === null ? null : [
+                            "color" => Marshaller::color($bid->color())   ,
+                            "num" => $bid->size(),
+                            "workers" => array_map(fn ($w) => Marshaller::worker($w), $bid->workers()),
+                        ]
                     ];
                 },
                 $model->market()->tiles())
@@ -105,11 +112,11 @@ class PlayerTurn extends AbstractState {
         foreach ($bidResult->movedBids as $bt => $mb) {
             $this->game->notify->all(
                 'bidMoved',
-                '${player_name} moved bid of ${num} ${color} from ${markettile}',
+                '${player_name} moved bid of ${num} ${color} from ${tiletype}',
                 [
                     'num' => count($mb->workers()),
                     'color' => Marshaller::color($mb->color()),
-                    'markettile' => $bt,
+                    'tiletype' => $bt,
                     'player_id' => $active_player_id,
                 ]
             );
@@ -127,7 +134,7 @@ class PlayerTurn extends AbstractState {
                 'bid' => array_map(fn ($w) => [
                     // FIXME: do we need position too?
                     'id' => $w->id,
-                    'type' => $w->color->value
+                    'color' => $w->color->value
                 ], $bid->workers())
             ]
         );

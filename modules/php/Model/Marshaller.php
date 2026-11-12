@@ -34,7 +34,7 @@ use Bga\Games\keyflowerrewrite\Model\Village;
 class Marshaller {
 
     /** @return array<mixed> */
-    private static function worker(Worker $w): array {
+    public static function worker(Worker $w): array {
         return [
             'id' => $w->id,
             'color' => $w->color->value,

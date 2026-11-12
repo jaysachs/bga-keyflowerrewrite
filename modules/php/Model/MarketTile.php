@@ -72,6 +72,7 @@ class MarketTile {
     }
 
     public function biddingColor(): ?WorkerColor {
+        // TODO: take into account any activations.
         // color of lowest bid is the bid color
         $lowest = null;
         foreach ($this->bids as $playerId => $bid) {
