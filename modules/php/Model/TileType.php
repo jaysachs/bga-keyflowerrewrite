@@ -174,6 +174,11 @@ enum TileType: string
             TileType::SMELTER => TileType::SMELTER_U,
             TileType::STORE => TileType::STORE_U,
             TileType::TAVERN => TileType::TAVERN_U,
+            TileType::BOAT1A => TileType::BOAT1B,
+            TileType::BOAT2A => TileType::BOAT2B,
+            TileType::BOAT3A => TileType::BOAT3B,
+            TileType::BOAT4A => TileType::BOAT4B,
+
             TileType::HOME1 => TileType::HOME1_U,
             TileType::HOME2 => TileType::HOME2_U,
             TileType::HOME3 => TileType::HOME3_U,
@@ -292,7 +297,6 @@ enum TileType: string
         };
     }
 
-
     /** @return list<TileType> */
     private static function allStandardBoats(): array {
         return [
@@ -304,6 +308,7 @@ enum TileType: string
             TileType::WHITEWIND,
         ];
     }
+
     /** @return list<TileType>  is actuall non-empty-list */
     public static function initialStandardBoats(int $playerCount): array
     {
@@ -489,13 +494,9 @@ enum TileType: string
     {
         return [
             TileType::BOAT1A,
-            TileType::BOAT1B,
             TileType::BOAT2A,
-            TileType::BOAT2B,
             TileType::BOAT3A,
-            TileType::BOAT3B,
             TileType::BOAT4A,
-            TileType::BOAT4B,
             TileType::BREWER,
             TileType::CARPENTER,
             TileType::FARRIER,

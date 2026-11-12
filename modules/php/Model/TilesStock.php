@@ -27,6 +27,8 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
+use InvalidArgumentException;
+
 // FIXME: should this data just be in the Market object?
 //  These are never physically seen in the adaptation ...
 class TilesStock {
@@ -73,6 +75,14 @@ class TilesStock {
         array_splice($summerTypes, $numPlayers + 4);
         $stock->seasonTiles[Season::SUMMER->value] = [];
         foreach ($summerTypes as $tt) {
+            if ($tt->isBoat()) {
+                if (random_int(0, 1)) {
+                    $tt = $tt->flip();
+                    if ($tt === null) {
+                        throw new InvalidArgumentException("summer boat should be flippable!");
+                    }
+                }
+            }
             $stock->seasonTiles[Season::SUMMER->value][] = new StockTile($lastId++, $tt);
         }
 

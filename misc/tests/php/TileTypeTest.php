@@ -43,8 +43,9 @@ final class TileTypeTest extends TestCase
         $this->assertEquals(6, count(TileType::initialHomeTiles()));
         $this->assertEquals(12, count(TileType::initialSpringTiles()));
         $this->assertEquals(0, count(array_filter(TileType::initialSpringTiles(), fn ($t) => $t->isBoat())));
-        $this->assertEquals(16, count(TileType::initialSummerTiles()));
-        $this->assertEquals(8, count(array_filter(TileType::initialSummerTiles(), fn ($t) => $t->isBoat())));
+        $this->assertEquals(12, count(TileType::initialSummerTiles()));
+        $this->assertEquals(4, count(array_filter(TileType::initialSummerTiles(), fn ($t) => $t->isBoat())));
+        $this->assertEquals(4, count(array_filter(TileType::initialSummerTiles(), fn ($t) => $t->isBoat() && $t->flip() !== null)));
         $this->assertEquals(12, count(TileType::initialFallTiles()));
         $this->assertEquals(0, count(array_filter(TileType::initialFallTiles(), fn ($t) => $t->isBoat())));
         $this->assertEquals(12, count(TileType::initialWinterTiles()));
