@@ -1,23 +1,15 @@
 import { KFGameDatas, KFPlayer, Village, VillageTile } from "../kfdata";
 import { BaseComponent } from "../libs/basecomponent";
 import { Html } from "../libs/html";
-import { tileArtPosition } from "../tiles";
+import { RowCol, unpackRowCol } from "../rowcol";
 
 /**
- * Splits a packed rowcol (100 * row + col, see RowCol.php) into its row and column.
- * Works for negative rows and columns, as long as the column stays within -49..49.
- */
-export function unpackRowCol(rowcol: number): { row: number, col: number } {
-    const col = ((rowcol % 100) + 150) % 100 - 50;
-    return { row: (rowcol - col) / 100, col };
-}
-
-/**
- * Where a tile sits in its village map, in tile widths (x) and tile heights (y).
+ * Where a hex sits relative to Home, in tile widths (x) and tile heights (y).
  * Flat-topped hexes in doubled coordinates: a column is 3/4 of a tile wide, a row half a tile high.
+ * The CSS places tiles with the same formula, from --kf-row and --kf-col.
  */
-function hexOffset(row: number, col: number): { x: number, y: number } {
-    return { x: col * 0.75, y: row * 0.5 };
+function hexOffset(rc: RowCol): { x: number, y: number } {
+    return { x: rc.col * 0.75, y: rc.row * 0.5 };
 }
 
 /**
@@ -47,11 +39,12 @@ export class VillageComponent extends BaseComponent<any> {
     }
 
     private villageDiv(village: Village, player: KFPlayer): HTMLElement {
-        const placed = village.tiles.map(t => ({ tile: t, ...unpackRowCol(t.rowcol) }));
-        const offsets = placed.map(p => hexOffset(p.row, p.col));
-        const minX = Math.min(...offsets.map(o => o.x)), minY = Math.min(...offsets.map(o => o.y));
-        const width = Math.max(...offsets.map(o => o.x)) - minX + 1;
-        const height = Math.max(...offsets.map(o => o.y)) - minY + 1;
+        // Tiles are placed relative to Home, which can be anywhere in the village: tiles left of
+        // or above it have negative offsets. The map is sized to the village's extent, and the
+        // origin (Home's corner) is moved in by the leftmost and topmost offsets, so every tile shows.
+        const offsets = village.tiles.map(t => hexOffset(unpackRowCol(t.rowcol)));
+        const minX = Math.min(...offsets.map(o => o.x)), maxX = Math.max(...offsets.map(o => o.x));
+        const minY = Math.min(...offsets.map(o => o.y)), maxY = Math.max(...offsets.map(o => o.y));
 
         return Html.div({
                 id: `kf_village_${village.player_id}`,
@@ -62,30 +55,32 @@ export class VillageComponent extends BaseComponent<any> {
             Html.div({ classes: 'kf_village_name', text: player.name }),
             Html.div({
                     classes: 'kf_village_map',
-                    style: [`--kf-cols: ${width}`, `--kf-rows: ${height}`],
+                    // in tiles: the map's width and height, and where Home's corner sits in it
+                    style: [`--kf-map-w: ${maxX - minX + 1}`, `--kf-map-h: ${maxY - minY + 1}`, `--kf-origin-x: ${-minX}`, `--kf-origin-y: ${-minY}`],
                 },
-                ...placed.map((p, i) => this.tileDiv(p.tile, offsets[i]!.x - minX, offsets[i]!.y - minY))
+                Html.div({ classes: 'kf_village_origin' },
+                    ...village.tiles.map(t => this.tileDiv(t))
+                )
             )
         );
     }
 
-    private tileDiv(tile: VillageTile, x: number, y: number): HTMLElement {
-        const art = tileArtPosition(tile.tiletype, tile.upgraded);
+    private tileDiv(tile: VillageTile): HTMLElement {
+        const rc = unpackRowCol(tile.rowcol);
+        const attrs: Record<string, string> = {
+            'data-kf-tile': tile.tiletype,
+            'data-kf-rowcol': String(tile.rowcol),
+            'data-kf-orientation': String(tile.orientation),
+        };
+        if (tile.upgraded) {
+            attrs['data-kf-upgraded'] = '';
+        }
         return Html.div({
             id: `kf_tile_${tile.tile_id}`,
-            classes: ['kf_tile', tile.upgraded ? 'kf_upgraded' : ''],
-            attrs: {
-                'data-kf-tiletype': tile.tiletype,
-                'data-kf-rowcol': String(tile.rowcol),
-                'data-kf-orientation': String(tile.orientation),
-            },
+            classes: 'kf_tile',
+            attrs,
             // Orientation 1 is the tile as printed; each step after it turns the tile 60 degrees counter-clockwise.
-            style: [
-                `--kf-x: ${x}`,
-                `--kf-y: ${y}`,
-                `--kf-turn: ${-(tile.orientation - 1) * 60}deg`,
-                art ? `background-position: ${art}` : '',
-            ],
+            style: [`--kf-row: ${rc.row}`, `--kf-col: ${rc.col}`, `--kf-turn: ${-(tile.orientation - 1) * 60}deg`],
             title: tile.tiletype,
         });
     }

@@ -31,20 +31,146 @@
 
 .kf_village_map {
     position: relative;
-    width: calc(var(--kf-cols) * var(--kf-tile-w));
-    height: calc(var(--kf-rows) * var(--kf-tile-h));
+    width: calc(var(--kf-map-w) * var(--kf-tile-w));
+    height: calc(var(--kf-map-h) * var(--kf-tile-h));
 }
 
-/* A tile: its face from the sprite (16 x 8 tiles), cut to a hexagon and turned to its orientation */
+/* Home's top-left corner: every tile is placed from its row and column relative to it */
+.kf_village_origin {
+    position: absolute;
+    left: calc(var(--kf-origin-x) * var(--kf-tile-w));
+    top: calc(var(--kf-origin-y) * var(--kf-tile-h));
+}
+
+/* A village tile: a column is 3/4 of a tile wide, a row half a tile high (doubled coordinates) */
+.kf_village_origin .kf_tile {
+    position: absolute;
+    left: calc(var(--kf-col) * 0.75 * var(--kf-tile-w));
+    top: calc(var(--kf-row) * 0.5 * var(--kf-tile-h));
+}
 
 .kf_tile {
-    position: absolute;
-    left: calc(var(--kf-x) * var(--kf-tile-w));
-    top: calc(var(--kf-y) * var(--kf-tile-h));
     width: var(--kf-tile-w);
     height: var(--kf-tile-h);
-    background-image: url('img/tiles-large.jpg');
-    background-size: 1600% 800%;
     clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
     transform: rotate(var(--kf-turn, 0deg));
 }
+
+/*
+ * Tile art: any element with data-kf-tile="<tile type>" shows that tile's face, and its upgraded
+ * face with data-kf-upgraded. The sprite has 16 x 8 tiles; positions are from the old game's CSS.
+ */
+[data-kf-tile] {
+    background-image: url('img/tiles-large.jpg');
+    background-size: 1600% 800%;
+}
+
+[data-kf-tile="home1"] { background-position: -1300% -200%; }
+[data-kf-tile="home1"][data-kf-upgraded] { background-position: -1400% -200%; }
+[data-kf-tile="home2"] { background-position: -1500% -200%; }
+[data-kf-tile="home2"][data-kf-upgraded] { background-position: 0 -300%; }
+[data-kf-tile="home3"] { background-position: -100% -300%; }
+[data-kf-tile="home3"][data-kf-upgraded] { background-position: -200% -300%; }
+[data-kf-tile="home4"] { background-position: -300% -300%; }
+[data-kf-tile="home4"][data-kf-upgraded] { background-position: -400% -300%; }
+[data-kf-tile="home5"] { background-position: -500% -300%; }
+[data-kf-tile="home5"][data-kf-upgraded] { background-position: -600% -300%; }
+[data-kf-tile="home6"] { background-position: -700% -300%; }
+[data-kf-tile="home6"][data-kf-upgraded] { background-position: -800% -300%; }
+[data-kf-tile="alehouse"] { background-position: 0 -400%; }
+[data-kf-tile="alehouse"][data-kf-upgraded] { background-position: -100% -400%; }
+[data-kf-tile="apprenticehall"] { background-position: -200% -400%; }
+[data-kf-tile="apprenticehall"][data-kf-upgraded] { background-position: -300% -400%; }
+[data-kf-tile="goldmine"] { background-position: -400% -400%; }
+[data-kf-tile="goldmine"][data-kf-upgraded] { background-position: -500% -400%; }
+[data-kf-tile="keymine"] { background-position: -600% -400%; }
+[data-kf-tile="keymine"][data-kf-upgraded] { background-position: -700% -400%; }
+[data-kf-tile="keystonequarry"] { background-position: -800% -400%; }
+[data-kf-tile="keystonequarry"][data-kf-upgraded] { background-position: -900% -400%; }
+[data-kf-tile="keywood"] { background-position: -1000% -400%; }
+[data-kf-tile="keywood"][data-kf-upgraded] { background-position: -1100% -400%; }
+[data-kf-tile="miner"] { background-position: -1200% -400%; }
+[data-kf-tile="miner"][data-kf-upgraded] { background-position: -1300% -400%; }
+[data-kf-tile="peddlar"] { background-position: -1400% -400%; }
+[data-kf-tile="peddlar"][data-kf-upgraded] { background-position: -1500% -400%; }
+[data-kf-tile="quarryman"] { background-position: 0 -500%; }
+[data-kf-tile="quarryman"][data-kf-upgraded] { background-position: -100% -500%; }
+[data-kf-tile="stable"] { background-position: -200% -500%; }
+[data-kf-tile="stable"][data-kf-upgraded] { background-position: -300% -500%; }
+[data-kf-tile="woodcutter"] { background-position: -400% -500%; }
+[data-kf-tile="woodcutter"][data-kf-upgraded] { background-position: -500% -500%; }
+[data-kf-tile="workshop"] { background-position: -600% -500%; }
+[data-kf-tile="workshop"][data-kf-upgraded] { background-position: -700% -500%; }
+[data-kf-tile="brewer"] { background-position: -800% -500%; }
+[data-kf-tile="brewer"][data-kf-upgraded] { background-position: -900% -500%; }
+[data-kf-tile="carpenter"] { background-position: -1000% -500%; }
+[data-kf-tile="carpenter"][data-kf-upgraded] { background-position: -1100% -500%; }
+[data-kf-tile="farrier"] { background-position: -1200% -500%; }
+[data-kf-tile="farrier"][data-kf-upgraded] { background-position: -1300% -500%; }
+[data-kf-tile="hiringfair"] { background-position: -1400% -500%; }
+[data-kf-tile="hiringfair"][data-kf-upgraded] { background-position: -1500% -500%; }
+[data-kf-tile="mason"] { background-position: 0 -600%; }
+[data-kf-tile="mason"][data-kf-upgraded] { background-position: -100% -600%; }
+[data-kf-tile="smelter"] { background-position: -200% -600%; }
+[data-kf-tile="smelter"][data-kf-upgraded] { background-position: -300% -600%; }
+[data-kf-tile="store"] { background-position: -400% -600%; }
+[data-kf-tile="store"][data-kf-upgraded] { background-position: -500% -600%; }
+[data-kf-tile="tavern"] { background-position: -600% -600%; }
+[data-kf-tile="tavern"][data-kf-upgraded] { background-position: -700% -600%; }
+[data-kf-tile="barn"] { background-position: 0 0; }
+[data-kf-tile="barn"][data-kf-upgraded] { background-position: -100% 0; }
+[data-kf-tile="blacksmith"] { background-position: -200% 0; }
+[data-kf-tile="blacksmith"][data-kf-upgraded] { background-position: -300% 0; }
+[data-kf-tile="fair"] { background-position: -400% 0; }
+[data-kf-tile="fair"][data-kf-upgraded] { background-position: -500% 0; }
+[data-kf-tile="forge"] { background-position: -600% 0; }
+[data-kf-tile="forge"][data-kf-upgraded] { background-position: -700% 0; }
+[data-kf-tile="goldsmith"] { background-position: -800% 0; }
+[data-kf-tile="goldsmith"][data-kf-upgraded] { background-position: -900% 0; }
+[data-kf-tile="inn"] { background-position: -1000% 0; }
+[data-kf-tile="inn"][data-kf-upgraded] { background-position: -1100% 0; }
+[data-kf-tile="sawmill"] { background-position: -1200% 0; }
+[data-kf-tile="sawmill"][data-kf-upgraded] { background-position: -1300% 0; }
+[data-kf-tile="sculptor"] { background-position: -1400% 0; }
+[data-kf-tile="sculptor"][data-kf-upgraded] { background-position: -1500% 0; }
+[data-kf-tile="stoneyard"] { background-position: 0 -100%; }
+[data-kf-tile="stoneyard"][data-kf-upgraded] { background-position: -100% -100%; }
+[data-kf-tile="timberyard"] { background-position: -200% -100%; }
+[data-kf-tile="timberyard"][data-kf-upgraded] { background-position: -300% -100%; }
+[data-kf-tile="wainwright"] { background-position: -400% -100%; }
+[data-kf-tile="wainwright"][data-kf-upgraded] { background-position: -500% -100%; }
+[data-kf-tile="well"] { background-position: -600% -100%; }
+[data-kf-tile="well"][data-kf-upgraded] { background-position: -700% -100%; }
+[data-kf-tile="apothecary"] { background-position: -900% -600%; }
+[data-kf-tile="craftsmansguild"] { background-position: -1000% -600%; }
+[data-kf-tile="jeweller"] { background-position: -1100% -600%; }
+[data-kf-tile="keyguild"] { background-position: -1200% -600%; }
+[data-kf-tile="keymarket"] { background-position: -1300% -600%; }
+[data-kf-tile="keythedral"] { background-position: -1400% -600%; }
+[data-kf-tile="mercersguild"] { background-position: -1500% -600%; }
+[data-kf-tile="scholar"] { background-position: 0 -700%; }
+[data-kf-tile="scribes"] { background-position: -100% -700%; }
+[data-kf-tile="villagehall"] { background-position: -200% -700%; }
+[data-kf-tile="watermill"] { background-position: -300% -700%; }
+[data-kf-tile="windmill"] { background-position: -400% -700%; }
+[data-kf-tile="boat1a"] { background-position: -800% -100%; }
+[data-kf-tile="boat1b"] { background-position: -900% -100%; }
+[data-kf-tile="boat2a"] { background-position: -1000% -100%; }
+[data-kf-tile="boat2b"] { background-position: -1100% -100%; }
+[data-kf-tile="boat3a"] { background-position: -1200% -100%; }
+[data-kf-tile="boat3b"] { background-position: -1300% -100%; }
+[data-kf-tile="boat4a"] { background-position: -1400% -100%; }
+[data-kf-tile="boat5b"] { background-position: -1500% -100%; }
+[data-kf-tile="keyflower"] { background-position: 0 -200%; }
+[data-kf-tile="seabastion"] { background-position: -200% -200%; }
+[data-kf-tile="seabreese"] { background-position: -400% -200%; }
+[data-kf-tile="flipper"] { background-position: -600% -200%; }
+[data-kf-tile="invincible"] { background-position: -800% -200%; }
+[data-kf-tile="whitewind"] { background-position: -1000% -200%; }
+[data-kf-tile="start2"] { background-position: -900% -300%; }
+[data-kf-tile="start3"] { background-position: -1100% -300%; }
+[data-kf-tile="start4"] { background-position: -1300% -300%; }
+[data-kf-tile="start36"] { background-position: -1000% -300%; }
+[data-kf-tile="start46"] { background-position: -1200% -300%; }
+[data-kf-tile="start56a"] { background-position: -1400% -300%; }
+[data-kf-tile="start56b"] { background-position: -1500% -300%; }
