@@ -60,7 +60,7 @@ class TilesStock {
         $lastId = 300;
         $stock = new TilesStock([], []);
 
-        $springTypes = TileType::springTiles();
+        $springTypes = TileType::initialSpringTiles();
         shuffle($springTypes);
         array_splice($springTypes, $numPlayers + 4);
         $stock->seasonTiles[Season::SPRING->value] = [];
@@ -68,7 +68,7 @@ class TilesStock {
             $stock->seasonTiles[Season::SPRING->value][] = new StockTile($lastId++, $tt);
         }
 
-        $summerTypes = TileType::summerTiles();
+        $summerTypes = TileType::initialSummerTiles();
         shuffle($summerTypes);
         array_splice($summerTypes, $numPlayers + 4);
         $stock->seasonTiles[Season::SUMMER->value] = [];
@@ -76,7 +76,7 @@ class TilesStock {
             $stock->seasonTiles[Season::SUMMER->value][] = new StockTile($lastId++, $tt);
         }
 
-        $fallTypes = TileType::fallTiles();
+        $fallTypes = TileType::initialFallTiles();
         shuffle($fallTypes);
         array_splice($fallTypes, $numPlayers + 4);
         $stock->seasonTiles[Season::FALL->value] = [];
@@ -84,7 +84,7 @@ class TilesStock {
             $stock->seasonTiles[Season::FALL->value][] = new StockTile($lastId++, $tt);
         }
 
-        $winterTypes = TileType::winterTiles();
+        $winterTypes = TileType::initialWinterTiles();
         shuffle($winterTypes);
         $perPlayer = $numPlayers < 5 ? 3 : 2;
         array_splice($winterTypes, $numPlayers * $perPlayer);

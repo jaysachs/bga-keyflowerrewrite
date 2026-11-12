@@ -15,9 +15,6 @@ CREATE TABLE IF NOT EXISTS `pieces` (
   loc_pos int,
   player_id int,
 
-  -- only for village tiles and standard boats; can we encode this somewhere else?
-  upgraded tinyint,
-
   PRIMARY KEY(`piece_type`, `id`)
 
   -- TODO: consider this constraint ... may have to have non-null
