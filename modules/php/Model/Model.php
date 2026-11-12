@@ -67,7 +67,7 @@ class Model {
 
         // shuffle bag workers?
 
-        $this->dock()->replenish($this->allData()->bagWorkers, $this->allData()->skills);
+        $this->dock()->replenish($this->allData()->workerStock, $this->allData()->skillPile);
 
         $this->market()->replenish($season, $this->allData()->tilesStock);
 
@@ -121,9 +121,8 @@ class Model {
 
     /**
      * @param list<int> $moved_bid_ids the tiles to move bids from
-     * @return WorkerGroup the workers that were newly bid / bid changed
      */
-    public function bid(int $market_tile_id, array $moved_bid_ids, int $numWorkersFromStock, WorkerType $workerType): WorkerGroup {
+    public function bid(int $market_tile_id, array $moved_bid_ids, int $numWorkersFromStock, WorkerColor $workerColor): BidResult {
 
         $hasBoat4a = $this->village()->hasTileType(TileType::BOAT4A);
         $market = $this->market();
@@ -134,7 +133,7 @@ class Model {
         }
 
         $currentColor = $bidTile->biddingColor();
-        if ($workerType != $currentColor && !$hasBoat4a) {
+        if ($currentColor !== null && $workerColor != $currentColor && !$hasBoat4a) {
             throw new InvalidArgumentException("bids must match bid color");
         }
 
@@ -144,6 +143,8 @@ class Model {
 
         /** @var list<WorkerGroup> */
         $movedBids = [];
+        /** @var array<int,WorkerGroup> */
+        $moved = [];
         foreach ($moved_bid_ids as $movedBidTileId) {
             $movedBidTile = $market->marketTileById($movedBidTileId);
             if ($movedBidTile === null) {
@@ -155,19 +156,30 @@ class Model {
                 throw new InvalidArgumentException("cannot move bid onto itself");
             }
             $bid = $movedBidTile->bidBy($this->activePlayerId);
+            // FIXME: remove the bid, or accept empty worker groups.
             if ($bid === null) {
                 throw new InvalidArgumentException("no bid to move on market tile {$movedBidTileId}");
             }
             if ($bid === $movedBidTile->highBid()) {
                 throw new InvalidArgumentException("cannot move a high bid {$movedBidTileId}");
             }
-            if ($bid->color() != $workerType) {
+            if ($bid->color() != $workerColor) {
                 throw new InvalidArgumentException("cannot mix colors in a bid");
             }
+            // FIXME: remove from market tile? Or leave empty?
+            $moved[$movedBidTileId] = new WorkerGroup($bid->workers());
             $movedBids[] = $bid;
         }
+        if ($numWorkersFromStock <= 0 && count($movedBids) == 0) {
+            throw new InvalidArgumentException("no workers bid from stock, no bids moved");
+        }
 
-        $newBid = $this->village()->takeWorkersFromStock($workerType, $numWorkersFromStock);
+
+        // FIXME: handle 0 workers from stock.
+        // TODO: allow empty worker groups?
+        $newBid = ($numWorkersFromStock > 0)
+            ? $this->village()->takeWorkersFromStock($workerColor, $numWorkersFromStock)
+            : array_shift($movedBids);
 
         foreach ($movedBids as $movedBid) {
             $newBid->combineWith($movedBid);
@@ -176,11 +188,17 @@ class Model {
         $bidTile->bid($this->activePlayerId, $newBid);
 
         /* Update the DB */
-        $this->ps->updateBidWorkerLocations($bidTile, $newBid);
-        // Just update locations of all workers involved in the bid
-        // Can we be "sloppy" and just reassign them all to positions 1-n?
-        // Or do we "dance around" workers already bid?
+        $this->ps->updateBidWorkerLocations($this->activePlayerId, $bidTile, $newBid);
+        $this->ps->clearPasses();
 
-        return $newBid;
+        return new BidResult($newBid, $bidTile->id, $moved);
+    }
+
+    public function passTurn(): void {
+        $this->ps->incPasses();
+    }
+
+    public function numPassed(): int {
+        return $this->ps->numPasses();
     }
 }

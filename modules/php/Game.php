@@ -161,9 +161,9 @@ class Game extends \Bga\GameFramework\Table
             'startPlayerId' => $startPlayerId,
             'dock' => Marshaller::dock($data->dock),
             'market' => Marshaller::market($data->market),
-            'skillCount' => $data->skills->size(),
-            'greenCount' => count($data->greens),
-            'bagCount' => $data->bagWorkers->size(),
+            'skillCount' => $data->skillPile->size(),
+            'greenCount' => $data->workerStock->greensSize(),
+            'bagCount' => $data->workerStock->bagSize(),
             'villages' => $sv,
         ];
     }

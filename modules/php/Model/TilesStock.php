@@ -57,7 +57,7 @@ class TilesStock {
     }
 
     public static function forNewGame(int $numPlayers): TilesStock {
-        $lastId = 300;
+        $lastId = 1000;
         $stock = new TilesStock([], []);
 
         $springTypes = TileType::springTiles();

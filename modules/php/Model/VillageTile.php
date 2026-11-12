@@ -34,7 +34,7 @@ class VillageTile {
      * @param list<Resource> $resources
      */
     public function __construct(
-        public readonly int $id,
+        public readonly int $tile_id,
         public TileType $type,
         public int $rowcol,
         public int $orientation,

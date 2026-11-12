@@ -37,7 +37,7 @@ class Marshaller {
     private static function worker(Worker $w): array {
         return [
             'id' => $w->id,
-            'color' => $w->type->value,
+            'color' => $w->color->value,
         ];
     }
 
@@ -72,7 +72,7 @@ class Marshaller {
         $result = [
             'tiles' => array_map(
                 fn ($vt) => [
-                    'tile_id' => $vt->id,
+                    'tile_id' => $vt->tile_id,
                     'tiletype' => $vt->type->value,
                     'rowcol' => $vt->rowcol,
                     'orientation' => $vt->orientation,
@@ -105,6 +105,10 @@ class Marshaller {
         );
     }
 
+    public static function color(?WorkerColor $color): ?string {
+        return $color === null ? null : $color->value;
+    }
+
     /**
      * @return array<mixed>
      */
@@ -113,11 +117,14 @@ class Marshaller {
             fn ($mt) => [
                 'id' => $mt->id,
                 'tiletype' => $mt->type->value,
-                'bids' => array_map(fn ($b) => [
-                    'player_id' => $b->playerId,
-                    // FIXME: need positions?
-                    'workers' => self::workers($b->workers),
-                ], $mt->bids)
+                'bids' => array_map(fn ($b, $pid) => [
+                        'player_id' => $pid,
+                        // FIXME: need positions?
+                        'workers' => self::workers($b->workers()),
+                    ],
+                    $mt->bids,
+                    array_keys($mt->bids)
+                )
             ],
             $market->tiles()
         );

@@ -39,19 +39,19 @@ class Village {
     public function __construct(public readonly int $playerId, public array $tiles, public array $workers, public array $skills, public array $winterTiles, public bool $hasStartPlayer) {}
 
     /** @return WorkerGroup */
-    public function takeWorkersFromStock(WorkerType $type, int $num): WorkerGroup {
+    public function takeWorkersFromStock(WorkerColor $color, int $num): WorkerGroup {
         $result = [];
         $workers = $this->workers;
         for ($i = 0; $i < $num; ++$i) {
-            $idx = array_find_key($workers, fn ($w) => $w->type == $type);
+            $idx = array_find_key($workers, fn ($w) => $w->color == $color);
             if ($idx !== null) {
-                $result[] = array_slice($workers, $idx, 1)[0];
+                $result[] = array_splice($workers, $idx, 1)[0];
             }
         }
         if (count($result) != $num) {
-            throw new InvalidArgumentException("Not enough workers of type {$type->value} in stock");
+            throw new InvalidArgumentException("Not enough workers of type {$color->value} in stock");
         }
-        return new WorkerGroup($this->playerId, $workers);
+        return new WorkerGroup($result);
     }
 
     public function hasStartPlayer(): bool {

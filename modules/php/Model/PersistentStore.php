@@ -29,7 +29,6 @@ namespace Bga\Games\keyflowerrewrite\Model;
 
 use Bga\GameFramework\Db\Globals;
 use Bga\Games\keyflowerrewrite\Utils\Db;
-use Bga\Games\keyflowerrewrite\Utils\Log;
 use InvalidArgumentException;
 
 class PersistentStore {
@@ -53,6 +52,7 @@ class PersistentStore {
     }
 
     private const GLOBAL_SEASON = 'season';
+    private const GLOBAL_PASSES = 'passes';
 
     private readonly string $TILE;
     private readonly string $RESOURCE;
@@ -141,7 +141,7 @@ class PersistentStore {
                     }
                     break;
                 case $this->WORKER:
-                    $worker = new Worker($id, WorkerType::from($subtype));
+                    $worker = new Worker($id, WorkerColor::from($subtype));
                     switch ($loc_type) {
                         case $this->BAG:
                             $bag[] = $worker;
@@ -160,11 +160,14 @@ class PersistentStore {
                         case $this->TILE:
                             // activations
                             $vid = $loc_id;
-                            $v = array_find($villages[$pid]->tiles, fn ($vt) => $vid == $vt->id);
+                            $v = array_find($villages[$pid]->tiles, fn ($vt) => $vid == $vt->tile_id);
+                            if ($v === null) {
+                                $v = array_find($marketTiles, fn ($vt) => $vid == $vt->id);
+                            }
                             if ($v === null) {
                                 throw new InvalidArgumentException("couldn't find village tile for player {$pid} tile {$vid}");
                             }
-                            // FIXME: this is incorrect
+                            // FIXME: need position!
                             // $v->activations[] = $worker;
                             break;
                         case $this->VILLAGE:
@@ -177,12 +180,10 @@ class PersistentStore {
                             if ($m === null) {
                                 throw new InvalidArgumentException("couldn't find market tile {$mid}");
                             }
-                            // FIXME: these don't work.
-                            // if ($pid) {
-                            //     $m->bids[] = $worker;
-                            // } else {
-                            //     $m->activations[intval($loc_pos])] = $worker;
-                            // }
+                            if (!$pid)  {
+                                throw new InvalidArgumentException("bid worker not attached to player");
+                            }
+                            $m->addToBid($pid, $worker);
                             break;
                         default:
                             throw new InvalidArgumentException("unknown loc_type {$loc_type} for worker piece");
@@ -219,7 +220,7 @@ class PersistentStore {
                             break;
                         case $this->TILE:
                             $vid = $loc_id;
-                            $v = array_find($villages[$pid]->tiles, fn ($vt) => $vid == $vt->id);
+                            $v = array_find($villages[$pid]->tiles, fn ($vt) => $vid == $vt->tile_id);
                             if ($v === null) {
                                 throw new InvalidArgumentException("couldn't find village tile for player {$pid} tile {$vid}");
                             }
@@ -240,14 +241,13 @@ class PersistentStore {
         /** @phpstan-ignore argument.type */
         $result->season = $seasonString === null ? null : Season::from(strval($seasonString));
         $result->playerIds = $playerIds;
-        $result->villages = array_values($villages);
+        $result->villages = $villages;
         $result->dock = new Dock($dockTiles);
         $result->market = new Market($marketTiles);
         $result->tilesStock = new TilesStock($startTiles, $seasonTiles);
-        $result->greens = $greens;
-        $result->bagWorkers = new Bag($bag);
+        $result->workerStock = new WorkerStock($bag, $greens);
         $result->resources = new ResourceStock($resources);
-        $result->skills = new SkillPile($skills);
+        $result->skillPile = new SkillPile($skills);
         return $result;
     }
 
@@ -260,7 +260,7 @@ class PersistentStore {
         foreach ($ws as $pos => $w) {
             $p = $pid === null ? 'NULL' : $pid;
             $l = $loc_id === null ? 'NULL' : $loc_id;
-            $result[] = "('{$this->WORKER}', {$w->id}, '{$w->type->value}','{$loc}', ${l}, {$pos}, {$p}, NULL)";
+            $result[] = "('{$this->WORKER}', {$w->id}, '{$w->color->value}','{$loc}', ${l}, {$pos}, {$p}, NULL)";
         }
         return $result;
     }
@@ -282,9 +282,9 @@ class PersistentStore {
     public function saveAllData(AllGameData $data): string {
         $values = [];
 
-        array_push($values, ... $this->workervals($this->GREENS, $data->greens));
-        array_push($values, ... $this->workervals($this->BAG, $data->bagWorkers->workers));
-        array_push($values, ... $this->skillVals($this->SKILLPILE, $data->skills->skills));
+        array_push($values, ... $this->workervals($this->GREENS, $data->workerStock->greens()));
+        array_push($values, ... $this->workervals($this->BAG, $data->workerStock->bagWorkers()));
+        array_push($values, ... $this->skillVals($this->SKILLPILE, $data->skillPile->skills()));
         foreach ($data->market->tiles() as $pos => $mt) {
             $values[] = "('{$this->TILE}', {$mt->id}, '{$mt->type->value}','{$this->MARKET}',NULL, {$pos}, NULL, NULL)";
             // TODO: add bids and activations
@@ -297,10 +297,10 @@ class PersistentStore {
         foreach ($data->villages as $village) {
             foreach ($village->tiles as $pos => $vt) {
                 $upgraded = $vt->upgraded ? 1 : 0;
-                $values[] = "('{$this->TILE}', {$vt->id}, '{$vt->type->value}', '{$this->VILLAGE}', {$vt->rowcol}, {$vt->orientation}, {$village->playerId}, {$upgraded})";
+                $values[] = "('{$this->TILE}', {$vt->tile_id}, '{$vt->type->value}', '{$this->VILLAGE}', {$vt->rowcol}, {$vt->orientation}, {$village->playerId}, {$upgraded})";
                 // FIXME: this doesn't work.
                 foreach ($vt->activations as $wg) {
-                    array_push($values, ... $this->workerVals($this->TILE, $wg->workers));
+                    array_push($values, ... $this->workerVals($this->TILE, $wg->workers()));
                 }
             }
             array_push($values, ... $this->workervals($this->VILLAGE, $village->workers, null, $village->playerId));
@@ -330,13 +330,32 @@ class PersistentStore {
         return "".count($values);
     }
 
-    public function updateBidWorkerLocations(MarketTile $bidTile, WorkerGroup $newBid): void {
-        // FIXME 1: need to handle existing worker bid, so fetch max id bid on that tile first
-        $p = 0;
-        foreach ($newBid->workers as $worker) {
-            $this->db->execute("UPDATE pieces SET (loc_type='bid', loc_id={$bidTile->id},loc_pos={$p}) WHERE id={$worker->id}");
-            $p++;
-        }
-        // FIXME: optimize this so it's a single UPDATE using CASE ...
+    public function updateBidWorkerLocations(int $player_id, MarketTile $bidTile, WorkerGroup $newBid): void {
+        $ids = array_map(fn ($w) => $w->id, $newBid->workers());
+        $case = "CASE id "
+            . implode(" ", array_map(fn ($i, $p) => "WHEN {$i} THEN {$p}", $ids, array_keys($ids)))
+            . " END";
+
+        $this->db->execute(
+            "UPDATE pieces
+             SET loc_type='{$this->MARKET}',
+                 loc_id={$bidTile->id},
+                 player_id={$player_id},
+                 loc_pos={$case}
+             WHERE id IN ( " . implode(",", $ids) . " )"
+        );
+    }
+
+    public function clearPasses(): void {
+        $this->globals->set(self::GLOBAL_PASSES, 0);
+    }
+
+    public function incPasses(): void {
+        $this->globals->inc(self::GLOBAL_PASSES, 1);
+    }
+
+    public function numPasses(): int {
+        /** @phpstan-ignore argument.type */
+        return intval($this->globals->get(self::GLOBAL_PASSES));
     }
 }

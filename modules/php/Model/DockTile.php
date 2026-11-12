@@ -37,14 +37,14 @@ class DockTile {
     public function __construct(public readonly int $id, public TileType $type, public array $passengers = [], public array $cargo = [], public bool $flipped = false) {
     }
 
-    public function refill(Bag $bag, SkillPile $skillPile): void {
+    public function refill(WorkerStock $workerStock, SkillPile $skillPile): void {
         if (!$this->type->isStandardBoat()) {
             throw new InvalidArgumentException("can't refill non-boat {$this->type->value}");
         }
         if (count($this->passengers) != 0 || count($this->cargo) != 0) {
             throw new InvalidArgumentException("boat {$this->type->value} not empty");
         }
-        $this->passengers = $bag->take($this->type->passengerCapacity($this->flipped));
+        $this->passengers = $workerStock->takeFromBag($this->type->passengerCapacity($this->flipped));
         $this->cargo = $skillPile->take($this->type->cargoCapacity($this->flipped));
     }
 

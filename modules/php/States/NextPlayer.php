@@ -3,9 +3,9 @@
 /**
  *------
  * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
- * zooloretto implementation : © Jay Sachs <vagabond@covariant.org>
+ * babylonia implementation : © Jay Sachs <vagabond@covariant.org>
  *
- * Copyright 2026 Jay Sachs <vagabond@covariant.org>
+ * Copyright 2025 Jay Sachs <vagabond@covariant.org>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,21 +25,30 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\keyflowerrewrite\Model;
+namespace Bga\Games\keyflowerrewrite\States;
 
+use Bga\GameFramework\StateType;
+use Bga\Games\keyflowerrewrite\Game;
 
-class Bag {
-    /** @param list<Worker> $workers */
-    public function __construct(public array $workers)
+class NextPlayer extends AbstractState
+{
+    function __construct(Game $game)
     {
+        parent::__construct(
+            game: $game,
+            id: 23,
+            type: StateType::GAME,
+            description: clienttranslate('Changing player'),
+            updateGameProgression: false,
+        );
     }
 
-    /** @return list<Worker> */
-    public function take(int $n): array {
-        return array_splice($this->workers, 0, $n);
-    }
-
-    public function size(): int {
-        return count($this->workers);
+    function onEnteringState(int $active_player_id): mixed {
+        if ($this->createModel(0)->numPassed() >= $this->game->getPlayerCount()) {
+            // return EndOfSeason::class;
+            return 99;
+        }
+        $this->game->activeNextPlayer();
+        return PlayerTurn::class;
     }
 }

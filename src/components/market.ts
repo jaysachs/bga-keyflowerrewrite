@@ -18,9 +18,9 @@ export class MarketComponent extends BaseComponent<any> {
     }
 
     private marketTileDiv(mt: MarketTile): HTMLElement {
-        const div =  Html.div({ id: `kf_tile_${mt.id}`, attrs: { kf_tiletype: mt.tiletype } });
-        // TODO: add bid information appropriately
-        div.innerText = `${mt.tiletype}: ${mt.bids}`;
-        return div;
+        return Html.div({ id: `kf_tile_${mt.id}`, attrs: { kf_tiletype: mt.tiletype } },
+            Html.span({text:`${mt.tiletype}-${mt.id}: `}),
+            ... mt.bids.map(b => Html.span({text: `${b.player_id}: ${b.workers.map(w => w.id + ":" + w.color)}`}))
+        );
     }
 }

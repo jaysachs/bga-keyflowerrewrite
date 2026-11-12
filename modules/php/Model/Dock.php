@@ -39,15 +39,15 @@ class Dock {
         }
     }
 
-    public function refill(Bag $bag, SkillPile $skillPile): void {
+    public function refill(WorkerStock $workerStock, SkillPile $skillPile): void {
         foreach ($this->boats as $boat) {
-            $boat->refill($bag, $skillPile);
+            $boat->refill($workerStock, $skillPile);
         }
     }
 
-    public function replenish(Bag $bag, SkillPile $skillPile): void {
+    public function replenish(WorkerStock $workerStock, SkillPile $skillPile): void {
         foreach ($this->boats as $boat) {
-            $boat->refill($bag, $skillPile);
+            $boat->refill($workerStock, $skillPile);
         }
     }
 

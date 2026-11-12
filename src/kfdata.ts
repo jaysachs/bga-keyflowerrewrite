@@ -29,7 +29,7 @@ export interface MarketTile {
     bids: {
         player_id: number;
         workers: Worker[];
-    }
+    }[];
     activations: Activations;
 }
 export type Market = MarketTile[];
