@@ -44,7 +44,7 @@ class WorkerStock {
 
     /** @return list<Worker> */
     public function greens(): array {
-        return $this->greens();
+        return $this->greens;
     }
 
     /** @return list<Worker> */
