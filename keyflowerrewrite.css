@@ -39,14 +39,8 @@
     height: calc((var(--kf-row-span) * var(--kf-row-step) + 1) * var(--kf-tile-h));
 }
 
-/* Where tiles are drawn: its corner is Home's, moved in by the smallest row and column */
-.kf_village_canvas {
-    position: absolute;
-    left: calc(var(--kf-min-col) * var(--kf-col-step) * var(--kf-tile-w) * -1);
-    top: calc(var(--kf-min-row) * var(--kf-row-step) * var(--kf-tile-h) * -1);
-}
-
-.kf_village_canvas .kf_tile {
+/* Rows and columns are counted from the village's top-left */
+.kf_village_map .kf_tile {
     position: absolute;
     left: calc(var(--kf-col) * var(--kf-col-step) * var(--kf-tile-w));
     top: calc(var(--kf-row) * var(--kf-row-step) * var(--kf-tile-h));

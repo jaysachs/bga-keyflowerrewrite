@@ -32,9 +32,8 @@ export class VillageComponent extends BaseComponent<any> {
 
     private villageDiv(village: Village, player: KFPlayer): HTMLElement {
         // Tiles are placed relative to Home, so tiles left of or above it have negative rows and
-        // columns. The map is sized to the village's span, and the canvas (where Home's corner is)
-        // is moved in by the smallest row and column, so every tile shows. The CSS turns rows and
-        // columns into positions.
+        // columns. Each tile gets its row and column counted from the village's top-left instead,
+        // and the map is sized to the village's span. The CSS turns rows and columns into positions.
         const rcs = village.tiles.map(t => RowCol.unpack(t.rowcol));
         const minRow = Math.min(...rcs.map(rc => rc.row)), maxRow = Math.max(...rcs.map(rc => rc.row));
         const minCol = Math.min(...rcs.map(rc => rc.col)), maxCol = Math.max(...rcs.map(rc => rc.col));
@@ -48,16 +47,15 @@ export class VillageComponent extends BaseComponent<any> {
             Html.div({ classes: 'kf_village_name', text: player.name }),
             Html.div({
                     classes: 'kf_village_map',
-                    style: [`--kf-min-row: ${minRow}`, `--kf-min-col: ${minCol}`, `--kf-row-span: ${maxRow - minRow}`, `--kf-col-span: ${maxCol - minCol}`],
+                    style: [`--kf-row-span: ${maxRow - minRow}`, `--kf-col-span: ${maxCol - minCol}`],
                 },
-                Html.div({ classes: 'kf_village_canvas' },
-                    ...village.tiles.map((t, i) => this.tileDiv(t, rcs[i]!))
-                )
+                ...village.tiles.map((t, i) => this.tileDiv(t, rcs[i]!.row - minRow, rcs[i]!.col - minCol))
             )
         );
     }
 
-    private tileDiv(tile: VillageTile, rc: RowCol): HTMLElement {
+    /** row and col are counted from the village's top-left; data-kf-rowcol keeps the real position. */
+    private tileDiv(tile: VillageTile, row: number, col: number): HTMLElement {
         return Html.div({
             id: `kf_tile_${tile.tile_id}`,
             classes: 'kf_tile',
@@ -66,7 +64,7 @@ export class VillageComponent extends BaseComponent<any> {
                 'data-kf-rowcol': String(tile.rowcol),
                 'data-kf-orientation': String(tile.orientation),
             },
-            style: [`--kf-row: ${rc.row}`, `--kf-col: ${rc.col}`],
+            style: [`--kf-row: ${row}`, `--kf-col: ${col}`],
             title: tile.tiletype,
         });
     }
