@@ -102,7 +102,7 @@ class PersistentStore {
         }
 
         foreach ($this->db->getObjectList(
-            "SELECT piece_type, id, piece_subtype, loc_type, loc_id, loc_pos, player_id, upgraded
+            "SELECT piece_type, id, piece_subtype, loc_type, loc_id, loc_pos, player_id
              FROM pieces
              ORDER BY CASE
                WHEN piece_type = '{$this->TILE}' THEN ''
@@ -121,16 +121,15 @@ class PersistentStore {
                     break;
                 case $this->TILE:
                     $type = TileType::from($subtype);
-                    $up = $row['upgraded'] == "1";
                     switch ($loc_type) {
                         case $this->VILLAGE:
-                            $villages[$pid]->tiles[] = new VillageTile($id, $type, $loc_id, $loc_pos, $up);
+                            $villages[$pid]->tiles[] = new VillageTile($id, $type, $loc_id, $loc_pos);
                             break;
                         case $this->MARKET:
                             $marketTiles[] = new MarketTile($id, $type, []);
                             break;
                         case $this->DOCK:
-                            $dockTiles[] = new DockTile($id, $type, [], [], $up );
+                            $dockTiles[] = new DockTile($id, $type, [], [] );
                             break;
                         case $this->START:
                             $startTiles[] = new StockTile($id, $type);
@@ -260,7 +259,7 @@ class PersistentStore {
         foreach ($ws as $pos => $w) {
             $p = $pid === null ? 'NULL' : $pid;
             $l = $loc_id === null ? 'NULL' : $loc_id;
-            $result[] = "('{$this->WORKER}', {$w->id}, '{$w->color->value}','{$loc}', ${l}, {$pos}, {$p}, NULL)";
+            $result[] = "('{$this->WORKER}', {$w->id}, '{$w->color->value}','{$loc}', ${l}, {$pos}, {$p})";
         }
         return $result;
     }
@@ -274,7 +273,7 @@ class PersistentStore {
         foreach ($ws as $pos => $w) {
             $p = $pid === null ? 'NULL' : $pid;
             $l = $loc_id === null ? 'NULL' : $loc_id;
-            $result[] = "('{$this->SKILL}', {$w->id}, '{$w->type->value}','{$loc}', {$l}, {$pos}, {$p}, NULL)";
+            $result[] = "('{$this->SKILL}', {$w->id}, '{$w->type->value}','{$loc}', {$l}, {$pos}, {$p})";
         }
         return $result;
     }
@@ -282,22 +281,24 @@ class PersistentStore {
     public function saveAllData(AllGameData $data): string {
         $values = [];
 
+        $noPid = 'NULL';
+        $noLocId = 'NULL';
+        $noSubtype = 'NULL';
         array_push($values, ... $this->workervals($this->GREENS, $data->workerStock->greens()));
         array_push($values, ... $this->workervals($this->BAG, $data->workerStock->bagWorkers()));
         array_push($values, ... $this->skillVals($this->SKILLPILE, $data->skillPile->skills()));
         foreach ($data->market->tiles() as $pos => $mt) {
-            $values[] = "('{$this->TILE}', {$mt->id}, '{$mt->type->value}','{$this->MARKET}',NULL, {$pos}, NULL, NULL)";
+            $values[] = "('{$this->TILE}', {$mt->id}, '{$mt->type->value}','{$this->MARKET}', {$noLocId}, {$pos}, {$noPid})";
             // TODO: add bids and activations
         }
         foreach ($data->dock->boats as $pos => $mt) {
-            $values[] = "('tile', {$mt->id}, '{$mt->type->value}','{$this->DOCK}',NULL, {$pos}, NULL, NULL)";
+            $values[] = "('tile', {$mt->id}, '{$mt->type->value}','{$this->DOCK}', {$noLocId}, {$pos}, {$noPid})";
             array_push($values, ... $this->workervals($this->BOAT, $mt->passengers, $mt->id));
             array_push($values, ... $this->skillvals($this->BOAT, $mt->cargo, $mt->id));
         }
         foreach ($data->villages as $village) {
             foreach ($village->tiles as $pos => $vt) {
-                $upgraded = $vt->upgraded ? 1 : 0;
-                $values[] = "('{$this->TILE}', {$vt->tile_id}, '{$vt->type->value}', '{$this->VILLAGE}', {$vt->rowcol}, {$vt->orientation}, {$village->playerId}, {$upgraded})";
+                $values[] = "('{$this->TILE}', {$vt->tile_id}, '{$vt->type->value}', '{$this->VILLAGE}', {$vt->rowcol}, {$vt->orientation}, {$village->playerId})";
                 // FIXME: this doesn't work.
                 foreach ($vt->activations as $wg) {
                     array_push($values, ... $this->workerVals($this->TILE, $wg->workers()));
@@ -306,22 +307,22 @@ class PersistentStore {
             array_push($values, ... $this->workervals($this->VILLAGE, $village->workers, null, $village->playerId));
             array_push($values, ... $this->skillVals($this->VILLAGE, $village->skills, null, $village->playerId));
             if ($village->hasStartPlayer()) {
-                array_push($values, "('{$this->STARTPLAYER}', 0, NULL, '{$this->VILLAGE}', 0, 0, {$village->playerId}, 0)");
+                array_push($values, "('{$this->STARTPLAYER}', 1, {$noSubtype}, '{$this->VILLAGE}', {$noLocId}, 0, {$village->playerId})");
             }
         }
 
         foreach (Season::cases() as $season) {
             foreach ($data->tilesStock->forSeason($season) as $pos => $tile) {
-                $values[] = "('{$this->TILE}', {$tile->id}, '{$tile->type->value}', '{$season->value}', NULL, {$pos}, NULL, NULL)";
+                $values[] = "('{$this->TILE}', {$tile->id}, '{$tile->type->value}', '{$season->value}', {$noLocId}, {$pos}, {$noPid})";
             }
         }
         foreach ($data->tilesStock->startTurnTiles() as $pos => $tile) {
-            $values[] = "('{$this->TILE}', {$tile->id}, '{$tile->type->value}', '{$this->START}', NULL, {$pos}, NULL, NULL)";
+            $values[] = "('{$this->TILE}', {$tile->id}, '{$tile->type->value}', '{$this->START}', {$noLocId}, {$pos}, {$noPid})";
         }
         if (count($values) > 0) {
         $this->db->execute(
             "REPLACE INTO `pieces`
-             (piece_type, id, piece_subtype, loc_type, loc_id, loc_pos, player_id, upgraded)
+             (piece_type, id, piece_subtype, loc_type, loc_id, loc_pos, player_id)
              VALUES " . implode(",\n", $values));
         }
         if ($data->season !== null) {

@@ -107,3 +107,4 @@ Questions:
 4. ~~should we have a separate "winter tiles in hand" location? or can we depend on the existence/absence of player_id along with the "winter" location?~~  **NO**, we'll use `player_id` non-zero for this.
 5. Can we eliminate `upgraded`? It's only for tiles and boats. We can't use e.g. negation of id, because that breaks the piece identity. We could, though, use the `piece_subtype` (append a trailing "_u"?)
 6. Is unset (for e.g. `player_id`) NULL or 0? Relates on whether we want to include a `UNIQUE` constraint or not.
+7. Should we not use upgraded ... just change the TileType on an existing tile? And have a "canBeUpgraded()" function on TileType (or a `flipsTo(): ?TileType` that returns null if not flippable, and works both for standard boats and non-boat seasonal tiles?

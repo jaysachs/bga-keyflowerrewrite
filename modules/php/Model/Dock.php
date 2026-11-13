@@ -66,7 +66,7 @@ class Dock {
     public static function forNewGame(int $numPlayers): Dock {
         $lastId = 400;
         $boatTiles = [];
-        foreach (TileType::standardBoats($numPlayers) as $tt) {
+        foreach (TileType::initialStandardBoats($numPlayers) as $tt) {
             $boatTiles[] = new DockTile(++$lastId, $tt);
         }
         return new Dock($boatTiles);

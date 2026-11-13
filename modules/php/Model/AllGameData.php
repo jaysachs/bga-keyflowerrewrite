@@ -82,7 +82,7 @@ class AllGameData {
         $result->resources = ResourceStock::forNewGame();
         $result->tilesStock = TilesStock::forNewGame($numPlayers);
 
-        $homes = TileType::homeTiles();
+        $homes = TileType::initialHomeTiles();
         shuffle($homes);
         array_splice($homes, $numPlayers);
         $min = TileType::HOME6;
@@ -103,7 +103,7 @@ class AllGameData {
             $home = array_shift($homes);
             $result->villages[$playerId] = new Village(
                 $playerId,
-                [new VillageTile(++$lastTileId, $home, RowCol::fromRowCol(0, 0), 1, false, [], [])],
+                [new VillageTile(++$lastTileId, $home, RowCol::fromRowCol(0, 0), 1, [], [])],
                 $workers,
                 [],
                 $wts,

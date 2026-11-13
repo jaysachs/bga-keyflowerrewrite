@@ -38,7 +38,6 @@ class VillageTile {
         public TileType $type,
         public int $rowcol,
         public int $orientation,
-        public bool $upgraded,
         public array $activations = [],
         public array $resources = []) {
     }
