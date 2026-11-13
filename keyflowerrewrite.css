@@ -60,6 +60,201 @@
 [data-kf-orientation="5"] { --kf-turn: -240deg; }
 [data-kf-orientation="6"] { --kf-turn: -300deg; }
 
+/* Market: each tile with the bids on it, the high bid first */
+
+#kf_market {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.kf_lot {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: var(--kf-tile-w);
+}
+
+.kf_lot_tile {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    cursor: default;
+}
+
+/* The outline follows the hex, since the tile inside is clipped to it */
+.kf_lot_tile.kf_selectable {
+    cursor: pointer;
+    filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 2px #1a73e8);
+}
+
+.kf_lot_tile.kf_selected {
+    filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #1a73e8) drop-shadow(0 0 3px #1a73e8);
+}
+
+.kf_bids {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 12px;
+}
+
+.kf_bid {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 1px 6px 1px 4px;
+    border-left: 4px solid var(--kf-player-color);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.75);
+}
+
+.kf_bid_player {
+    font-weight: bold;
+    max-width: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.kf_outbid,
+.kf_moving {
+    opacity: 0.6;
+}
+
+.kf_pending {
+    outline: 2px dashed #1a73e8;
+    outline-offset: -1px;
+}
+
+.kf_tag {
+    font-style: italic;
+}
+
+.kf_chip {
+    font-weight: bold;
+    color: #1a5fb4;
+}
+
+/* Workers, from the old game's sprite */
+
+.kf_workers {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+}
+
+.kf_worker {
+    display: inline-block;
+    width: 17px;
+    height: 17px;
+    background-image: url('img/tiles-symbols.png');
+}
+.kf_worker[data-kf-color="red"] { background-position: -136px -7px; }
+.kf_worker[data-kf-color="yellow"] { background-position: -168px -7px; }
+.kf_worker[data-kf-color="blue"] { background-position: -201px -7px; }
+.kf_worker[data-kf-color="green"] { background-position: -136px -40px; }
+
+.kf_count {
+    font-weight: bold;
+    margin-left: 2px;
+}
+
+/* Choosing a bid in the status bar: a row per colour; tap the third worker to take three */
+
+.kf_pick {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin: 6px 0;
+}
+
+.kf_pick_row {
+    display: flex;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    max-width: 100%;
+    gap: 4px;
+}
+
+.kf_pick_worker {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    width: auto;
+    height: auto;
+    min-width: 44px;
+    min-height: 44px;
+    margin: 0;
+    justify-content: center;
+    padding: 0 6px;
+    border: 2px solid #c8c8c8;
+    border-radius: 6px;
+    background: #fff;
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.kf_pick_worker .kf_worker {
+    zoom: 1.5;
+}
+
+.kf_pick_worker.kf_on {
+    border-color: #1a73e8;
+    background: #e8f0fe;
+}
+
+/* A worker from your stock, with the number a tap takes under it. */
+.kf_pick_one {
+    gap: 5px;
+    padding: 0 8px;
+}
+
+.kf_pick_num {
+    min-width: 0.6em;
+    font-size: 17px;
+    font-weight: bold;
+    line-height: 1;
+    color: #333;
+}
+
+.kf_pick_worker.kf_on .kf_pick_num {
+    color: #1a73e8;
+}
+
+/*
+ * Hover preview (mouse only): pointing at the third worker outlines the first three, and the
+ * chosen workers after it fade, since the tap would put them back.
+ */
+@media (hover: hover) {
+    .kf_pick_one:hover,
+    .kf_pick_one:has(~ .kf_pick_one:hover) {
+        border-color: #1a73e8;
+    }
+
+    .kf_pick_one:hover ~ .kf_pick_one.kf_on {
+        border-color: #c8c8c8;
+        background: #fff;
+        opacity: 0.6;
+    }
+}
+
+.kf_pick_msg {
+    flex-basis: 100%;
+    margin: 0;
+    font-size: 14px;
+    color: #b3261e;
+}
+
+.kf_pick_msg:empty {
+    display: none;
+}
+
 /*
  * Tile art: any element with data-kf-tile="<tile type>" shows that tile's face; upgraded faces
  * are their own types (keymine_u). The sprite has 16 x 8 tiles; positions are from the old game's CSS.

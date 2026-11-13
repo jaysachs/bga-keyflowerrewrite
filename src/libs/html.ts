@@ -47,6 +47,12 @@ export class Html {
         return this.makeElem('p', args, ...children);
     }
 
+    public static button(args: { id?: string | undefined, text?: string | undefined, title?: string, attrs?: Record<string, string> | AttrLike, classes?: (string | string[]), style?: (string | string[]) }, ...children: (Node | undefined)[]) {
+        const b = this.makeElem('button', args, ...children);
+        b.setAttribute('type', 'button');
+        return b as HTMLButtonElement;
+    }
+
     /**
     * Returns the index of the given element among its parent's child elements or -1 if no parent.
     */
