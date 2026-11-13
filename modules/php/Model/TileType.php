@@ -140,7 +140,7 @@ enum TileType: string
     case BOAT3A = "boat3a";
     case BOAT3B = "boat3b";
     case BOAT4A = "boat4a";
-    case BOAT4B = "boat5b";
+    case BOAT4B = "boat4b";
     case KEYFLOWER = "keyflower";
     case SEABASTION = "seabastion";
     case SEABREESE = "seabreese";
