@@ -259,7 +259,7 @@ class PersistentStore {
         foreach ($ws as $pos => $w) {
             $p = $pid === null ? 'NULL' : $pid;
             $l = $loc_id === null ? 'NULL' : $loc_id;
-            $result[] = "('{$this->WORKER}', {$w->id}, '{$w->color->value}','{$loc}', ${l}, {$pos}, {$p})";
+            $result[] = "('{$this->WORKER}', {$w->id}, '{$w->color->value}','{$loc}', {$l}, {$pos}, {$p})";
         }
         return $result;
     }
@@ -284,6 +284,7 @@ class PersistentStore {
         $noPid = 'NULL';
         $noLocId = 'NULL';
         $noSubtype = 'NULL';
+
         array_push($values, ... $this->workervals($this->GREENS, $data->workerStock->greens()));
         array_push($values, ... $this->workervals($this->BAG, $data->workerStock->bagWorkers()));
         array_push($values, ... $this->skillVals($this->SKILLPILE, $data->skillPile->skills()));
@@ -320,10 +321,10 @@ class PersistentStore {
             $values[] = "('{$this->TILE}', {$tile->id}, '{$tile->type->value}', '{$this->START}', {$noLocId}, {$pos}, {$noPid})";
         }
         if (count($values) > 0) {
-        $this->db->execute(
-            "REPLACE INTO `pieces`
-             (piece_type, id, piece_subtype, loc_type, loc_id, loc_pos, player_id)
-             VALUES " . implode(",\n", $values));
+            $this->db->execute(
+                "REPLACE INTO `pieces`
+                (piece_type, id, piece_subtype, loc_type, loc_id, loc_pos, player_id)
+                VALUES " . implode(",\n", $values));
         }
         if ($data->season !== null) {
             $this->globals->set(self::GLOBAL_SEASON, $data->season->value);
