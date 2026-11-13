@@ -13,8 +13,12 @@ use Bga\Games\keyflowerrewrite\Model\{
 final class TilesStockTest extends TestCase
 {
     /**  @param array<mixed> $a */
-    private function assertAllTrue(array $a, \Closure $c, string $msg): void {
-        $this->assertTrue(array_reduce($a, fn ($carry, $t) => $carry && $c($t), true), $msg);
+    private static function assertAllTrue(array $a, \Closure $c, string $msg): void {
+        self::assertTrue(self::allTrue($a, $c), $msg);
+    }
+
+    private static function allTrue(array $a, \Closure $c): bool {
+        return array_reduce($a, fn ($carry, $t) => $carry && $c($t), true);
     }
 
     public function testForNewGame_summerTiles(): void {
@@ -31,9 +35,16 @@ final class TilesStockTest extends TestCase
             "summer tiles should be ... summer tiles");
         $this->assertAllTrue(
             $summerTileTypes,
-            fn (TileType $t) =>  ! $t->isBoat() ||
-                /** @phpstan-ignore property.nonObject */
-                array_search($t->flip()->value, $summerTileValues) === false,
+            function (TileType $t) use (&$summerTileTypes) {
+                if (! $t->isBoat()) { return true; }
+                // if it's a flipped boat, ensure no other summer tile flips to this tone.
+                $flipped = $t->flip();
+                if ($flipped === null) {
+                    return self::allTrue($summerTileTypes, fn($t2) => $t2->flip() !== $t);
+                }
+                // if a non-flipped boat, ensure we don't flip to another existing summer tile
+                return self::allTrue($summerTileTypes, fn($t2) => $t2 !== $flipped);
+            },
             "summer tiles should all be non-boats or not a the flip side of an existing boat");
     }
 }
