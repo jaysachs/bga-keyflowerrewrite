@@ -10,6 +10,7 @@
 
 import { DockComponent } from "./components/dock";
 import { MarketComponent } from "./components/market";
+import { VillageComponent } from "./components/village";
 import { KFGameDatas, KFPlayer } from "./kfdata";
 import { BaseGame } from "./libs/basegame";
 import { Html } from "./libs/html";
@@ -21,12 +22,14 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
 
     private marketComponent: MarketComponent;
     private dockComponent: DockComponent;
+    private villageComponent: VillageComponent;
 
     constructor(bga: Bga<KFPlayer, KFGameDatas>) {
         super(bga);
 
         this.marketComponent = new MarketComponent(bga);
         this.dockComponent = new DockComponent(bga);
+        this.villageComponent = new VillageComponent(bga);
     }
 
     override async setup(gamedatas: KFGameDatas) {
@@ -42,7 +45,8 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
 
         const mainElem = this.makeHtml(
             this.marketComponent.setup(),
-            this.dockComponent.setup());
+            this.dockComponent.setup(),
+            this.villageComponent.setup());
         this.bga.gameArea.getElement().appendChild(mainElem);
     }
 
@@ -51,10 +55,10 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
         this.bga.states.register('SeasonSetup', new SeasonSetupState(this.bga, this.animationManager));
     }
 
-    private makeHtml(marketEl, dockEl: HTMLElement): HTMLElement {
+    private makeHtml(marketEl: HTMLElement, dockEl: HTMLElement, villagesEl: HTMLElement): HTMLElement {
         return Html.div({ id: 'kf_main',
             classes: this.bga.players.isCurrentPlayerSpectator() ? ['kf_is_spectator'] : []},
-                dockEl, marketEl
+                dockEl, marketEl, villagesEl
         );
     }
 }
