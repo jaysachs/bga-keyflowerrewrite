@@ -31,12 +31,12 @@ use Bga\Games\keyflowerrewrite\Utils\Arrays;
 
 class SkillPile {
     /** @param list<Skill> $skills */
-    public function __construct(public array $skills)
+    public function __construct(private array $skills)
     {
     }
 
     public static function forNewGame() : SkillPile {
-        $lastId = 100;
+        $lastId = 4000;
         /** @var list<Skill> */
         $skills = [];
         foreach (SkillType::cases() as $st) {
@@ -51,6 +51,11 @@ class SkillPile {
     /** @return list<Skill> */
     public function take(int $n): array {
         return array_splice($this->skills, 0, $n);
+    }
+
+    /** @return list<Skill> */
+    public function skills(): array {
+        return $this->skills;
     }
 
     public function size(): int {

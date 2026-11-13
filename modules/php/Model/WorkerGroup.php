@@ -31,39 +31,45 @@ use InvalidArgumentException;
 
 class WorkerGroup {
     /** @param list<Worker> $workers */
-    public function __construct(public readonly int $playerId, public array $workers)
+    public function __construct(private array $workers)
     {
         $color = null;
         // FIXME: if boat4b in play, need to by pass this check if making
         //   a group for activation
         foreach ($workers as $worker) {
             if ($color === null) {
-                $color = $worker->type;
-            } else if ($worker->type != $color) {
-                throw new InvalidArgumentException("worker groups must be of a single color");
+                $color = $worker->color;
+            } else if ($worker->color != $color) {
+                throw new InvalidArgumentException("worker groups must be of a single color, got {$color->value} and {$worker->color->value}");
             }
-        }
-        if ($color == null) {
-            throw new InvalidArgumentException("empty worker group");
         }
     }
 
-    public function color(): WorkerType {
-        return $this->workers[0]->type;
+    public function color(): ?WorkerColor {
+        return count($this->workers) > 0 ? $this->workers[0]->color : null;
+    }
+
+    /** @return list<Worker> */
+    public function workers(): array {
+        return $this->workers;
     }
 
     public function size(): int {
         return count($this->workers);
     }
 
+    public function add(Worker $worker): void {
+        $this->combineWith(new WorkerGroup([$worker]));
+    }
+
     public function combineWith(WorkerGroup $other): void {
-        if ($other->playerId != $this->playerId) {
-            throw new InvalidArgumentException("can't combine worker groups owned by different players");
-        }
-        if ($other->workers[0]->type != $this->workers[0]->type) {
+        // FIXME: boat4b affects this in certain circumstances
+        if ($other->color() !== null
+            && $this->color() !== null
+            && $other->color() !== $this->color()) {
             throw new InvalidArgumentException("can't combine workers of different colors");
         }
-        $this->workers += $other->workers;
+        array_push($this->workers, ... $other->workers);
         $other->workers = [];
     }
 }

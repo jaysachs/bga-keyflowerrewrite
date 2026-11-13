@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS `pieces` (
 |  `tile`  | `village` | tile placed in a village | encoded rowcol | tile orientation | Y |
 |  `tile`  | `market` | tile in market | - | position in market | |
 |  `tile`  | `dock`   | boat tile at dock | - | position in dock | |
+|  `tile`  | `start`  | tile in start player tiles stock | - | position in pile | |
 |  `tile`  | `spring` | tile in spring stock | - | position in pile | |
 |  `tile`  | `summer` | tile in summer stock | - | position in pile | |
 |  `tile`  | `fall` | tile in fall stock | - | position in pile | |

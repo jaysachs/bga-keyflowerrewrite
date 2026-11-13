@@ -27,15 +27,13 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
-use Bga\Games\keyflowerrewrite\Utils\Arrays;
 use InvalidArgumentException;
 
 class AllGameData {
     public function __construct()
     {
-        $this->greens = [];
-        $this->bagWorkers = new Bag([]);
-        $this->skills = new SkillPile([]);
+        $this->workerStock = new WorkerStock([], []);
+        $this->skillPile = new SkillPile([]);
         $this->resources = new ResourceStock([]);
         $this->tilesStock = new TilesStock([],[
             Season::SPRING->value => [],
@@ -49,18 +47,15 @@ class AllGameData {
         $this->season = null;
     }
 
-    /** @var list<Worker> */
-    public array $greens;
+    public WorkerStock $workerStock;
 
-    public Bag $bagWorkers;
-
-    public SkillPile $skills;
+    public SkillPile $skillPile;
 
     public ResourceStock $resources;
 
     public TilesStock $tilesStock;
 
-    /** @var list<Village> */
+    /** @var array<int,Village> */
     public array $villages;
 
     public Market $market;
@@ -79,31 +74,12 @@ class AllGameData {
         if ($numPlayers < 2 || $numPlayers > 6) {
             throw new InvalidArgumentException("player count must be between 2 and 6");
         }
-        $lastId = 0;
 
         $result = new AllGameData();
         $result->playerIds = $playerIds;
-        // workers
-        $bagWorkers = [];
-        foreach ([WorkerType::RED, WorkerType::BLUE, WorkerType::YELLOW] as $wt) {
-            for ($i = 0; $i < 40; $i++) {
-                $bagWorkers[] = new Worker(++$lastId, $wt);
-            }
-        }
-        shuffle($bagWorkers);
-        $result->bagWorkers = new Bag($bagWorkers);
-
-        $result->greens = [];
-        for ($i = 0; $i < 20; ++$i) {
-            $result->greens[] = new Worker(++$lastId, WorkerType::GREEN);
-        }
-
-        // skills
-        $result->skills = SkillPile::forNewGame();
-
-        // resources
+        $result->workerStock = WorkerStock::forNewGame();
+        $result->skillPile = SkillPile::forNewGame();
         $result->resources = ResourceStock::forNewGame();
-
         $result->tilesStock = TilesStock::forNewGame($numPlayers);
 
         $homes = TileType::initialHomeTiles();
@@ -116,16 +92,16 @@ class AllGameData {
             }
         }
 
-        $lastTileId = 500;
+        $lastTileId = 1100;
         $result->villages = [];
         $winterTiles = & $result->tilesStock->forSeason(Season::WINTER);
         $perPlayer = intval(count($winterTiles) / $numPlayers);
         foreach ($playerIds as $playerId) {
-            $workers = $result->bagWorkers->take(8);
+            $workers = $result->workerStock->takeFromBag(8);
             $wts = array_splice($winterTiles, 0, $perPlayer);
             /** @var TileType */
             $home = array_shift($homes);
-            $result->villages[] = new Village(
+            $result->villages[$playerId] = new Village(
                 $playerId,
                 [new VillageTile(++$lastTileId, $home, RowCol::fromRowCol(0, 0), 1, [], [])],
                 $workers,

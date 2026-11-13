@@ -45,6 +45,15 @@ class MarketTile {
         return new MarketTile($st->id, $st->type, [], []);
     }
 
+    public function addToBid(int $playerId, Worker $w): void {
+        if (isset($this->bids[$playerId])) {
+            $this->bids[$playerId]->add($w);
+        } else {
+            $this->bids[$playerId] = new WorkerGroup([$w]);
+        }
+    }
+
+    // FIXME: this mutating the bid is "correct" but maybe fragile
     public function bid(int $playerId, WorkerGroup $bid): void {
         if (isset($this->bids[$playerId])) {
             $this->bids[$playerId]->combineWith($bid);
@@ -63,7 +72,8 @@ class MarketTile {
         return null;
     }
 
-    public function biddingColor(): ?WorkerType {
+    public function biddingColor(): ?WorkerColor {
+        // TODO: take into account any activations.
         // color of lowest bid is the bid color
         $lowest = null;
         foreach ($this->bids as $playerId => $bid) {
@@ -74,7 +84,17 @@ class MarketTile {
         return $lowest === null ? null : $lowest->color();
     }
 
-    public function highBid(): ?WorkerGroup {
+    /** Returns true if the player has a non-empty bid that is not the high bid */
+    public function hasNonWinningBid(int $playerId): bool {
+        $bid = $this->bidBy($playerId);
+        if ($bid === null || count($bid->workers()) == 0) {
+            // never bid, or already moved a losing bid
+            return false;
+        }
+        return $this->highBid() !== $bid;
+    }
+
+    public function highBid(): WorkerGroup {
         /** @var WorkerGroup|null */
         $winner = null;
         foreach ($this->bids as $playerId => $bid) {
@@ -82,6 +102,6 @@ class MarketTile {
                 $winner = $bid;
             }
         }
-        return $winner;
+        return $winner === null ? new WorkerGroup([]) : $winner;
     }
 }

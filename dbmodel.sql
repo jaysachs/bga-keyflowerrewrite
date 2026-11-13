@@ -1,9 +1,8 @@
 CREATE TABLE IF NOT EXISTS `pieces` (
+  id int unsigned NOT NULL,
 
   -- 'tile', 'worker', 'resource', 'skill', 'startplayer'
   piece_type varchar(12) NOT NULL,
-
-  id int unsigned NOT NULL,
 
   -- tile: the tile name, lowercase no spaces: 'home4', 'keymine', 'wainwright', 'boat4a'
   -- worker: the worker color: 'yellow', 'red', 'green', 'blue'
@@ -15,7 +14,7 @@ CREATE TABLE IF NOT EXISTS `pieces` (
   loc_pos int,
   player_id int,
 
-  PRIMARY KEY(`piece_type`, `id`)
+  PRIMARY KEY(`id`)
 
   -- TODO: consider this constraint ... may have to have non-null
   -- loc_id / loc_pos / player_id, using 0 to mean "unset"

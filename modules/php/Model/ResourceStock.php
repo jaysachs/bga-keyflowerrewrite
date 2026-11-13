@@ -43,12 +43,12 @@ class ResourceStock {
     }
 
     /** @return list<Resource> */
-    public function & ofType(ResourceType $type): array {
+    public function ofType(ResourceType $type): array {
         return $this->resources[$type->value];
     }
 
     public static function forNewGame(): ResourceStock {
-        $lastId = 200;
+        $lastId = 3000;
         $resources = [];
         foreach (ResourceType::cases() as $rt) {
             $c = $rt == ResourceType::GOLD ? 48 : 24;

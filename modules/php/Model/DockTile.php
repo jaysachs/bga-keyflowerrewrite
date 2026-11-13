@@ -40,11 +40,14 @@ class DockTile {
         }
     }
 
-    public function refill(Bag $bag, SkillPile $skillPile): void {
+    public function refill(WorkerStock $workerStock, SkillPile $skillPile): void {
+        if (!$this->type->isStandardBoat()) {
+            throw new InvalidArgumentException("can't refill non-boat {$this->type->value}");
+        }
         if (count($this->passengers) != 0 || count($this->cargo) != 0) {
             throw new InvalidArgumentException("boat {$this->type->value} not empty");
         }
-        $this->passengers = $bag->take($this->type->passengerCapacity());
+        $this->passengers = $workerStock->takeFromBag($this->type->passengerCapacity());
         $this->cargo = $skillPile->take($this->type->cargoCapacity());
     }
 

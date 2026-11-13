@@ -11,17 +11,18 @@ export class DockComponent extends BaseComponent<any> {
 
     public setup(): HTMLElement {
         const dock = this.bga.gameui.gamedatas.dock;
-
+        const village = this.bga.gameui.gamedatas.villages[this.bga.players.getCurrentPlayerId()];
         return Html.div({id:'kf_dock'},
+            Html.div({text: `${village.workers?.map(w => w.id + ":" + w.color)}`}),
             ... dock.map(boat => this.boatDiv(boat))
         );
     }
 
     private boatDiv(boat: Boat): HTMLElement {
         return Html.div({ id: `kf_tile_${boat.id}`, attrs: { kf_tiletype: boat.boattype } },
-            Html.div({text: boat.boattype}),
-            Html.div({text: "cargo:" }), ... boat.cargo.map(w => Html.span({text: ` ${w.type}-${w.id}` })),
-            Html.div({text: "passengers:" }), ... boat.passengers.map(w => Html.span({text: ` ${w.color}-${w.id}` })),
+            Html.div({text: `${boat.boattype}-${boat.id}`}),
+            Html.div({}, Html.span({text: " cargo:" }), ... boat.cargo.map(w => Html.span({text: ` ${w.type}-${w.id}` }))),
+            Html.div({}, Html.span({text: " passengers:" }), ... boat.passengers.map(w => Html.span({text: ` ${w.color}-${w.id}` }))),
         );
     }
 }

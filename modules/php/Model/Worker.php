@@ -29,5 +29,5 @@ namespace Bga\Games\keyflowerrewrite\Model;
 
 
 class Worker {
-    public function __construct(readonly int $id, readonly WorkerType $type) {}
+    public function __construct(readonly int $id, readonly WorkerColor $color) {}
 }
