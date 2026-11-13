@@ -53,6 +53,7 @@ class MarketTile {
         }
     }
 
+    // FIXME: this mutating the bid is "correct" but maybe fragile
     public function bid(int $playerId, WorkerGroup $bid): void {
         if (isset($this->bids[$playerId])) {
             $this->bids[$playerId]->combineWith($bid);
