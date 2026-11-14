@@ -33,6 +33,20 @@ export interface MarketTile {
     activations: Activations;
 }
 export type Market = MarketTile[];
+
+/** What the active player may bid on one market tile (PlayerTurn args, in market order). */
+export interface BidInfo {
+    /** The colour a bid must be, or null if any colour may be used. */
+    color: WorkerColor | null;
+    /** The smallest total that would be the high bid. */
+    min: number;
+    /** Whether the player has an outbid bid here that could be moved to another tile. */
+    moveable: boolean;
+    current_bid: { color: WorkerColor; num: number; workers: Worker[] } | null;
+}
+export interface PlayerTurnArgs {
+    bidinfo: BidInfo[];
+}
 export interface Boat {
     id: number;
     boattype: string;
