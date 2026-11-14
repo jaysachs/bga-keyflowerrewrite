@@ -45,7 +45,6 @@ class AllGameData {
         $this->market = new Market([]);
         $this->dock = new Dock([]);
         $this->season = null;
-        $this->tileTypesById = [];
     }
 
     public WorkerStock $workerStock;
@@ -66,9 +65,6 @@ class AllGameData {
 
     /** @var list<int> */
     public array $playerIds;
-
-    /** @var array<int,TileType> */
-    public array $tileTypesById;
 
     /**
      * @param list<int> $playerIds
