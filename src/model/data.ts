@@ -1,3 +1,5 @@
+import { TileType } from "../kfdata";
+
 export interface BblPlayer extends Player {
     hand_size: number;
     pool_size: number;
@@ -50,4 +52,7 @@ export interface BblGamedatas extends Gamedatas<BblPlayer> {
     translated_pieces: Record<PieceType, string>;
     potential_city_scoring: PotentialCityScoring;
     captured_city_count: number;
+    tileinfo: {
+        translated_names: Record<TileType,string>;
+    }
 }

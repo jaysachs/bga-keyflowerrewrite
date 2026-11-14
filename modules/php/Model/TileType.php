@@ -298,7 +298,8 @@ enum TileType: string
     }
 
     /** @return list<TileType> */
-    private static function allStandardBoats(): array {
+    private static function allStandardBoats(): array
+    {
         return [
             TileType::KEYFLOWER,
             TileType::SEABASTION,
@@ -312,7 +313,7 @@ enum TileType: string
     /** @return list<TileType>  is actuall non-empty-list */
     public static function initialStandardBoats(int $playerCount): array
     {
-        return array_values(array_filter(self::allStandardBoats(), fn ($t) => $t->usedInPlayerCount($playerCount)));
+        return array_values(array_filter(self::allStandardBoats(), fn($t) => $t->usedInPlayerCount($playerCount)));
     }
 
     public function isStartPlayer(): bool
@@ -567,17 +568,17 @@ enum TileType: string
 
     public function isSpring(): bool
     {
-        return array_find(self::initialSpringTiles(), fn ($t) => $t == $this || $t->flip() == $this) !== null;
+        return array_find(self::initialSpringTiles(), fn($t) => $t == $this || $t->flip() == $this) !== null;
     }
 
     public function isSummer(): bool
     {
-        return array_find(self::initialSummerTiles(), fn ($t) => $t == $this || $t->flip() == $this) !== null;
+        return array_find(self::initialSummerTiles(), fn($t) => $t == $this || $t->flip() == $this) !== null;
     }
 
     public function isFall(): bool
     {
-        return array_find(self::initialFallTiles(), fn ($t) => $t == $this || $t->flip() == $this) !== null;
+        return array_find(self::initialFallTiles(), fn($t) => $t == $this || $t->flip() == $this) !== null;
     }
 
     public function isWinter(): bool
@@ -614,7 +615,7 @@ enum TileType: string
 
     public function isStandardBoat(): bool
     {
-        return array_find(self::initialStandardBoats(6), fn ($t) => $t == $this || $t->flip() == $this) !== null;
+        return array_find(self::initialStandardBoats(6), fn($t) => $t == $this || $t->flip() == $this) !== null;
     }
 
     public function passengerCapacity(): int
@@ -771,6 +772,95 @@ enum TileType: string
             TileType::STORE_U => [1, 3, 4],
             TileType::TAVERN_U => [2, 3, 5],
             default => [],
+        };
+    }
+
+    public function translatedName(): string
+    {
+        return match ($this) {
+            TileType::HOME1, TileType::HOME1_U => clienttranslate("Home 1"),
+            TileType::HOME2, TileType::HOME2_U => clienttranslate("Home 2"),
+            TileType::HOME3, TileType::HOME3_U => clienttranslate("Home 3"),
+            TileType::HOME4, TileType::HOME4_U => clienttranslate("Home 4"),
+            TileType::HOME5, TileType::HOME5_U => clienttranslate("Home 5"),
+            TileType::HOME6, TileType::HOME6_U => clienttranslate("Home 6"),
+
+            // spring
+            TileType::ALEHOUSE, TileType::ALEHOUSE_U => clienttranslate("Alehouse"),
+            TileType::APPRENTICEHALL, TileType::APPRENTICEHALL_U => clienttranslate("Apprentice hall"),
+            TileType::GOLDMINE, TileType::GOLDMINE_U => clienttranslate("Goldmine"),
+            TileType::KEYMINE, TileType::KEYMINE_U => clienttranslate("Keymine"),
+            TileType::KEYSTONEQUARRY, TileType::KEYSTONEQUARRY_U => clienttranslate("Keystone quarry"),
+            TileType::KEYWOOD, TileType::KEYWOOD_U => clienttranslate("Keywood"),
+            TileType::MINER, TileType::MINER_U => clienttranslate("Miner"),
+            TileType::PEDDLAR, TileType::PEDDLAR_U => clienttranslate("Peddlar"),
+            TileType::QUARRYMAN, TileType::QUARRYMAN_U => clienttranslate("Quarryman"),
+            TileType::STABLE, TileType::STABLE_U => clienttranslate("Stable"),
+            TileType::WOODCUTTER, TileType::WOODCUTTER_U => clienttranslate("Woodcutter"),
+            TileType::WORKSHOP, TileType::WORKSHOP_U => clienttranslate("Workshop"),
+
+            // summer
+            TileType::BREWER, TileType::BREWER_U => clienttranslate("Brewer"),
+            TileType::CARPENTER, TileType::CARPENTER_U => clienttranslate("Carpenter"),
+            TileType::FARRIER, TileType::FARRIER_U => clienttranslate("Farrier"),
+            TileType::HIRINGFAIR, TileType::HIRINGFAIR_U => clienttranslate("Hiring fair"),
+            TileType::MASON, TileType::MASON_U => clienttranslate("Mason"),
+            TileType::SMELTER, TileType::SMELTER_U => clienttranslate("Smelter"),
+            TileType::STORE, TileType::STORE_U => clienttranslate("Store"),
+            TileType::TAVERN, TileType::TAVERN_U => clienttranslate("Tavern"),
+
+            // fall tiles
+            TileType::BARN, TileType::BARN_U => clienttranslate("Barn"),
+            TileType::BLACKSMITH, TileType::BLACKSMITH_U => clienttranslate("Blacksmith"),
+            TileType::FAIR, TileType::FAIR_U => clienttranslate("Fair"),
+            TileType::FORGE, TileType::FORGE_U => clienttranslate("Forge"),
+            TileType::GOLDSMITH, TileType::GOLDSMITH_U => clienttranslate("Goldsmith"),
+            TileType::INN, TileType::INN_U => clienttranslate("Inn"),
+            TileType::SAWMILL, TileType::SAWMILL_U => clienttranslate("Sawmill"),
+            TileType::SCULPTOR, TileType::SCULPTOR_U => clienttranslate("Sculptor"),
+            TileType::STONEYARD, TileType::STONEYARD_U => clienttranslate("Stoneyard"),
+            TileType::TIMBERYARD, TileType::TIMBERYARD_U => clienttranslate("Timberyard"),
+            TileType::WAINWRIGHT, TileType::WAINWRIGHT_U => clienttranslate("Wainwright"),
+            TileType::WELL, TileType::WELL_U => clienttranslate("Well"),
+
+            // winter
+            TileType::APOTHECARY => clienttranslate("Apothecary"),
+            TileType::CRAFTSMANSGUILD => clienttranslate("Craftsmen's guild"),
+            TileType::JEWELLER => clienttranslate("Jeweller"),
+            TileType::KEYGUILD => clienttranslate("Key guild"),
+            TileType::KEYMARKET => clienttranslate("Key market"),
+            TileType::KEYTHEDRAL => clienttranslate("Keythedral"),
+            TileType::MERCERSGUILD => clienttranslate("Mercer's guild"),
+            TileType::SCHOLAR => clienttranslate("Scholar"),
+            TileType::SCRIBES => clienttranslate("Scribes"),
+            TileType::VILLAGEHALL => clienttranslate("Village hall"),
+            TileType::WATERMILL => clienttranslate("Watermill"),
+            TileType::WINDMILL => clienttranslate("Windmill"),
+
+            // boats
+            TileType::BOAT1A => clienttranslate("Boat 1a"),
+            TileType::BOAT1B => clienttranslate("Boat 1b"),
+            TileType::BOAT2A => clienttranslate("Boat 2a"),
+            TileType::BOAT2B => clienttranslate("Boat 2b"),
+            TileType::BOAT3A => clienttranslate("Boat 3a"),
+            TileType::BOAT3B => clienttranslate("Boat 3b"),
+            TileType::BOAT4A => clienttranslate("Boat 4a"),
+            TileType::BOAT4B => clienttranslate("Boat 4b"),
+            TileType::KEYFLOWER, TileType::KEYFLOWER_U => clienttranslate("Keyflower"),
+            TileType::SEABASTION, TileType::SEABASTION_U => clienttranslate("Sea Bastion"),
+            TileType::SEABREESE, TileType::SEABREESE_U => clienttranslate("Sea Breese"),
+            TileType::FLIPPER, TileType::FLIPPER_U => clienttranslate("Flipper"),
+            TileType::INVINCIBLE, TileType::INVINCIBLE_U => clienttranslate("Invincible"),
+            TileType::WHITEWIND, TileType::WHITEWIND_U => clienttranslate("Whitewind"),
+
+            // FIXME: how to translate these?
+            TileType::START2 => clienttranslate("Start player 1a"),
+            TileType::START3 => clienttranslate("Start player 2a"),
+            TileType::START36 => clienttranslate("Start player 1b"),
+            TileType::START4 => clienttranslate("Start player 3a"),
+            TileType::START46 => clienttranslate("Start player 2b"),
+            TileType::START56A => clienttranslate("Start player 3b"),
+            TileType::START56B => clienttranslate("Start player 4"),
         };
     }
 }

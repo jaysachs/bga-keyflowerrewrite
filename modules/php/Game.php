@@ -22,6 +22,7 @@ use Bga\Games\keyflowerrewrite\Model\AllGameData;
 use Bga\Games\keyflowerrewrite\Model\Marshaller;
 use Bga\Games\keyflowerrewrite\Model\Model;
 use Bga\Games\keyflowerrewrite\Model\PersistentStore;
+use Bga\Games\keyflowerrewrite\Model\TileType;
 use Bga\Games\keyflowerrewrite\States\SeasonSetup;
 use Bga\Games\keyflowerrewrite\Utils\Arrays;
 use Bga\Games\keyflowerrewrite\Utils\DefaultDb;
@@ -165,6 +166,12 @@ class Game extends \Bga\GameFramework\Table
             'greenCount' => $data->workerStock->greensSize(),
             'bagCount' => $data->workerStock->bagSize(),
             'villages' => $sv,
+            'tileinfo' => [
+                'translated_names' => array_combine(
+                    array_map(fn ($t) => $t->value, TileType::cases()),
+                    array_map(fn ($t) => $t->translatedName(), TileType::cases())
+                )
+            ]
         ];
     }
 

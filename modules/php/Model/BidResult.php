@@ -29,7 +29,7 @@ namespace Bga\Games\keyflowerrewrite\Model;
 
 class BidResult {
     /**
-     * @param array<int,WorkerGroup> $movedBids key is source tile
+     * @param list<MovedBid> $movedBids
      */
     public function __construct(
         public readonly WorkerGroup $bid,
