@@ -30,41 +30,36 @@ namespace Bga\Games\keyflowerrewrite\Model;
 use InvalidArgumentException;
 
 class AllGameData {
-    public function __construct()
+    /** @param list<int> $playerIds */
+    public function __construct(public readonly array $playerIds, public ?Season $season)
     {
-        $this->workerStock = new WorkerStock([], []);
-        $this->skillPile = new SkillPile([]);
-        $this->resources = new ResourceStock([]);
-        $this->tilesStock = new TilesStock([],[
-            Season::SPRING->value => [],
-            Season::SUMMER->value => [],
-            Season::FALL->value => [],
-            Season::WINTER->value => []
-        ]);
+        $this->workerStock = new WorkerStock();
+        $this->skillPile = new SkillPile();
+        $this->resourceStock = new ResourceStock();
+        $this->tilesStock = new TilesStock();
         $this->villages = [];
-        $this->market = new Market([]);
-        $this->dock = new Dock([]);
-        $this->season = null;
+        foreach ($this->playerIds as $pid) {
+            $this->villages[$pid] = new Village($pid, [], [], [], [], false);
+        }
+
+        $this->market = new Market();
+        $this->dock = new Dock();
     }
 
     public WorkerStock $workerStock;
 
     public SkillPile $skillPile;
 
-    public ResourceStock $resources;
+    public ResourceStock $resourceStock;
 
     public TilesStock $tilesStock;
 
+    // TODO: would like too make readonly
     /** @var array<int,Village> */
     public array $villages;
 
     public Market $market;
     public Dock $dock;
-
-    public ?Season $season;
-
-    /** @var list<int> */
-    public array $playerIds;
 
     /**
      * @param list<int> $playerIds
@@ -75,11 +70,10 @@ class AllGameData {
             throw new InvalidArgumentException("player count must be between 2 and 6");
         }
 
-        $result = new AllGameData();
-        $result->playerIds = $playerIds;
+        $result = new AllGameData($playerIds, null);
         $result->workerStock = WorkerStock::forNewGame();
         $result->skillPile = SkillPile::forNewGame();
-        $result->resources = ResourceStock::forNewGame();
+        $result->resourceStock = ResourceStock::forNewGame();
         $result->tilesStock = TilesStock::forNewGame($numPlayers);
 
         $homes = TileType::initialHomeTiles();
@@ -93,8 +87,7 @@ class AllGameData {
         }
 
         $lastTileId = 1100;
-        $result->villages = [];
-        $winterTiles = & $result->tilesStock->forSeason(Season::WINTER);
+        $winterTiles = $result->tilesStock->takeTilesFor(Season::WINTER);
         $perPlayer = intval(count($winterTiles) / $numPlayers);
         foreach ($playerIds as $playerId) {
             $workers = $result->workerStock->takeFromBag(8);
@@ -103,7 +96,7 @@ class AllGameData {
             $home = array_shift($homes);
             $result->villages[$playerId] = new Village(
                 $playerId,
-                [new VillageTile(++$lastTileId, $home, RowCol::fromRowCol(0, 0), 1, [], [])],
+                [new VillageTile(++$lastTileId, $home, RowCol::fromRowCol(0, 0), 1)],
                 $workers,
                 [],
                 $wts,
@@ -111,7 +104,7 @@ class AllGameData {
         }
 
         $result->dock = Dock::forNewGame($numPlayers);
-        $result->market = new Market([]);
+        $result->market = new Market();
 
         $result->season = null;
 

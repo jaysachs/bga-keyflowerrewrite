@@ -31,10 +31,9 @@ use Bga\GameFramework\Actions\Types\IntArrayParam;
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\keyflowerrewrite\Game;
-use Bga\Games\keyflowerrewrite\Model\MarketTile;
+use Bga\Games\keyflowerrewrite\Model\MarketLot;
 use Bga\Games\keyflowerrewrite\Model\Marshaller;
 use Bga\Games\keyflowerrewrite\Model\WorkerColor;
-use Bga\Games\keyflowerrewrite\Model\WorkerType;
 
 class PlayerTurn extends AbstractState {
     public function __construct(Game $game)
@@ -60,7 +59,7 @@ class PlayerTurn extends AbstractState {
         $model = $this->createModel($active_player_id);
         return [
             "bidinfo" => array_map(
-                function (MarketTile $mt) use (&$active_player_id) : array {
+                function (MarketLot $mt) use (&$active_player_id) : array {
                     $hb = $mt->highBid();
                     $bc = $mt->biddingColor();
                     $bid = $mt->bidBy($active_player_id);
@@ -76,7 +75,7 @@ class PlayerTurn extends AbstractState {
                         ]
                     ];
                 },
-                $model->market()->tiles())
+                $model->market()->lots())
         ];
     }
 
@@ -126,11 +125,10 @@ class PlayerTurn extends AbstractState {
             '${player_name} bid ${num} ${color} workers on ${tiletype}',
             [
                 'player_id' => $active_player_id,
-                'markettileid' => $market_tile_id,
+                'marketlotid' => $market_tile_id,
                 'num' => count($bid->workers()),
                 'color' => Marshaller::color($bid->color()),
-                // @phpstan-ignore property.nonObject
-                'tiletype' => $model->market()->marketTileById($market_tile_id)->type->value,
+                'tiletype' => $model->market()->marketLotById($market_tile_id)->type->value,
                 'bid' => array_map(fn ($w) => [
                     // FIXME: do we need position too?
                     'id' => $w->id,

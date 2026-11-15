@@ -47,19 +47,16 @@ class Model {
         return $this->_allData;
     }
 
-    static string $foo = "";
     /** @return array{startPlayerId:int,season:Season} */
     public function nextSeason(): array {
 
         $curr = $this->allData()->season;
-        self::$foo = self::$foo . "," . ($curr === null ? "null" : $curr->value);
-        $foo = self::$foo;
         $season = match ($curr) {
             null => Season::SPRING,
             Season::SPRING => Season::SUMMER,
             Season::SUMMER => Season::FALL,
             Season::FALL => Season::WINTER,
-            default => throw new UnexpectedValueException("no next season after {$foo} {$curr->value}")
+            default => throw new UnexpectedValueException("no next season after {$curr->value}")
         };
         $this->allData()->season = $season;
 
@@ -81,8 +78,7 @@ class Model {
             }
         }
         if ($startPlayerId == 0) {
-            // throw new InvalidArgumentException("no players have start player?!");
-            $startPlayerId = $this->allData()->playerIds[0];
+            throw new InvalidArgumentException("no players have start player?!");
         }
 
         $this->ps->saveAllData($this->allData());
@@ -127,12 +123,9 @@ class Model {
         $hasBoat4a = $this->village()->hasTileType(TileType::BOAT4A);
         $market = $this->market();
 
-        $bidTile = $market->marketTileById($market_tile_id);
-        if ($bidTile === null) {
-            throw new InvalidArgumentException("no market tile {$market_tile_id}");
-        }
+        $lot = $market->marketLotById($market_tile_id);
 
-        $currentColor = $bidTile->biddingColor();
+        $currentColor = $lot->biddingColor();
         if ($currentColor !== null && $workerColor != $currentColor && !$hasBoat4a) {
             throw new InvalidArgumentException("bids must match bid color");
         }
@@ -146,11 +139,8 @@ class Model {
         /** @var array<int,WorkerGroup> */
         $moved = [];
         foreach ($moved_bid_ids as $movedBidTileId) {
-            $movedBidTile = $market->marketTileById($movedBidTileId);
-            if ($movedBidTile === null) {
-                throw new InvalidArgumentException("no market tile {$movedBidTileId}");
-            }
-            if ($movedBidTile == $bidTile) {
+            $movedBidTile = $market->marketLotById($movedBidTileId);
+            if ($movedBidTile == $lot) {
                 // TODO: figure out if this should be ok; if it is allowed, the
                 //       subsequent validations will need adjustment.
                 throw new InvalidArgumentException("cannot move bid onto itself");
@@ -175,23 +165,22 @@ class Model {
         }
 
 
-        // FIXME: handle 0 workers from stock.
-        // TODO: allow empty worker groups?
-        $newBid = ($numWorkersFromStock > 0)
-            ? $this->village()->takeWorkersFromStock($workerColor, $numWorkersFromStock)
-            : array_shift($movedBids);
-
+        $stockWorkers = $this->village()->takeWorkersFromStock($workerColor, $numWorkersFromStock);
+        if (count($stockWorkers) < $numWorkersFromStock) {
+            throw new InvalidArgumentException("Insufficent workers from hand");
+        }
+        $newBid = new WorkerGroup($stockWorkers);
         foreach ($movedBids as $movedBid) {
-            $newBid->combineWith($movedBid);
+            $newBid = $newBid->combineWith($movedBid);
         }
 
-        $bidTile->bid($this->activePlayerId, $newBid);
+        $lot->bid($this->activePlayerId, $newBid);
 
         /* Update the DB */
-        $this->ps->updateBidWorkerLocations($this->activePlayerId, $bidTile, $newBid);
+        $this->ps->updateBidWorkerLocations($this->activePlayerId, $lot, $newBid);
         $this->ps->clearPasses();
 
-        return new BidResult($newBid, $bidTile->id, $moved);
+        return new BidResult($newBid, $lot->id, $moved);
     }
 
     public function passTurn(): void {

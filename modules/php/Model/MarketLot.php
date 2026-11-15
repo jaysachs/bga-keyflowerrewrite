@@ -29,40 +29,39 @@ namespace Bga\Games\keyflowerrewrite\Model;
 
 use InvalidArgumentException;
 
-class MarketTile {
-    /**
-     * @param list<WorkerGroup> $activations
-     * @param array<int,WorkerGroup> $bids key is playerId
-     */
+class MarketLot {
+
+    // private array $activations = [];
+    /** @param array<int,WorkerGroup> $bids key is playerId */
     public function __construct(
         public readonly int $id,
         public TileType $type,
-        public array $activations,
-        public array $bids = []) {
+        private array $bids = []) {
+        // validate we have no bids, or a single high bid.
+        $this->highBid();
     }
 
-    public static function fromStock(StockTile $st): MarketTile {
-        return new MarketTile($st->id, $st->type, [], []);
+    public static function fromStock(StockTile $st): MarketLot {
+        return new MarketLot($st->id, $st->type);
     }
 
-    public function addToBid(int $playerId, Worker $w): void {
-        if (isset($this->bids[$playerId])) {
-            $this->bids[$playerId]->add($w);
-        } else {
-            $this->bids[$playerId] = new WorkerGroup([$w]);
-        }
-    }
-
-    // FIXME: this mutating the bid is "correct" but maybe fragile
     public function bid(int $playerId, WorkerGroup $bid): void {
+        if ($bid->size() == 0) {
+            throw new InvalidArgumentException("bid must be non-empty");
+        }
         if (isset($this->bids[$playerId])) {
-            $this->bids[$playerId]->combineWith($bid);
+            $this->bids[$playerId] = $this->bids[$playerId]->combineWith($bid);
         } else {
             $this->bids[$playerId] = $bid;
         }
         if ($this->bids[$playerId] != $this->highBid()) {
             throw new InvalidArgumentException("new bid must be high bid");
         }
+    }
+
+    /** @return array<int, WorkerGroup>  key is playerId */
+    public function bids(): array {
+        return $this->bids;
     }
 
     public function bidBy(int $playerId): ?WorkerGroup {
@@ -97,11 +96,20 @@ class MarketTile {
     public function highBid(): WorkerGroup {
         /** @var WorkerGroup|null */
         $winner = null;
+        $winners = 0;
         foreach ($this->bids as $playerId => $bid) {
             if ($winner === null || $bid->size() > $winner->size()) {
                 $winner = $bid;
+                $winners = 1;
+            } else if ($bid->size() == $winner->size()) {
+                $winners++;
             }
         }
+        if ($winners > 1) {
+            $sz = $winner->size();
+            throw new InvalidArgumentException("multiple high bids: {$sz}");
+        }
+        // return $winner;
         return $winner === null ? new WorkerGroup([]) : $winner;
     }
 }

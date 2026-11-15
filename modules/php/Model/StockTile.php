@@ -27,9 +27,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
-use InvalidArgumentException;
 
-// FIXME: use this as base class for others?
 class StockTile {
     public function __construct(public readonly int $id, public TileType $type) {}
 }

@@ -21,7 +21,7 @@ use Bga\GameFramework\Table as GameFrameworkTable;
 use Bga\Games\keyflowerrewrite\Model\AllGameData;
 use Bga\Games\keyflowerrewrite\Model\Marshaller;
 use Bga\Games\keyflowerrewrite\Model\Model;
-use Bga\Games\keyflowerrewrite\Model\PersistentStore;
+use Bga\Games\keyflowerrewrite\Model\DefaultPersistentStore;
 use Bga\Games\keyflowerrewrite\States\SeasonSetup;
 use Bga\Games\keyflowerrewrite\Utils\Arrays;
 use Bga\Games\keyflowerrewrite\Utils\DefaultDb;
@@ -55,7 +55,7 @@ class GameLogger implements Logger {
 class Game extends \Bga\GameFramework\Table
 {
 	// private Stats $stats;
-    private PersistentStore $ps;
+    private DefaultPersistentStore $ps;
 
     function __construct()
     {
@@ -66,7 +66,7 @@ class Game extends \Bga\GameFramework\Table
 		$this->notify->addDecorator($logDecorator->playerNames(...));
         $this->bga->notify->alwaysMergePrivate();
  		// $this->stats = Stats::createForGame($this);
-        $this->ps = new PersistentStore(new DefaultDb(), $this->globals);
+        $this->ps = new DefaultPersistentStore(new DefaultDb(), $this->globals);
 
 		$this->initGameStateLabels([]);
     }

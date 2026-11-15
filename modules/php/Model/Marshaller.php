@@ -98,10 +98,10 @@ class Marshaller {
                 'id' => $b->id,
                 'boattype' => $b->type->value,
                 // FIXME: need positions
-                'passengers' => self::workers($b->passengers),
-                'cargo' => self::skills($b->cargo)
+                'passengers' => self::workers($b->passengers()),
+                'cargo' => self::skills($b->cargo())
             ],
-            $dock->boats
+            $dock->boats()
         );
     }
 
@@ -122,11 +122,11 @@ class Marshaller {
                         // FIXME: need positions?
                         'workers' => self::workers($b->workers()),
                     ],
-                    $mt->bids,
-                    array_keys($mt->bids)
+                    $mt->bids(),
+                    array_keys($mt->bids())
                 )
             ],
-            $market->tiles()
+            $market->lots()
         );
     }
 }

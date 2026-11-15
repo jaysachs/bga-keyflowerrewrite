@@ -155,13 +155,13 @@ enum TileType: string
     case INVINCIBLE_U = "invincible_u";
     case WHITEWIND_U = "whitewind_u";
 
-    case START2 = "start2";
-    case START3 = "start3";
-    case START36 = "start36";
-    case START4 = "start4";
-    case START46 = "start46";
-    case START56A = "start56a";
-    case START56B = "start56b";
+    case TURN_ORDER_2 = "turnOrder2";
+    case TURN_ORDER_3 = "turnOrder3";
+    case TURN_ORDER_36 = "turnOrder36";
+    case TURN_ORDER_4 = "turnOrder4";
+    case TURN_ORDER_46 = "turnOrder46";
+    case TURN_ORDER_56A = "turnOrder56a";
+    case TURN_ORDER_56B = "turnOrder56b";
 
     public function flip(): ?TileType
     {
@@ -218,8 +218,6 @@ enum TileType: string
             TileType::FLIPPER => TileType::FLIPPER_U,
             TileType::INVINCIBLE => TileType::INVINCIBLE_U,
             TileType::WHITEWIND => TileType::WHITEWIND_U,
-            // TODO: should this throw an exception? We'd then need an "isFlippable"
-            //  but that can be determined by "isStartingSpringTile()", "isStandardBoat" etc.
             default => null,
         };
     }
@@ -286,13 +284,13 @@ enum TileType: string
             TileType::FLIPPER => $playerCount >= 4,
             TileType::INVINCIBLE => $playerCount >= 5,
             TileType::WHITEWIND => $playerCount >= 6,
-            TileType::START2 => $playerCount == 2,
-            TileType::START3 => $playerCount == 3,
-            TileType::START36 => $playerCount >= 3,
-            TileType::START4 => $playerCount == 4,
-            TileType::START46 => $playerCount >= 4,
-            TileType::START56A => $playerCount >= 5,
-            TileType::START56B => $playerCount >= 5,
+            TileType::TURN_ORDER_2 => $playerCount == 2,
+            TileType::TURN_ORDER_3 => $playerCount == 3,
+            TileType::TURN_ORDER_36 => $playerCount >= 3,
+            TileType::TURN_ORDER_4 => $playerCount == 4,
+            TileType::TURN_ORDER_46 => $playerCount >= 4,
+            TileType::TURN_ORDER_56A => $playerCount >= 5,
+            TileType::TURN_ORDER_56B => $playerCount >= 5,
             default => true,
         };
     }
@@ -315,24 +313,24 @@ enum TileType: string
         return array_values(array_filter(self::allStandardBoats(), fn ($t) => $t->usedInPlayerCount($playerCount)));
     }
 
-    public function isStartPlayer(): bool
+    public function isTurnOrder(): bool
     {
         return match ($this) {
-            TileType::START2 => true,
-            TileType::START3 => true,
-            TileType::START36 => true,
-            TileType::START4 => true,
-            TileType::START46 => true,
-            TileType::START56A => true,
-            TileType::START56B => true,
+            TileType::TURN_ORDER_2 => true,
+            TileType::TURN_ORDER_3 => true,
+            TileType::TURN_ORDER_36 => true,
+            TileType::TURN_ORDER_4 => true,
+            TileType::TURN_ORDER_46 => true,
+            TileType::TURN_ORDER_56A => true,
+            TileType::TURN_ORDER_56B => true,
             default => false,
         };
     }
 
     /** @return list<TileType>  is actuall non-empty-list */
-    public static function startPlayerTiles(int $playerCount): array
+    public static function turnOrderTiles(int $playerCount): array
     {
-        return array_values(array_filter(TileType::cases(), fn($t) => $t->isStartPlayer() && $t->usedInPlayerCount($playerCount)));
+        return array_values(array_filter(TileType::cases(), fn($t) => $t->isTurnOrder() && $t->usedInPlayerCount($playerCount)));
     }
 
     public function activationReward(): ActivationReward
@@ -470,82 +468,6 @@ enum TileType: string
         };
     }
 
-    /** @return non-empty-list<TileType> */
-    public static function initialSpringTiles(): array
-    {
-        return [
-            TileType::ALEHOUSE,
-            TileType::APPRENTICEHALL,
-            TileType::GOLDMINE,
-            TileType::KEYMINE,
-            TileType::KEYSTONEQUARRY,
-            TileType::KEYWOOD,
-            TileType::MINER,
-            TileType::PEDDLAR,
-            TileType::QUARRYMAN,
-            TileType::STABLE,
-            TileType::WOODCUTTER,
-            TileType::WORKSHOP,
-        ];
-    }
-
-    /** @return non-empty-list<TileType> */
-    public static function initialSummerTiles(): array
-    {
-        return [
-            TileType::BOAT1A,
-            TileType::BOAT2A,
-            TileType::BOAT3A,
-            TileType::BOAT4A,
-            TileType::BREWER,
-            TileType::CARPENTER,
-            TileType::FARRIER,
-            TileType::HIRINGFAIR,
-            TileType::MASON,
-            TileType::SMELTER,
-            TileType::STORE,
-            TileType::TAVERN,
-        ];
-    }
-
-    /** @return non-empty-list<TileType> */
-    public static function initialFallTiles(): array
-    {
-        return [
-            TileType::BARN,
-            TileType::BLACKSMITH,
-            TileType::FAIR,
-            TileType::FORGE,
-            TileType::GOLDSMITH,
-            TileType::INN,
-            TileType::SAWMILL,
-            TileType::SCULPTOR,
-            TileType::STONEYARD,
-            TileType::TIMBERYARD,
-            TileType::WAINWRIGHT,
-            TileType::WELL,
-        ];
-    }
-
-    /** @return non-empty-list<TileType> */
-    public static function initialWinterTiles(): array
-    {
-        return [
-            TileType::APOTHECARY,
-            TileType::CRAFTSMANSGUILD,
-            TileType::JEWELLER,
-            TileType::KEYGUILD,
-            TileType::KEYMARKET,
-            TileType::KEYTHEDRAL,
-            TileType::MERCERSGUILD,
-            TileType::SCHOLAR,
-            TileType::SCRIBES,
-            TileType::VILLAGEHALL,
-            TileType::WATERMILL,
-            TileType::WINDMILL,
-        ];
-    }
-
     public function isHome(): bool
     {
         return match ($this) {
@@ -565,24 +487,70 @@ enum TileType: string
         };
     }
 
-    public function isSpring(): bool
-    {
-        return array_find(self::initialSpringTiles(), fn ($t) => $t == $this || $t->flip() == $this) !== null;
+    /** @return list<TileType> */
+    public static function initialSeasonTiles(Season $season): array {
+        return array_values(
+            array_filter(TileType::cases(),
+                         fn ($t) => $t->season() == $season
+                                    && ($season == Season::WINTER || $t->flip() !== null)));
     }
 
-    public function isSummer(): bool
-    {
-        return array_find(self::initialSummerTiles(), fn ($t) => $t == $this || $t->flip() == $this) !== null;
-    }
+    public function season(): ?Season {
+        return match ($this) {
+            TileType::ALEHOUSE,
+            TileType::APPRENTICEHALL,
+            TileType::GOLDMINE,
+            TileType::KEYMINE,
+            TileType::KEYSTONEQUARRY,
+            TileType::KEYWOOD,
+            TileType::MINER,
+            TileType::PEDDLAR,
+            TileType::QUARRYMAN,
+            TileType::STABLE,
+            TileType::WOODCUTTER,
+            TileType::WORKSHOP => Season::SPRING,
 
-    public function isFall(): bool
-    {
-        return array_find(self::initialFallTiles(), fn ($t) => $t == $this || $t->flip() == $this) !== null;
-    }
+            TileType::BOAT1A,
+            TileType::BOAT2A,
+            TileType::BOAT3A,
+            TileType::BOAT4A,
+            TileType::BREWER,
+            TileType::CARPENTER,
+            TileType::FARRIER,
+            TileType::HIRINGFAIR,
+            TileType::MASON,
+            TileType::SMELTER,
+            TileType::STORE,
+            TileType::TAVERN => Season::SUMMER,
 
-    public function isWinter(): bool
-    {
-        return array_search($this, self::initialWinterTiles()) !== false;
+            TileType::BARN,
+            TileType::BLACKSMITH,
+            TileType::FAIR,
+            TileType::FORGE,
+            TileType::GOLDSMITH,
+            TileType::INN,
+            TileType::SAWMILL,
+            TileType::SCULPTOR,
+            TileType::STONEYARD,
+            TileType::TIMBERYARD,
+            TileType::WAINWRIGHT,
+            TileType::WELL => Season::FALL,
+
+            TileType::APOTHECARY,
+            TileType::CRAFTSMANSGUILD,
+            TileType::JEWELLER,
+            TileType::KEYGUILD,
+            TileType::KEYMARKET,
+            TileType::KEYTHEDRAL,
+            TileType::MERCERSGUILD,
+            TileType::SCHOLAR,
+            TileType::SCRIBES,
+            TileType::VILLAGEHALL,
+            TileType::WATERMILL,
+            TileType::WINDMILL => Season::WINTER,
+
+            default => $this->unflip() !== null ? $this->unflip()->season() : null,
+        };
     }
 
     public function isBoat(): bool
@@ -773,4 +741,21 @@ enum TileType: string
             default => [],
         };
     }
+
+    public function unflip(): ?TileType {
+        /** @var array<string,TileType>|null */
+        static $unflipped = null;
+        if ($unflipped === null) {
+            $unflipped = [];
+            foreach (TileType::cases() as $other) {
+                $f = $other->flip();
+                if ($f !== null) {
+                    $unflipped[$f->value] = $other;
+                }
+            }
+        }
+        return isset($unflipped[$this->value]) ? $unflipped[$this->value] : null;
+    }
+
 }
+

@@ -27,28 +27,63 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
-class Market {
-    /**
-     * @param array<int,MarketTile> $tiles key is position (1+)
-     */
-    public function __construct(private array $tiles) {}
+use InvalidArgumentException;
 
-    public function marketTileById(int $tileId): ?MarketTile {
-        foreach ($this->tiles as $tile) {
+class Market {
+    /** @var array<int,MarketLot> */
+    private array $lots = [];
+    public function __construct() {
+        $this->validate();
+    }
+
+    public function marketLotById(int $tileId): MarketLot {
+        foreach ($this->lots as $tile) {
             if ($tile->id == $tileId) {
                 return $tile;
             }
         }
-        return null;
+        throw new InvalidArgumentException("no market tile with id {$tileId}");
+    }
+
+    private function validate(): void {
+        $ids = array_map(fn (MarketLot $t) => $t->id, $this->lots);
+        if (count($ids) != count(array_unique($ids))) {
+            $x = '';
+            $seen =[];
+            foreach ($this->lots as $t) {
+                $id = $t->id;
+                if (isset($seen[$id])) {
+                    $seen[$id]++;
+                    $x .= "{$t->type->value}({$id})";
+                } else {
+                    $seen[$id] = 1;
+                }
+            }
+            throw new InvalidArgumentException("non unique tiles in market: {$x}");
+        }
+    }
+
+    public function addLot(MarketLot $lot): void {
+        $this->lots[] = $lot;
+        $this->validate();
+    }
+
+    public function lotByTileId(int $id): ?MarketLot {
+        return array_find($this->lots, fn ($t) => $t->id == $id);
     }
 
     public function replenish(Season $season, TilesStock $stock): void {
-        // FIXME: should position be 1-based
-        array_push($this->tiles, ... array_map(fn ($t) => MarketTile::fromStock($t), $stock->takeTilesFor($season)));
+        array_push($this->lots, ... array_map(fn ($t) => MarketLot::fromStock($t), $stock->takeTilesFor($season)));
+        $this->validate();
     }
 
-    /** @return array<int,MarketTile>  keyed by position */
-    public function tiles(): array {
-        return $this->tiles;
+    public function removeUnbidLots(): void {
+        // FIXME: do we remove all unbid tiles winter? do we pass in session to tell if we remove the turnOrder tiles?
+        $this->lots = array_filter($this->lots, fn (MarketLot $lot) => $lot->type->isTurnOrder() || $lot->highBid()->size() > 0);
+    }
+
+    /** @return array<int,MarketLot>  keyed by position */
+    public function lots(): array {
+        return $this->lots;
     }
 }
