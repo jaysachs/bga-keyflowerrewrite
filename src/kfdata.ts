@@ -23,7 +23,8 @@ export interface VillageTile {
     activations: Activations;
 }
 export type Season = 'spring' | 'summer' | 'fall' | 'winter';
-export interface MarketTile {
+/** A tile up for auction in the market, with the bids on it. */
+export interface MarketLot {
     id: number;
     tiletype: TileType;
     bids: {
@@ -32,7 +33,8 @@ export interface MarketTile {
     }[];
     activations: Activations;
 }
-export type Market = MarketTile[];
+export type Market = MarketLot[];
+
 export interface Boat {
     id: number;
     boattype: string;
