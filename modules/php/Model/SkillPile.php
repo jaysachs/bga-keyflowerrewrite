@@ -30,10 +30,9 @@ namespace Bga\Games\keyflowerrewrite\Model;
 use Bga\Games\keyflowerrewrite\Utils\Arrays;
 
 class SkillPile {
-    /** @param list<Skill> $skills */
-    public function __construct(private array $skills)
-    {
-    }
+    /** @var list<Skill> */
+    private array $skills = [];
+    public function __construct() { }
 
     public static function forNewGame() : SkillPile {
         $lastId = 4000;
@@ -45,7 +44,15 @@ class SkillPile {
             }
         }
         Arrays::shuffle($skills);
-        return new SkillPile($skills);
+        $pile = new SkillPile();
+        foreach ($skills as $skill) {
+            $pile->put($skill);
+        }
+        return $pile;
+    }
+
+    public function put(Skill $skill): void {
+        $this->skills[] = $skill;
     }
 
     /** @return list<Skill> */

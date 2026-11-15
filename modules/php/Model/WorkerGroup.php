@@ -29,6 +29,8 @@ namespace Bga\Games\keyflowerrewrite\Model;
 
 use InvalidArgumentException;
 
+// FIXME: Consider calling this BidGroup, and then can correctly validate single-color.
+// Compare that to an ActivationGroup, which is allowed to have multiple colors.
 class WorkerGroup {
     /** @param list<Worker> $workers */
     public function __construct(private array $workers)
@@ -45,8 +47,21 @@ class WorkerGroup {
         }
     }
 
+    /**
+     * @return WorkerColor|null color, of null if (a) no workers or (b) multiple colors
+     */
     public function color(): ?WorkerColor {
-        return count($this->workers) > 0 ? $this->workers[0]->color : null;
+        $color = null;
+        foreach ($this->workers as $worker) {
+            if ($color === null) {
+                $color = $worker->color;
+            }
+            else if ($color != $worker->color) {
+                // FIXME: null means "multiple" ... is that ok?
+                return null;
+            }
+        }
+        return $color;
     }
 
     /** @return list<Worker> */
@@ -58,18 +73,11 @@ class WorkerGroup {
         return count($this->workers);
     }
 
-    public function add(Worker $worker): void {
-        $this->combineWith(new WorkerGroup([$worker]));
-    }
-
-    public function combineWith(WorkerGroup $other): void {
-        // FIXME: boat4b affects this in certain circumstances
-        if ($other->color() !== null
-            && $this->color() !== null
-            && $other->color() !== $this->color()) {
-            throw new InvalidArgumentException("can't combine workers of different colors");
-        }
-        array_push($this->workers, ... $other->workers);
-        $other->workers = [];
+    /* does not mutate this */
+    public function combineWith(WorkerGroup $other): WorkerGroup {
+        $workers = [];
+        array_push($workers, ... $this->workers);
+        array_push($workers, ... $other->workers);
+        return new WorkerGroup($workers);
     }
 }

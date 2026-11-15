@@ -27,19 +27,15 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
-use Bga\Games\keyflowerrewrite\Utils\Arrays;
+use InvalidArgumentException;
 
 class ResourceStock {
 
     /** @var array<string,list<Resource>> */
     private array $resources;
 
-    /** @param list<Resource> $allresources */
-    public function __construct(array $allresources) {
+    public function __construct() {
         $this->resources = array_fill_keys(array_map(fn ($t) => $t->value, ResourceType::cases()), []);
-        foreach ($allresources as $res) {
-            $this->resources[$res->type->value][] = $res;
-        }
     }
 
     /** @return list<Resource> */
@@ -47,15 +43,28 @@ class ResourceStock {
         return $this->resources[$type->value];
     }
 
+    private function verifyUniqueIds(): void {
+        $allIds = array_map(fn (Resource $r) => $r->id, array_merge(... array_values($this->resources)));
+        if (count($allIds) != count(array_unique($allIds))) {
+            throw new InvalidArgumentException("duplicate resource IDs");
+        };
+    }
+
+    public function put(Resource $res): void {
+        $this->resources[$res->type->value][] = $res;
+        $this->verifyUniqueIds();
+    }
+
+
     public static function forNewGame(): ResourceStock {
         $lastId = 3000;
-        $resources = [];
+        $stock = new ResourceStock();
         foreach (ResourceType::cases() as $rt) {
             $c = $rt == ResourceType::GOLD ? 48 : 24;
             for ($i = 0; $i < $c; ++$i) {
-                $resources[] = new Resource(++$lastId, $rt);
+                $stock->put(new Resource(++$lastId, $rt));
             }
         }
-        return new ResourceStock($resources);
+        return $stock;
     }
 }

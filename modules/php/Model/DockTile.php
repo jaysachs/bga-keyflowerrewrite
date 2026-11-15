@@ -29,21 +29,47 @@ namespace Bga\Games\keyflowerrewrite\Model;
 
 use InvalidArgumentException;
 
+// TODO: Rename to Boat? need to distinguish from summer boats though. Boats & SummerBoats ?
 class DockTile {
     /**
      * @param list<Worker> $passengers
      * @param list<Skill> $cargo
      */
-    public function __construct(public readonly int $id, public TileType $type, public array $passengers = [], public array $cargo = []) {
+    public function __construct(public readonly int $id, public TileType $type, private array $passengers = [], private array $cargo = []) {
         if (!$this->type->isStandardBoat()) {
             throw new InvalidArgumentException("only standard boats permitted at docks {$this->type->value}");
         }
     }
 
+    /** @return list<Worker> */
+    public function passengers(): array {
+        return $this->passengers;
+    }
+
+    /** @return list<Skill> */
+    public function cargo(): array {
+        return $this->cargo;
+    }
+
+    public function addPassenger(Worker $worker): void {
+        $this->passengers[] = $worker;
+    }
+
+    public function addCargo(Skill $skill): void {
+        $this->cargo[] = $skill;
+    }
+
+    /** @return list<Worker> */
+    public function takeAllPassengers(): array {
+        return array_splice($this->passengers, 0, count($this->passengers));
+    }
+
+    /** @return list<Skill> */
+    public function takeAllCargo(): array {
+        return array_splice($this->cargo, 0, count($this->cargo));
+    }
+
     public function refill(WorkerStock $workerStock, SkillPile $skillPile): void {
-        if (!$this->type->isStandardBoat()) {
-            throw new InvalidArgumentException("can't refill non-boat {$this->type->value}");
-        }
         if (count($this->passengers) != 0 || count($this->cargo) != 0) {
             throw new InvalidArgumentException("boat {$this->type->value} not empty");
         }

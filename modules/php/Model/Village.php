@@ -27,19 +27,18 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
-use InvalidArgumentException;
 
 class Village {
     /**
-     * @param list<VillageTile> $tiles  key is encoded row/col
-     * @param list<Worker> $workers FIXME: for now this includes start player
+     * @param array<int,VillageTile> $tiles  key is encoded row/col
+     * @param list<Worker> $workers
      * @param list<Skill> $skills
      * @param list<StockTile> $winterTiles
      */
     public function __construct(public readonly int $playerId, public array $tiles, public array $workers, public array $skills, public array $winterTiles, public bool $hasStartPlayer) {}
 
-    /** @return WorkerGroup */
-    public function takeWorkersFromStock(WorkerColor $color, int $num): WorkerGroup {
+    /** @return list<Worker> */
+    public function takeWorkersFromStock(WorkerColor $color, int $num): array {
         $result = [];
         $workers = $this->workers;
         for ($i = 0; $i < $num; ++$i) {
@@ -48,10 +47,12 @@ class Village {
                 $result[] = array_splice($workers, $idx, 1)[0];
             }
         }
-        if (count($result) != $num) {
-            throw new InvalidArgumentException("Not enough workers of type {$color->value} in stock");
-        }
-        return new WorkerGroup($result);
+        return $result;
+    }
+
+    public function placeTile(VillageTile $tile): void {
+        // TODO: validate placement!
+        $this->tiles[$tile->rowcol] = $tile;
     }
 
     public function hasStartPlayer(): bool {

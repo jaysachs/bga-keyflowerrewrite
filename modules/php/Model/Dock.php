@@ -30,18 +30,36 @@ namespace Bga\Games\keyflowerrewrite\Model;
 use InvalidArgumentException;
 
 class Dock {
-    /** @param list<DockTile> $boats */
-    public function __construct(public array $boats) {
-        foreach ($boats as $boat) {
+    // TODO: convert to array<id, DockTile>
+    /** @var list<DockTile> $boats */
+    private  array $boats;
+    public function __construct() {
+    }
+
+    public function add(DockTile $boat): void {
+        $this->boats[] = $boat;
+        $this->validate();
+    }
+
+    public function boatById(int $id): ?DockTile {
+        return array_find($this->boats, fn (DockTile $b, int $_i) => $b->id == $id);
+    }
+
+    /** @return list<DockTile> */
+    public function boats(): array {
+        return $this->boats;
+    }
+
+    private function validate(): void {
+        $ids = [];
+        foreach ($this->boats as $boat) {
             if (!$boat->type->isStandardBoat()) {
                 throw new InvalidArgumentException("Non-standard boat {$boat->type->value} added to Dock");
             }
+            $ids[] = $boat->id;
         }
-    }
-
-    public function refill(WorkerStock $workerStock, SkillPile $skillPile): void {
-        foreach ($this->boats as $boat) {
-            $boat->refill($workerStock, $skillPile);
+        if (count(array_unique($ids)) != count($this->boats)) {
+            throw new InvalidArgumentException("Duplicate boats added to Dock");
         }
     }
 
@@ -65,10 +83,10 @@ class Dock {
 
     public static function forNewGame(int $numPlayers): Dock {
         $lastId = 400;
-        $boatTiles = [];
+        $dock = new Dock();
         foreach (TileType::initialStandardBoats($numPlayers) as $tt) {
-            $boatTiles[] = new DockTile(++$lastId, $tt);
+            $dock->add(new DockTile(++$lastId, $tt));
         }
-        return new Dock($boatTiles);
+        return $dock;
     }
 }

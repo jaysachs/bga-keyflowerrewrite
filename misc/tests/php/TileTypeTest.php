@@ -5,14 +5,22 @@ declare(strict_types=1);
 use PHPUnit\Framework\TestCase;
 
 use Bga\Games\keyflowerrewrite\Model\{
+    Season,
     TileType,
 };
 
 final class TileTypeTest extends TestCase
 {
+    public function testStandardBoatsFlippable(): void {
+        foreach (TileType::initialStandardBoats(6) as $bt) {
+            $this->assertTrue($bt->flip() !== null, "boat {$bt->value} should be flippable");
+        }
+    }
+
     public function testRoads(): void {
         foreach (TileType::cases() as $tt) {
-            if ($tt->isStartPlayer()) {
+            $season = $tt->season();
+            if ($tt->isTurnOrder()) {
                 $this->assertEquals([], $tt->roads());
             }
             else if ($tt->isBoat()) {
@@ -21,16 +29,16 @@ final class TileTypeTest extends TestCase
             else if ($tt->isHome()) {
                 $this->assertEquals(5, count($tt->roads()));
             }
-            else if ($tt->isSpring()) {
+            else if ($season == Season::SPRING) {
                 $this->assertEquals(4, count($tt->roads()));
             }
-            else if ($tt->isSummer()) {
+            else if ($season == Season::SUMMER) {
                 $this->assertEquals(3, count($tt->roads()));
             }
-            else if ($tt->isFall()) {
+            else if ($season == Season::FALL) {
                 $this->assertEquals(2, count($tt->roads()));
             }
-            else if ($tt->isWinter()) {
+            else if ($season == Season::WINTER) {
                 $this->assertEquals(1, count($tt->roads()));
             } else {
                 $this->assertTrue(false, "Unclassified tile {$tt->value}");
@@ -41,15 +49,23 @@ final class TileTypeTest extends TestCase
     public function testSanityChecks(): void
     {
         $this->assertEquals(6, count(TileType::initialHomeTiles()));
-        $this->assertEquals(12, count(TileType::initialSpringTiles()));
-        $this->assertEquals(0, count(array_filter(TileType::initialSpringTiles(), fn ($t) => $t->isBoat())));
-        $this->assertEquals(12, count(TileType::initialSummerTiles()));
-        $this->assertEquals(4, count(array_filter(TileType::initialSummerTiles(), fn ($t) => $t->isBoat())));
-        $this->assertEquals(4, count(array_filter(TileType::initialSummerTiles(), fn ($t) => $t->isBoat() && $t->flip() !== null)));
-        $this->assertEquals(12, count(TileType::initialFallTiles()));
-        $this->assertEquals(0, count(array_filter(TileType::initialFallTiles(), fn ($t) => $t->isBoat())));
-        $this->assertEquals(12, count(TileType::initialWinterTiles()));
-        $this->assertEquals(0, count(array_filter(TileType::initialWinterTiles(), fn ($t) => $t->isBoat())));
+
+        $sts = TileType::initialSeasonTiles(Season::SPRING);
+        $this->assertEquals(12, count($sts));
+        $this->assertEquals(0, count(array_filter($sts, fn ($t) => $t->isBoat())));
+
+        $sts = TileType::initialSeasonTiles(Season::SUMMER);
+        $this->assertEquals(12, count($sts));
+        $this->assertEquals(4, count(array_filter($sts, fn ($t) => $t->isBoat())));
+        $this->assertEquals(4, count(array_filter($sts, fn ($t) => $t->isBoat() && $t->flip() !== null)));
+
+        $sts = TileType::initialSeasonTiles(Season::FALL);
+        $this->assertEquals(12, count($sts));
+        $this->assertEquals(0, count(array_filter($sts, fn ($t) => $t->isBoat())));
+
+        $sts = TileType::initialSeasonTiles(Season::WINTER);
+        $this->assertEquals(12, count($sts));
+        $this->assertEquals(0, count(array_filter($sts, fn ($t) => $t->isBoat())));
 
         for ($p = 2; $p <= 6; ++$p) {
             $this->assertEquals($p, count(TileType::initialStandardBoats($p)));
@@ -62,11 +78,10 @@ final class TileTypeTest extends TestCase
             $i = 0;
             if ($tt->isStandardBoat()) {$i++;}
             if ($tt->isHome()) {$i++;}
-            if ($tt->isStartPlayer()) {$i++;}
-            if ($tt->isSpring()) {$i++;}
-            if ($tt->isSummer()) {$i++;}
-            if ($tt->isFall()) {$i++;}
-            if ($tt->isWinter()) {$i++;}
+            if ($tt->isTurnOrder()) {$i++;}
+            foreach (Season::cases() as $season) {
+                if ($tt->season() == $season) { $i++; }
+            }
             $this->assertTrue($i == 1, "{$tt->value} is $i");
         }
     }

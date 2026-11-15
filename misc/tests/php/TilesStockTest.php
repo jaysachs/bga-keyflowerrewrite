@@ -33,7 +33,7 @@ final class TilesStockTest extends TestCase
         $this->assertTrue(count(array_filter($summerTileTypes, fn ($t) => $t->isBoat())) <= 4, "with 6p, there should be at most 4 boats");
         $this->assertAllTrue(
             $summerTileTypes,
-            fn (TileType $t) => $t->isSummer(),
+            fn (TileType $t) => $t->season() == Season::SUMMER,
             "summer tiles should be ... summer tiles");
         $this->assertAllTrue(
             $summerTileTypes,

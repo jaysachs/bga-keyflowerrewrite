@@ -30,6 +30,6 @@ namespace Bga\Games\keyflowerrewrite\Model;
 class MovedBid {
     public function __construct(
         public readonly WorkerGroup $bid,
-        public readonly MarketTile $sourceTile
+        public readonly MarketLot $sourceTile
     ) {}
 }
