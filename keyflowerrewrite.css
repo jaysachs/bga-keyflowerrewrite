@@ -467,10 +467,10 @@
 [data-kf-tile="invincible_u"] { background-position: -900% -200%; }
 [data-kf-tile="whitewind"] { background-position: -1000% -200%; }
 [data-kf-tile="whitewind_u"] { background-position: -1100% -200%; }
-[data-kf-tile="start2"] { background-position: -900% -300%; }
-[data-kf-tile="start3"] { background-position: -1100% -300%; }
-[data-kf-tile="start4"] { background-position: -1300% -300%; }
-[data-kf-tile="start36"] { background-position: -1000% -300%; }
-[data-kf-tile="start46"] { background-position: -1200% -300%; }
-[data-kf-tile="start56a"] { background-position: -1400% -300%; }
-[data-kf-tile="start56b"] { background-position: -1500% -300%; }
+[data-kf-tile="turnorder2"] { background-position: -900% -300%; }
+[data-kf-tile="turnorder3"] { background-position: -1100% -300%; }
+[data-kf-tile="turnorder4"] { background-position: -1300% -300%; }
+[data-kf-tile="turnorder36"] { background-position: -1000% -300%; }
+[data-kf-tile="turnorder46"] { background-position: -1200% -300%; }
+[data-kf-tile="turnorder56a"] { background-position: -1400% -300%; }
+[data-kf-tile="turnorder56b"] { background-position: -1500% -300%; }

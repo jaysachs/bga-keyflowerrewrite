@@ -155,13 +155,13 @@ enum TileType: string
     case INVINCIBLE_U = "invincible_u";
     case WHITEWIND_U = "whitewind_u";
 
-    case TURN_ORDER_2 = "turnOrder2";
-    case TURN_ORDER_3 = "turnOrder3";
-    case TURN_ORDER_36 = "turnOrder36";
-    case TURN_ORDER_4 = "turnOrder4";
-    case TURN_ORDER_46 = "turnOrder46";
-    case TURN_ORDER_56A = "turnOrder56a";
-    case TURN_ORDER_56B = "turnOrder56b";
+    case TURN_ORDER_2 = "turnorder2";
+    case TURN_ORDER_3 = "turnorder3";
+    case TURN_ORDER_36 = "turnorder36";
+    case TURN_ORDER_4 = "turnorder4";
+    case TURN_ORDER_46 = "turnorder46";
+    case TURN_ORDER_56A = "turnorder56a";
+    case TURN_ORDER_56B = "turnorder56b";
 
     public function flip(): ?TileType
     {
