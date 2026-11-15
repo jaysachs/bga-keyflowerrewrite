@@ -66,6 +66,14 @@ export class PlayerTurnState extends BaseState {
             this.market.setPending(null);
         }
         this.market.addToBid(args.marketlot_id, args.player_id, args.bid);
+        // The bid flies to its tile: a group moved from another tile from where it was (bidMoved
+        // comes just before), workers from stock from the player's panel.
+        const moved = this.movedFrom && this.movedFrom.playerId == args.player_id ? this.movedFrom.rect : null;
+        this.movedFrom = null;
+        const from = moved ?? this.panelOrigin(args.player_id, args.bid[0]?.color);
+        if (from && this.animate()) {
+            await this.market.flyBid(args.marketlot_id, args.player_id, from);
+        }
         // Your stock is only sent to you: take out the workers that are now on the tile.
         const village = this.bga.gameui.gamedatas.villages[args.player_id];
         if (village?.workers) {
@@ -74,9 +82,36 @@ export class PlayerTurnState extends BaseState {
         }
     }
 
+    /** Where the last moved bid was drawn, so bidMade can animate it to its new tile. */
+    private movedFrom: { playerId: number, rect: DOMRect } | null = null;
+
     /** An outbid bid moved off a tile. */
     async notif_bidMoved(args: { player_id: number, tile_id: number }) {
+        const rect = this.market.bidRect(args.tile_id, args.player_id);
+        this.movedFrom = rect ? { playerId: args.player_id, rect } : null;
         this.market.removeBid(args.tile_id, args.player_id);
+    }
+
+    /**
+     * Where a player's workers come from in their panel: your own worker icon of that color (in your
+     * private row), or, for other players, whose stock is private, their avatar.
+     */
+    private panelOrigin(playerId: number, color: WorkerColor | undefined): DOMRect | null {
+        const candidates = [
+            color && document.querySelector(`#overall_player_board_${playerId} .kf_private .kf_worker[data-kf-color="${color}"]`),
+            document.getElementById(`avatarwrap_${playerId}`),
+            document.getElementById(`overall_player_board_${playerId}`),
+        ];
+        for (const c of candidates) {
+            const r = c ? (c as Element).getBoundingClientRect() : null;
+            if (r && r.width > 0) { return r; }
+        }
+        return null;
+    }
+
+    /** Animations are off in replays and fast mode (BGA), and for players who ask for reduced motion. */
+    private animate(): boolean {
+        return this.bga.gameui.bgaAnimationsActive() && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     }
 
     override onLeavingState(args: any, isCurrentPlayerActive: boolean): void {

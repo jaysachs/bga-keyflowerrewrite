@@ -82,6 +82,33 @@ export class MarketComponent extends BaseComponent<MarketLot> {
         this.redraw(tileId);
     }
 
+    /** Where a player's bid on a tile is drawn now (along the edge, or as a row in narrow layouts). */
+    public bidRect(tileId: number, playerId: number): DOMRect | null {
+        const shown = Array.from(document.querySelectorAll<HTMLElement>(`#kf_lot_${tileId} [data-kf-player="${playerId}"]`))
+            .map(e => e.getBoundingClientRect())
+            .find(r => r.width > 0);
+        return shown ?? null;
+    }
+
+    /**
+     * Animates a player's bid on a tile from where its workers came from (`from`: where a moved bid
+     * was, or the player's panel); longer flights take longer, up to 0.9s.
+     * Uses the `translate` property, which applies on top of the edge's rotation. Resolves when done.
+     */
+    public async flyBid(tileId: number, playerId: number, from: DOMRect): Promise<void> {
+        const el = Array.from(document.querySelectorAll<HTMLElement>(`#kf_lot_${tileId} [data-kf-player="${playerId}"]`))
+            .find(e => e.getBoundingClientRect().width > 0);
+        if (!el) { return; }
+        const to = el.getBoundingClientRect();
+        const dx = (from.left + from.width / 2) - (to.left + to.width / 2);
+        const dy = (from.top + from.height / 2) - (to.top + to.height / 2);
+        const flight = el.animate([
+            { translate: `${dx}px ${dy}px`, scale: '1.15', zIndex: 10 },
+            { translate: '0 0', scale: '1', zIndex: 10 },
+        ], { duration: Math.min(900, 400 + Math.hypot(dx, dy) * 0.6), easing: 'cubic-bezier(.2,.7,.3,1)' });
+        await flight.finished.catch(() => undefined);
+    }
+
     /** The tiles that can be clicked; an empty list makes the market read-only. */
     public setSelectable(tileIds: number[]): void {
         const changed = [...this.selectable, ...tileIds];
