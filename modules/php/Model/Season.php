@@ -33,4 +33,13 @@ enum Season: string {
     case SUMMER = "summer";
     case FALL = "fall";
     case WINTER = "winter";
+
+    public function translatedName(): string {
+        return match ($this) {
+            Season::SPRING => "Spring",
+            Season::SUMMER => "Summer",
+            Season::FALL => "Autumn",
+            Season::WINTER => "Winter",
+        };
+    }
 }

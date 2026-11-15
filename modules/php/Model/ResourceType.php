@@ -32,4 +32,13 @@ enum ResourceType: string {
     case WOOD = "wood";
     case IRON = "iron";
     case GOLD = "gold";
+
+    public function translatedName(): string {
+        return match ($this) {
+            ResourceType::STONE => "stone",
+            ResourceType::WOOD => "wood",
+            ResourceType::IRON => "iron",
+            ResourceType::GOLD => "gold",
+        };
+    }
 }
