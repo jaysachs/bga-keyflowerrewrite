@@ -136,7 +136,7 @@ class Model {
 
         /** @var list<WorkerGroup> */
         $movedBids = [];
-        /** @var array<int,WorkerGroup> */
+        /** @var list<MovedBid> */
         $moved = [];
         foreach ($moved_bid_ids as $movedBidTileId) {
             $movedBidTile = $market->marketLotById($movedBidTileId);
@@ -157,7 +157,7 @@ class Model {
                 throw new InvalidArgumentException("cannot mix colors in a bid");
             }
             // FIXME: remove from market tile? Or leave empty?
-            $moved[$movedBidTileId] = new WorkerGroup($bid->workers());
+            $moved[] = new MovedBid(new WorkerGroup($bid->workers()), $movedBidTile);
             $movedBids[] = $bid;
         }
         if ($numWorkersFromStock <= 0 && count($movedBids) == 0) {
