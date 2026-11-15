@@ -16,7 +16,7 @@ interface BidInfo {
 }
 
 interface PlayerTurnArgs {
-    bidinfo: BidInfo[];
+    bidding_info: BidInfo[];
 }
 
 /** The bid being chosen in the status bar. */
@@ -107,7 +107,7 @@ export class PlayerTurnState extends BaseState {
     /** bidinfo comes in market order. */
     private info(tileId: number): BidInfo | undefined {
         const i = this.bga.gameui.gamedatas.market.findIndex(mt => mt.id == tileId);
-        return i < 0 ? undefined : this.args?.bidinfo[i];
+        return i < 0 ? undefined : this.args?.bidding_info[i];
     }
 
     /** Your outbid bids on other tiles, in a color, which could move onto this one. */
