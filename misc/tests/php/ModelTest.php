@@ -9,6 +9,7 @@ use Bga\Games\keyflowerrewrite\Model\{
     Market,
     MarketLot,
     Model,
+    MovedBid,
     PersistentStore,
     RowCol,
     Season,
@@ -275,7 +276,7 @@ final class ModelTest extends TestCase {
         $result = $model->bid($lot1->id, [$lot2->id], 0, WorkerColor::RED);
 
         $this->assertEquals($lot1->id, $result->bidTileId);
-        $this->assertEquals([$lot2->id => $bid1], $result->movedBids);
+        $this->assertEquals([new MovedBid($bid1, $lot2)], $result->movedBids);
         $this->assertWorkerGroupMatches($result->bid, WorkerColor::RED, 1);
     }
 
@@ -309,7 +310,7 @@ final class ModelTest extends TestCase {
         $result = $model->bid($lot1->id, [$lot2->id], 1, WorkerColor::RED);
 
         $this->assertEquals($lot1->id, $result->bidTileId);
-        $this->assertEquals([$lot2->id => $bid1], $result->movedBids);
+        $this->assertEquals([new MovedBid($bid1, $lot2)], $result->movedBids);
         $this->assertWorkerGroupMatches($result->bid, WorkerColor::RED, 2);
     }
 

@@ -57,7 +57,6 @@ class PlayerTurn extends AbstractState {
             (4) TODO: also include the color/size of the player's current bid?
         */
         $model = $this->createModel($active_player_id);
-        $tiles = $model->market()->tiles();
         return [
             "bidding_info" => array_map(
                 function (MarketLot $mt) use (&$active_player_id) : array {
