@@ -1,6 +1,6 @@
 import { AnimationManager } from "../bgalibs/bga-animations";
 import { MarketComponent, tileName, workerIcons } from "../components/market";
-import { KFGameDatas, KFPlayer, Lot, Worker, WorkerColor } from "../kfdata";
+import { KFGameDatas, KFPlayer, MarketLot, Worker, WorkerColor } from "../kfdata";
 import { Html } from "../libs/html";
 import { BaseState } from "./base";
 
@@ -39,7 +39,7 @@ export class PlayerTurnState extends BaseState {
 
     private args: PlayerTurnArgs | null = null;
     private pick: Pick | null = null;
-    private readonly onTile = (mt: Lot) => this.startPick(mt.id);
+    private readonly onTile = (mt: MarketLot) => this.startPick(mt.id);
 
     constructor(bga: Bga<KFPlayer, KFGameDatas>, animationManager: AnimationManager, private market: MarketComponent) {
         super(bga, animationManager);

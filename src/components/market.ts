@@ -1,4 +1,4 @@
-import { KFGameDatas, KFPlayer, Lot, Worker, WorkerColor } from "../kfdata";
+import { KFGameDatas, KFPlayer, MarketLot, Worker, WorkerColor } from "../kfdata";
 import { BaseComponent } from "../libs/basecomponent";
 import { Html } from "../libs/html";
 
@@ -33,7 +33,7 @@ export interface PendingBid {
  * the high bid first. While you choose a bid, the tiles you can bid on are buttons and
  * a click on one is dispatched to the handlers with its market tile.
  */
-export class MarketComponent extends BaseComponent<Lot> {
+export class MarketComponent extends BaseComponent<MarketLot> {
 
     private selectable = new Set<number>();
     private selected: number | null = null;
@@ -49,12 +49,12 @@ export class MarketComponent extends BaseComponent<Lot> {
         );
     }
 
-    public tile(tileId: number): Lot | undefined {
+    public tile(tileId: number): MarketLot | undefined {
         return this.bga.gameui.gamedatas.market.find(mt => mt.id == tileId);
     }
 
     /** The lot for a tile id from the server, or undefined with an error if the market doesn't have it. */
-    private lot(tileId: number, from: string): Lot | undefined {
+    private lot(tileId: number, from: string): MarketLot | undefined {
         const mt = this.tile(tileId);
         if (!mt) { console.error(`${from}: no market tile ${tileId}`); }
         return mt;
@@ -111,7 +111,7 @@ export class MarketComponent extends BaseComponent<Lot> {
     }
 
     /** Bids, highest first. Equal bids keep the order they were made in, as on the server. */
-    private sortedBids(mt: Lot): Lot['bids'] {
+    private sortedBids(mt: MarketLot): MarketLot['bids'] {
         return mt.bids
             .filter(b => b.workers.length > 0)
             .map((b, i) => ({ b, i }))
@@ -133,7 +133,7 @@ export class MarketComponent extends BaseComponent<Lot> {
     }
 
     /** What to show for each bid on a tile, including the one being chosen. */
-    private shownBids(mt: Lot): ShownBid[] {
+    private shownBids(mt: MarketLot): ShownBid[] {
         const me = this.bga.players.getCurrentPlayerId();
         const pending = this.pending?.tileId == mt.id ? this.pending : null;
         const moving = this.pending?.movedFrom.includes(mt.id) ?? false;
@@ -150,7 +150,7 @@ export class MarketComponent extends BaseComponent<Lot> {
         return shown;
     }
 
-    private lotDiv(mt: Lot): HTMLElement {
+    private lotDiv(mt: MarketLot): HTMLElement {
         const canClick = this.selectable.has(mt.id);
         const shown = this.shownBids(mt);
         const edges = this.seatEdges();
@@ -217,7 +217,7 @@ export class MarketComponent extends BaseComponent<Lot> {
         );
     }
 
-    private bidSummary(bids: Lot['bids']): string {
+    private bidSummary(bids: MarketLot['bids']): string {
         if (bids.length == 0) { return _('No bids'); }
         const players = this.bga.gameui.gamedatas.players;
         return bids.map((b, i) => `${players[b.player_id]!.name}: ${b.workers.length} ${b.workers[0]!.color}${i == 0 ? '' : ', ' + _('outbid')}`).join('; ');
