@@ -158,12 +158,12 @@ export class MarketComponent extends BaseComponent<MarketLot> {
         const tileButton = Html.button({
                 classes: ['kf_lot_tile', canClick ? 'kf_selectable' : '', this.selected == mt.id ? 'kf_selected' : ''],
                 attrs: {
-                    'aria-label': `${tileName(mt.tiletype)}. ${this.bidSummary(this.sortedBids(mt))}`,
+                    'aria-label': `${tileName(this.bga.gameui.gamedatas, mt.tiletype)}. ${this.bidSummary(this.sortedBids(mt))}`,
                     'aria-disabled': canClick ? null : true,
                     'aria-pressed': this.selected == mt.id ? true : null,
                 },
             },
-            Html.div({ id: `kf_tile_${mt.id}`, classes: 'kf_tile', attrs: { 'data-kf-tile': mt.tiletype }, title: tileName(mt.tiletype) })
+            Html.div({ id: `kf_tile_${mt.id}`, classes: 'kf_tile', attrs: { 'data-kf-tile': mt.tiletype }, title: tileName(this.bga.gameui.gamedatas, mt.tiletype) })
         );
         tileButton.addEventListener('click', () => {
             if (this.selectable.has(mt.id)) {
@@ -234,8 +234,8 @@ export function workerIcons(color: WorkerColor, num: number): HTMLElement {
     );
 }
 
-/** A readable name until the server sends translated names: "keystonequarry" stays as it is. */
-export function tileName(tiletype: string): string {
-    const t = tiletype.replace(/_u$/, '');
-    return t.charAt(0).toUpperCase() + t.slice(1);
+/** A tile's name in the player's language, from the server's list (`gamedatas.translations.tiles`). */
+export function tileName(gamedatas: KFGameDatas, tiletype: string): string {
+    const name = gamedatas.translations?.tiles?.[tiletype];
+    return name ? _(name) : tiletype;
 }

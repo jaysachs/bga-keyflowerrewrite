@@ -6,6 +6,8 @@ import { BaseState } from "./base";
 
 /** What the active player may bid on one market tile (PlayerTurn args, in market order). */
 interface BidInfo {
+    /** The market tile this is about. */
+    tile_id: number;
     /** The color a bid must be, or null if any color may be used. */
     color: WorkerColor | null;
     /** The smallest total that would be the high bid. */
@@ -68,9 +70,9 @@ export class PlayerTurnState extends BaseState {
         }
     }
 
-    /** An outbid bid moved off a tile. The server sends the tile's id as `tiletype`. */
-    async notif_bidMoved(args: { player_id: number, tiletype: number | string }) {
-        this.market.removeBid(Number(args.tiletype), args.player_id);
+    /** An outbid bid moved off a tile. */
+    async notif_bidMoved(args: { player_id: number, tile_id: number }) {
+        this.market.removeBid(args.tile_id, args.player_id);
     }
 
     override onLeavingState(args: any, isCurrentPlayerActive: boolean): void {
@@ -104,10 +106,8 @@ export class PlayerTurnState extends BaseState {
         return this.stock().filter(w => w.color == color).length;
     }
 
-    /** bidinfo comes in market order. */
     private info(tileId: number): BidInfo | undefined {
-        const i = this.bga.gameui.gamedatas.market.findIndex(mt => mt.id == tileId);
-        return i < 0 ? undefined : this.args?.bidding_info[i];
+        return this.args?.bidding_info.find(b => b.tile_id == tileId);
     }
 
     /** Your outbid bids on other tiles, in a color, which could move onto this one. */
@@ -161,7 +161,7 @@ export class PlayerTurnState extends BaseState {
     private showPick(): void {
         const p = this.pick!;
         const mt = this.market.tile(p.tileId)!;
-        const name = tileName(mt.tiletype);
+        const name = tileName(this.bga.gameui.gamedatas, mt.tiletype);
         const need = this.needed(p.tileId);
         const total = p.color ? this.total(p) : 0;
         const fixedColor = this.info(p.tileId)?.current_bid?.color ?? this.info(p.tileId)?.color ?? null;
@@ -200,7 +200,7 @@ export class PlayerTurnState extends BaseState {
                 }),
                 ...this.movable(p.tileId, color).map(m => {
                     const pressed = on && p.moved.includes(m.tileId);
-                    const from = tileName(this.market.tile(m.tileId)!.tiletype);
+                    const from = tileName(this.bga.gameui.gamedatas, this.market.tile(m.tileId)!.tiletype);
                     const b = Html.button({
                             classes: ['kf_pick_worker', 'kf_pick_group', pressed ? 'kf_on' : ''],
                             attrs: { 'aria-pressed': pressed, 'aria-label': `${m.num} ${colorName(color)}, ${_('outbid on')} ${from}`, 'data-kf-key': `from:${m.tileId}` },
