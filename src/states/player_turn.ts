@@ -1,8 +1,23 @@
 import { AnimationManager } from "../bgalibs/bga-animations";
 import { MarketComponent, tileName, workerIcons } from "../components/market";
-import { BidInfo, KFGameDatas, KFPlayer, MarketTile, PlayerTurnArgs, Worker, WorkerColor } from "../kfdata";
+import { KFGameDatas, KFPlayer, Lot, Worker, WorkerColor } from "../kfdata";
 import { Html } from "../libs/html";
 import { BaseState } from "./base";
+
+/** What the active player may bid on one market tile (PlayerTurn args, in market order). */
+interface BidInfo {
+    /** The color a bid must be, or null if any color may be used. */
+    color: WorkerColor | null;
+    /** The smallest total that would be the high bid. */
+    min: number;
+    /** Whether the player has an outbid bid here that could be moved to another tile. */
+    moveable: boolean;
+    current_bid: { color: WorkerColor; num: number; workers: Worker[] } | null;
+}
+
+interface PlayerTurnArgs {
+    bidinfo: BidInfo[];
+}
 
 /** The bid being chosen in the status bar. */
 interface Pick {
@@ -16,15 +31,15 @@ interface Pick {
 
 /**
  * Your turn: bid on a market tile, or pass. (Using a tile comes later.)
- * Tap a tile and the status bar asks for workers, as in the mockup: one row per colour you
+ * Tap a tile and the status bar asks for workers, as in the mockup: one row per color you
  * can use, where tapping the third worker takes three, and your outbid bids elsewhere as
- * extra buttons in their colour's row. Your workers show on the tile as you choose; Confirm sends it.
+ * extra buttons in their color's row. Your workers show on the tile as you choose; Bid sends it.
  */
 export class PlayerTurnState extends BaseState {
 
     private args: PlayerTurnArgs | null = null;
     private pick: Pick | null = null;
-    private readonly onTile = (mt: MarketTile) => this.startPick(mt.id);
+    private readonly onTile = (mt: Lot) => this.startPick(mt.id);
 
     constructor(bga: Bga<KFPlayer, KFGameDatas>, animationManager: AnimationManager, private market: MarketComponent) {
         super(bga, animationManager);
@@ -35,6 +50,22 @@ export class PlayerTurnState extends BaseState {
         this.args = args;
         this.market.addHandler(this.onTile);
         this.showChoices();
+    }
+
+    /** Workers added to a bid; moved outbid workers come with them. */
+    async notif_bidMade(args: { player_id: number, markettileid: number, bid: Worker[] }) {
+        this.market.addToBid(args.markettileid, args.player_id, args.bid);
+        // Your stock is only sent to you: take out the workers that are now on the tile.
+        const village = this.bga.gameui.gamedatas.villages[args.player_id];
+        if (village?.workers) {
+            const ids = new Set(args.bid.map(w => w.id));
+            village.workers = village.workers.filter(w => !ids.has(w.id));
+        }
+    }
+
+    /** An outbid bid moved off a tile. The server sends the tile's id as `tiletype`. */
+    async notif_bidMoved(args: { player_id: number, tiletype: number | string }) {
+        this.market.removeBid(Number(args.tiletype), args.player_id);
     }
 
     override onLeavingState(args: any, isCurrentPlayerActive: boolean): void {
@@ -74,7 +105,7 @@ export class PlayerTurnState extends BaseState {
         return i < 0 ? undefined : this.args?.bidinfo[i];
     }
 
-    /** Your outbid bids on other tiles, in a colour, which could move onto this one. */
+    /** Your outbid bids on other tiles, in a color, which could move onto this one. */
     private movable(tileId: number, color: WorkerColor): { tileId: number, num: number }[] {
         const me = this.bga.players.getCurrentPlayerId();
         return this.bga.gameui.gamedatas.market
@@ -90,12 +121,12 @@ export class PlayerTurnState extends BaseState {
         return info ? info.min - (info.current_bid?.num ?? 0) : 0;
     }
 
-    /** The colours you could bid on this tile with: allowed, and enough of them. */
+    /** The colors you could bid on this tile with: allowed, and enough of them. */
     private colorsFor(tileId: number): WorkerColor[] {
         const info = this.info(tileId);
         if (!info) { return []; }
-        const fixed = info.current_bid?.color ?? info.color;
-        const colors: WorkerColor[] = fixed ? [fixed] : ['red', 'yellow', 'blue', 'green'];
+        const fixedColor = info.current_bid?.color ?? info.color;
+        const colors: WorkerColor[] = fixedColor ? [fixedColor] : ['red', 'yellow', 'blue', 'green'];
         return colors.filter(c =>
             this.stockOf(c) + this.movable(tileId, c).reduce((n, m) => n + m.num, 0) >= this.needed(tileId));
     }
@@ -128,15 +159,15 @@ export class PlayerTurnState extends BaseState {
         const name = tileName(mt.tiletype);
         const need = this.needed(p.tileId);
         const total = p.color ? this.total(p) : 0;
-        const fixed = this.info(p.tileId)?.current_bid?.color ?? this.info(p.tileId)?.color ?? null;
+        const fixedColor = this.info(p.tileId)?.current_bid?.color ?? this.info(p.tileId)?.color ?? null;
         const already = this.info(p.tileId)?.current_bid?.num ?? 0;
 
         this.market.setPending(p.color && total > 0 ? { tileId: p.tileId, color: p.color, num: total, movedFrom: p.moved } : null);
 
-        const title = already && fixed ? _('Bid on ${tile}: at least ${n} more ${color}')
-            : fixed ? _('Bid on ${tile}: at least ${n} ${color}')
-            : _('Bid on ${tile}: at least ${n} of one colour');
-        this.bga.statusBar.setTitle(title, { tile: name, n: need, color: fixed ? colorName(fixed) : '' });
+        const title = already && fixedColor ? _('Bid on ${tile}: at least ${n} more ${color}')
+            : fixedColor ? _('Bid on ${tile}: at least ${n} ${color}')
+            : _('Bid on ${tile}: at least ${n} of one color');
+        this.bga.statusBar.setTitle(title, { tile: name, n: need, color: fixedColor ? colorName(fixedColor) : '' });
         // Every tap redraws the picker; keyboard focus returns to the button that had it.
         const focused = (document.activeElement as HTMLElement | null)?.dataset['kfKey'];
         this.bga.statusBar.removeActionButtons();
@@ -150,7 +181,7 @@ export class PlayerTurnState extends BaseState {
                     // The number says what a tap takes: the third worker takes three.
                     const b = Html.button({
                             classes: ['kf_pick_worker', 'kf_pick_one', pressed ? 'kf_on' : ''],
-                            attrs: { 'aria-pressed': String(pressed), 'aria-label': `${i + 1} ${colorName(color)}`, 'data-kf-key': `${color}:${i + 1}` },
+                            attrs: { 'aria-pressed': pressed, 'aria-label': `${i + 1} ${colorName(color)}`, 'data-kf-key': `${color}:${i + 1}` },
                         },
                         workerIcons(color, 1),
                         Html.span({ classes: 'kf_pick_num', text: String(i + 1), attrs: { 'aria-hidden': 'true' } }));
@@ -167,7 +198,7 @@ export class PlayerTurnState extends BaseState {
                     const from = tileName(this.market.tile(m.tileId)!.tiletype);
                     const b = Html.button({
                             classes: ['kf_pick_worker', 'kf_pick_group', pressed ? 'kf_on' : ''],
-                            attrs: { 'aria-pressed': String(pressed), 'aria-label': `${m.num} ${colorName(color)}, ${_('outbid on')} ${from}`, 'data-kf-key': `from:${m.tileId}` },
+                            attrs: { 'aria-pressed': pressed, 'aria-label': `${m.num} ${colorName(color)}, ${_('outbid on')} ${from}`, 'data-kf-key': `from:${m.tileId}` },
                         },
                         workerIcons(color, m.num),
                         Html.span({ text: `${_('outbid on')} ${from}` }));
@@ -189,13 +220,14 @@ export class PlayerTurnState extends BaseState {
         if (zoom < 1) { pick.style.zoom = String(1 / zoom); }
         document.getElementById('generalactions')!.appendChild(pick);
 
-        this.bga.statusBar.addActionButton(_('Cancel'), () => this.showChoices(), { color: 'secondary' });
+        // Bid first and Cancel after it, as in other BGA games.
         // Bid is never disabled: pressed too early, it says what's missing and keeps focus.
         const missing = this.missing(p, need, total);
         const bid = this.bga.statusBar.addActionButton(
             missing ? _('Bid') : `${_('Bid')} ${total} ${colorName(p.color!)}`,
             () => missing ? this.explain(msg, missing) : this.confirm());
         bid.setAttribute('aria-describedby', 'kf_pick_msg');
+        this.bga.statusBar.addActionButton(_('Cancel'), () => this.showChoices(), { color: 'secondary' });
 
         if (focused) {
             document.querySelector<HTMLElement>(`#generalactions [data-kf-key="${focused}"]`)?.focus();
@@ -212,7 +244,7 @@ export class PlayerTurnState extends BaseState {
         return color
             ? fill(_('Choose at least ${n} ${color}'), { n: need, color: colorName(color) })
             : need == 1 ? _('Choose a worker')
-            : fill(_('Choose at least ${n} workers of one colour'), { n: need });
+            : fill(_('Choose at least ${n} workers of one color'), { n: need });
     }
 
     private explain(msg: HTMLElement, text: string): void {

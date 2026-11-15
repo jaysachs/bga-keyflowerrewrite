@@ -1,6 +1,23 @@
-import { KFGameDatas, KFPlayer, MarketTile, Worker, WorkerColor } from "../kfdata";
+import { KFGameDatas, KFPlayer, Lot, Worker, WorkerColor } from "../kfdata";
 import { BaseComponent } from "../libs/basecomponent";
 import { Html } from "../libs/html";
+
+/** One bid as shown on a tile. */
+interface ShownBid {
+    playerId: number;
+    color: WorkerColor;
+    num: number;
+    outbid: boolean;
+    /** Your outbid workers that the bid being chosen would move away. */
+    moving: boolean;
+    /** Workers the bid being chosen adds; 0 for bids already made. */
+    added: number;
+}
+
+/** The edges used for each number of players, in seat order (see seatEdges). */
+const SEAT_EDGES: Record<number, number[]> = {
+    1: [3], 2: [3, 0], 3: [3, 5, 1], 4: [3, 4, 0, 1], 5: [3, 4, 5, 0, 1], 6: [3, 4, 5, 0, 1, 2],
+};
 
 /** A bid being chosen: shown on its tile until it's confirmed or cancelled. */
 export interface PendingBid {
@@ -16,7 +33,7 @@ export interface PendingBid {
  * the high bid first. While you choose a bid, the tiles you can bid on are buttons and
  * a click on one is dispatched to the handlers with its market tile.
  */
-export class MarketComponent extends BaseComponent<MarketTile> {
+export class MarketComponent extends BaseComponent<Lot> {
 
     private selectable = new Set<number>();
     private selected: number | null = null;
@@ -32,13 +49,20 @@ export class MarketComponent extends BaseComponent<MarketTile> {
         );
     }
 
-    public tile(tileId: number): MarketTile | undefined {
+    public tile(tileId: number): Lot | undefined {
         return this.bga.gameui.gamedatas.market.find(mt => mt.id == tileId);
+    }
+
+    /** The lot for a tile id from the server, or undefined with an error if the market doesn't have it. */
+    private lot(tileId: number, from: string): Lot | undefined {
+        const mt = this.tile(tileId);
+        if (!mt) { console.error(`${from}: no market tile ${tileId}`); }
+        return mt;
     }
 
     /** Adds workers to a player's bid on a tile (bidMade sends only the workers added). */
     public addToBid(tileId: number, playerId: number, workers: Worker[]): void {
-        const mt = this.tile(tileId);
+        const mt = this.lot(tileId, 'addToBid');
         if (!mt) { return; }
         const bid = mt.bids.find(b => b.player_id == playerId);
         if (bid) {
@@ -51,7 +75,7 @@ export class MarketComponent extends BaseComponent<MarketTile> {
 
     /** Takes a player's bid off a tile (bidMoved). */
     public removeBid(tileId: number, playerId: number): void {
-        const mt = this.tile(tileId);
+        const mt = this.lot(tileId, 'removeBid');
         if (!mt) { return; }
         mt.bids = mt.bids.filter(b => b.player_id != playerId);
         this.redraw(tileId);
@@ -87,7 +111,7 @@ export class MarketComponent extends BaseComponent<MarketTile> {
     }
 
     /** Bids, highest first. Equal bids keep the order they were made in, as on the server. */
-    private sortedBids(mt: MarketTile): MarketTile['bids'] {
+    private sortedBids(mt: Lot): Lot['bids'] {
         return mt.bids
             .filter(b => b.workers.length > 0)
             .map((b, i) => ({ b, i }))
@@ -95,19 +119,48 @@ export class MarketComponent extends BaseComponent<MarketTile> {
             .map(x => x.b);
     }
 
-    private lotDiv(mt: MarketTile): HTMLElement {
+    /**
+     * The edge of the tile each player's bids sit on, as on the table: you at the bottom, then the
+     * others clockwise in turn order, spread around the tile when there are fewer than six.
+     * Edges are numbered clockwise from the top: 0 top, 1 upper right … 3 bottom … 5 upper left.
+     */
+    private seatEdges(): Map<number, number> {
+        const order = this.bga.gameui.gamedatas.playerorder.map(Number);
+        const i = order.indexOf(this.bga.players.getCurrentPlayerId());
+        const seats = i < 0 ? order : [...order.slice(i), ...order.slice(0, i)];
+        const edges = SEAT_EDGES[seats.length] ?? SEAT_EDGES[6]!;
+        return new Map(seats.map((pid, k) => [pid, edges[k]!]));
+    }
+
+    /** What to show for each bid on a tile, including the one being chosen. */
+    private shownBids(mt: Lot): ShownBid[] {
         const me = this.bga.players.getCurrentPlayerId();
-        const bids = this.sortedBids(mt);
         const pending = this.pending?.tileId == mt.id ? this.pending : null;
         const moving = this.pending?.movedFrom.includes(mt.id) ?? false;
+        const bids = this.sortedBids(mt);
+        const shown: ShownBid[] = bids.map((b, i) => {
+            const mine = b.player_id == me;
+            // Your pending workers on a tile you already bid on are added to that bid.
+            const added = mine && pending ? pending.num : 0;
+            return { playerId: b.player_id, color: b.workers[0]!.color, num: b.workers.length + added, outbid: i > 0, moving: mine && moving, added };
+        });
+        if (pending && !bids.some(b => b.player_id == me)) {
+            shown.push({ playerId: me, color: pending.color, num: pending.num, outbid: false, moving: false, added: pending.num });
+        }
+        return shown;
+    }
+
+    private lotDiv(mt: Lot): HTMLElement {
         const canClick = this.selectable.has(mt.id);
+        const shown = this.shownBids(mt);
+        const edges = this.seatEdges();
 
         const tileButton = Html.button({
                 classes: ['kf_lot_tile', canClick ? 'kf_selectable' : '', this.selected == mt.id ? 'kf_selected' : ''],
                 attrs: {
-                    'aria-label': `${tileName(mt.tiletype)}. ${this.bidSummary(bids)}`,
-                    ...(canClick ? {} : { 'aria-disabled': 'true' }),
-                    ...(this.selected == mt.id ? { 'aria-pressed': 'true' } : {}),
+                    'aria-label': `${tileName(mt.tiletype)}. ${this.bidSummary(this.sortedBids(mt))}`,
+                    'aria-disabled': canClick ? null : true,
+                    'aria-pressed': this.selected == mt.id ? true : null,
                 },
             },
             Html.div({ id: `kf_tile_${mt.id}`, classes: 'kf_tile', attrs: { 'data-kf-tile': mt.tiletype }, title: tileName(mt.tiletype) })
@@ -118,43 +171,56 @@ export class MarketComponent extends BaseComponent<MarketTile> {
             }
         });
 
-        return Html.div({ id: `kf_lot_${mt.id}`, classes: 'kf_lot', attrs: { 'data-kf-market-tile': String(mt.id) } },
-            tileButton,
-            Html.div({ classes: 'kf_bids' },
-                ...bids.map((b, i) => {
-                    const mine = b.player_id == me;
-                    // Your pending workers on a tile you already bid on are added to that row.
-                    const added = mine && pending ? pending.num : 0;
-                    return this.bidRow(b.player_id, b.workers[0]!.color, b.workers.length + added, {
-                        outbid: i > 0, moving: mine && moving, added,
-                    });
-                }),
-                pending && !bids.some(b => b.player_id == me)
-                    ? this.bidRow(me, pending.color, pending.num, { outbid: false, moving: false, added: pending.num })
-                    : undefined,
-            )
+        // Bids sit along the tile's edges; where the market is too narrow for that, the CSS shows
+        // them as rows under the tile instead. The tile button's label reads them out either way.
+        return Html.div({ id: `kf_lot_${mt.id}`, classes: 'kf_lot', attrs: { 'data-kf-market-tile': mt.id } },
+            Html.div({ classes: 'kf_lot_box' },
+                tileButton,
+                ...shown.map(b => this.edgeBid(b, edges.get(b.playerId) ?? 3)),
+            ),
+            Html.div({ classes: 'kf_bids', attrs: { 'aria-hidden': true } }, ...shown.map(b => this.bidRow(b))),
         );
     }
 
-    private bidRow(playerId: number, color: WorkerColor, num: number, o: { outbid: boolean, moving: boolean, added: number }): HTMLElement {
-        const player = this.bga.gameui.gamedatas.players[playerId];
+    private bidClasses(b: ShownBid, base: string): string[] {
+        return [base, b.outbid && !b.added ? 'kf_outbid' : '', b.moving ? 'kf_moving' : '', b.added ? 'kf_pending' : ''];
+    }
+
+    /** A bid along one edge: the player's avatar, kept upright, then their workers. */
+    private edgeBid(b: ShownBid, edge: number): HTMLElement {
+        const player = this.bga.gameui.gamedatas.players[b.playerId]!;
         return Html.div({
-                classes: ['kf_bid', o.outbid && !o.added ? 'kf_outbid' : '', o.moving ? 'kf_moving' : '', o.added ? 'kf_pending' : ''],
-                attrs: { 'data-kf-player': String(playerId) },
-                style: `--kf-player-color: #${player?.color ?? '888888'}`,
+                classes: this.bidClasses(b, 'kf_ebid'),
+                attrs: { 'data-kf-player': b.playerId, 'data-kf-edge': edge, 'aria-hidden': true },
+                style: `--kf-player-color: #${player.color}`,
             },
-            Html.span({ classes: 'kf_bid_player', text: player?.name ?? String(playerId) }),
-            workerIcons(color, num),
-            o.added ? Html.span({ classes: 'kf_chip', text: `+${o.added}` }) : undefined,
-            o.moving ? Html.span({ classes: 'kf_chip', text: `−${num}` }) : undefined,
-            o.outbid && !o.added && !o.moving ? Html.span({ classes: 'kf_tag', text: _('outbid') }) : undefined,
+            Html.img({ classes: 'kf_avatar', attrs: { src: this.bga.players.getPlayerAvatarUrl(b.playerId, 32), alt: '' } }),
+            workerIcons(b.color, b.num),
+            b.added ? Html.span({ classes: 'kf_chip', text: `+${b.added}` }) : undefined,
+            b.moving ? Html.span({ classes: 'kf_chip', text: `−${b.num}` }) : undefined,
         );
     }
 
-    private bidSummary(bids: MarketTile['bids']): string {
+    /** A bid as a row under the tile, for narrow screens. */
+    private bidRow(b: ShownBid): HTMLElement {
+        const player = this.bga.gameui.gamedatas.players[b.playerId]!;
+        return Html.div({
+                classes: this.bidClasses(b, 'kf_bid'),
+                attrs: { 'data-kf-player': b.playerId },
+                style: `--kf-player-color: #${player.color}`,
+            },
+            Html.span({ classes: 'kf_bid_player', text: player.name }),
+            workerIcons(b.color, b.num),
+            b.added ? Html.span({ classes: 'kf_chip', text: `+${b.added}` }) : undefined,
+            b.moving ? Html.span({ classes: 'kf_chip', text: `−${b.num}` }) : undefined,
+            b.outbid && !b.added && !b.moving ? Html.span({ classes: 'kf_tag', text: _('outbid') }) : undefined,
+        );
+    }
+
+    private bidSummary(bids: Lot['bids']): string {
         if (bids.length == 0) { return _('No bids'); }
         const players = this.bga.gameui.gamedatas.players;
-        return bids.map((b, i) => `${players[b.player_id]?.name}: ${b.workers.length} ${b.workers[0]!.color}${i == 0 ? '' : ', ' + _('outbid')}`).join('; ');
+        return bids.map((b, i) => `${players[b.player_id]!.name}: ${b.workers.length} ${b.workers[0]!.color}${i == 0 ? '' : ', ' + _('outbid')}`).join('; ');
     }
 }
 

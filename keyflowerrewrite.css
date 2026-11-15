@@ -60,20 +60,39 @@
 [data-kf-orientation="5"] { --kf-turn: -240deg; }
 [data-kf-orientation="6"] { --kf-turn: -300deg; }
 
-/* Market: each tile with the bids on it, the high bid first */
+/*
+ * Market: each tile with the bids on it. Bids sit along the tile's edges, as on the table: each
+ * player always has the same edge, yours at the bottom (data-kf-edge, 0 top, clockwise to 5 upper
+ * left). Where two tiles with their edges don't fit side by side, bids are rows under the tile.
+ */
 
 #kf_market {
+    container-type: inline-size;
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
     margin-top: 16px;
+    /* Room around the tile for the bids, and how far a bid sits outside its edge */
+    --kf-lot-margin: 28px;
+    --kf-bid-offset: 12px;
 }
 
 .kf_lot {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 4px;
-    width: var(--kf-tile-w);
+}
+
+.kf_lot_box {
+    position: relative;
+    width: calc(var(--kf-tile-w) + 2 * var(--kf-lot-margin));
+    height: calc(var(--kf-tile-h) + 2 * var(--kf-lot-margin));
+}
+
+.kf_lot_box > .kf_lot_tile {
+    position: absolute;
+    left: var(--kf-lot-margin);
+    top: var(--kf-lot-margin);
 }
 
 .kf_lot_tile {
@@ -95,9 +114,85 @@
     filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #1a73e8) drop-shadow(0 0 3px #1a73e8);
 }
 
-.kf_bids {
+/* A bid along an edge: centred on the edge's midpoint, pushed outwards, turned along the edge */
+.kf_ebid {
+    --m: var(--kf-lot-margin);
+    --o: var(--kf-bid-offset);
+    --w: var(--kf-tile-w);
+    --h: var(--kf-tile-h);
+    position: absolute;
     display: flex;
+    align-items: center;
+    gap: 1px;
+    padding: 0 2px;
+    border-radius: 10px;
+    white-space: nowrap;
+    pointer-events: none;
+    transform: translate(-50%, -50%) rotate(var(--kf-edge-turn, 0deg));
+}
+.kf_ebid[data-kf-edge="0"] { left: calc(var(--m) + var(--w) / 2); top: calc(var(--m) - var(--o)); }
+.kf_ebid[data-kf-edge="1"] { left: calc(var(--m) + var(--w) * 7 / 8 + var(--o) * 0.866); top: calc(var(--m) + var(--h) / 4 - var(--o) / 2); --kf-edge-turn: 60deg; }
+.kf_ebid[data-kf-edge="2"] { left: calc(var(--m) + var(--w) * 7 / 8 + var(--o) * 0.866); top: calc(var(--m) + var(--h) * 3 / 4 + var(--o) / 2); --kf-edge-turn: -60deg; }
+.kf_ebid[data-kf-edge="3"] { left: calc(var(--m) + var(--w) / 2); top: calc(var(--m) + var(--h) + var(--o)); }
+.kf_ebid[data-kf-edge="4"] { left: calc(var(--m) + var(--w) / 8 - var(--o) * 0.866); top: calc(var(--m) + var(--h) * 3 / 4 + var(--o) / 2); --kf-edge-turn: 60deg; }
+.kf_ebid[data-kf-edge="5"] { left: calc(var(--m) + var(--w) / 8 - var(--o) * 0.866); top: calc(var(--m) + var(--h) / 4 - var(--o) / 2); --kf-edge-turn: -60deg; }
+
+/* The avatar stays upright on the slanted edges */
+.kf_avatar {
+    width: 18px;
+    height: 18px;
+    margin-right: 1px;
+    box-sizing: border-box;
+    border: 2px solid var(--kf-player-color);
+    border-radius: 50%;
+    background: #fff;
+    transform: rotate(calc(-1 * var(--kf-edge-turn, 0deg)));
+}
+
+.kf_ebid.kf_outbid > :not(.kf_chip) {
+    opacity: 0.55;
+}
+
+.kf_ebid.kf_moving,
+.kf_ebid.kf_pending {
+    outline: 2px dashed #1a73e8;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.kf_ebid .kf_chip {
+    font-size: 11px;
+    margin-left: 2px;
+}
+
+/* Rows under the tile: only where the edges don't fit */
+.kf_bids {
+    display: none;
+}
+
+@container (max-width: 367px) {
+    .kf_lot_box {
+        width: var(--kf-tile-w);
+        height: var(--kf-tile-h);
+    }
+    .kf_lot_box > .kf_lot_tile {
+        left: 0;
+        top: 0;
+    }
+    .kf_ebid {
+        display: none;
+    }
+    .kf_lot {
+        width: var(--kf-tile-w);
+        margin: 0 6px 12px;
+    }
+    .kf_lot .kf_bids {
+        display: flex;
+    }
+}
+
+.kf_lot .kf_bids {
     flex-direction: column;
+    align-self: stretch;
     gap: 2px;
     font-size: 12px;
 }
@@ -163,7 +258,7 @@
     margin-left: 2px;
 }
 
-/* Choosing a bid in the status bar: a row per colour; tap the third worker to take three */
+/* Choosing a bid in the status bar: a row per color; tap the third worker to take three */
 
 .kf_pick {
     display: flex;
