@@ -54,6 +54,11 @@ export class PlayerTurnState extends BaseState {
 
     /** Workers added to a bid; moved outbid workers come with them. */
     async notif_bidMade(args: { player_id: number, markettileid: number, bid: Worker[] }) {
+        // Your bid is now on the tile: stop showing it as pending, or it's counted twice
+        // until the turn moves on.
+        if (args.player_id == this.bga.players.getCurrentPlayerId()) {
+            this.market.setPending(null);
+        }
         this.market.addToBid(args.markettileid, args.player_id, args.bid);
         // Your stock is only sent to you: take out the workers that are now on the tile.
         const village = this.bga.gameui.gamedatas.villages[args.player_id];
