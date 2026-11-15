@@ -13,16 +13,18 @@ use Bga\Games\keyflowerrewrite\Model\{
 final class TilesStockTest extends TestCase
 {
     /**  @param array<mixed> $a */
-    private static function assertAllTrue(array $a, \Closure $c, string $msg): void {
-        self::assertTrue(self::allTrue($a, $c), $msg);
+    private function assertAllTrue(array $a, \Closure $c, string $msg): void {
+        $this->assertTrue(self::allTrue($a, $c), $msg);
     }
 
+    /** @param array<mixed> $a */
     private static function allTrue(array $a, \Closure $c): bool {
         return array_reduce($a, fn ($carry, $t) => $carry && $c($t), true);
     }
 
     public function testForNewGame_summerTiles(): void {
         $stock = TilesStock::forNewGame(6);
+        /** @var list<TileType> */
         $summerTileTypes = array_map(fn ($t) => $t->type, $stock->forSeason(Season::SUMMER));
         $summerTileValues = array_map(fn ($t) => $t->value, $summerTileTypes);
         $this->assertTrue(count($summerTileTypes) == 10, "should be 10 summer tiles for 6p");
@@ -40,7 +42,7 @@ final class TilesStockTest extends TestCase
                 // if it's a flipped boat, ensure no other summer tile flips to this tone.
                 $flipped = $t->flip();
                 if ($flipped === null) {
-                    return self::allTrue($summerTileTypes, fn($t2) => $t2->flip() !== $t);
+                    return self::allTrue($summerTileTypes, fn(TileType $t2) => $t2->flip() !== $t);
                 }
                 // if a non-flipped boat, ensure we don't flip to another existing summer tile
                 return self::allTrue($summerTileTypes, fn($t2) => $t2 !== $flipped);
