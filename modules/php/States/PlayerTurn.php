@@ -127,7 +127,7 @@ class PlayerTurn extends AbstractState {
             '${player_name} bid ${num} ${color} on ${tiletype}',
             [
                 'player_id' => $active_player_id,
-                'marketlotid' => $market_tile_id,
+                'marketlot_id' => $market_tile_id,
                 'num' => count($bid->workers()),
                 'color' => Marshaller::color($bid->color()),
                 'tiletype' => $model->market()->marketLotById($market_tile_id)->type->value,
