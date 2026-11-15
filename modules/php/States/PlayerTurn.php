@@ -58,13 +58,15 @@ class PlayerTurn extends AbstractState {
             (4) TODO: also include the color/size of the player's current bid?
         */
         $model = $this->createModel($active_player_id);
+        $tiles = $model->market()->tiles();
         return [
-            "bidinfo" => array_map(
+            "bidding_info" => array_map(
                 function (MarketTile $mt) use (&$active_player_id) : array {
                     $hb = $mt->highBid();
                     $bc = $mt->biddingColor();
                     $bid = $mt->bidBy($active_player_id);
                     return [
+                        "tile_id" => $mt->id,
                         "color" => $bc === null ? null : $bc->value,
                         "min" => $hb->size()+1,
                         "moveable" => $mt->hasNonWinningBid($active_player_id),
@@ -76,7 +78,8 @@ class PlayerTurn extends AbstractState {
                         ]
                     ];
                 },
-                $model->market()->tiles())
+                $model->market()->tiles()
+            )
         ];
     }
 
@@ -109,21 +112,22 @@ class PlayerTurn extends AbstractState {
         $bidResult = $model->bid($market_tile_id, $moved_bid_ids, $numWorkersFromStock, $workerColor);
         $bid = $bidResult->bid;
 
-        foreach ($bidResult->movedBids as $bt => $mb) {
+        foreach ($bidResult->movedBids as $mb) {
             $this->game->notify->all(
                 'bidMoved',
                 '${player_name} moved bid of ${num} ${color} from ${tiletype}',
                 [
-                    'num' => count($mb->workers()),
-                    'color' => Marshaller::color($mb->color()),
-                    'tiletype' => $bt,
+                    'num' => count($mb->bid->workers()),
+                    'color' => Marshaller::color($mb->bid->color()),
+                    'tile_id' => $mb->sourceTile->id,
+                    'tiletype' => $mb->sourceTile->type->value,
                     'player_id' => $active_player_id,
                 ]
             );
         }
         $this->game->notify->all(
             'bidMade',
-            '${player_name} bid ${num} ${color} workers on ${tiletype}',
+            '${player_name} bid ${num} ${color} on ${tiletype}',
             [
                 'player_id' => $active_player_id,
                 'markettileid' => $market_tile_id,
@@ -144,7 +148,13 @@ class PlayerTurn extends AbstractState {
     #[PossibleAction]
     public function actPass(int $active_player_id): mixed {
         $this->createModel($active_player_id)->passTurn();
-        // TODO
+        $this->notify->all(
+            'playerPassed',
+            '${player_name} passed their turn',
+            [
+                'player_id' => $active_player_id
+            ]
+        );
         return NextPlayer::class;
     }
 
