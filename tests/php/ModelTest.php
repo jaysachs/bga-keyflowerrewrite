@@ -323,4 +323,19 @@ final class ModelTest extends TestCase {
         $this->assertWorkerGroupMatches($result->bid, WorkerColor::RED, 2);
     }
 
+    public function testBid_moveBidMustHaveOneColor(): void {
+        $model = $this->initialModel();
+        $lot1 = $this->makeLot(TileType::ALEHOUSE, [
+            self::PID2 => $this->makeWorkerGroup(WorkerColor::RED, 1),
+        ]);
+        $bid1 = $this->makeWorkerGroup(WorkerColor::RED, 1);
+        $lot2 = $this->makeLot(TileType::WOODCUTTER, [
+            self::PID1 => $bid1,
+            self::PID2 => $this->makeWorkerGroup(WorkerColor::RED, 2)
+        ]);
+        $model->allData()->market->addLot($lot1);
+        $model->allData()->market->addLot($lot2);
+
+        $this->assertThrows(fn () => $result = $model->bid($lot1->id, [$lot2->id], 1, WorkerColor::BLUE));
+    }
 }
