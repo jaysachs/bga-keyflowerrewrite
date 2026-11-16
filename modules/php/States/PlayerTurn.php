@@ -33,6 +33,7 @@ use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\keyflowerrewrite\Game;
 use Bga\Games\keyflowerrewrite\Model\MarketLot;
 use Bga\Games\keyflowerrewrite\Model\Marshaller;
+use Bga\Games\keyflowerrewrite\Model\TileType;
 use Bga\Games\keyflowerrewrite\Model\WorkerColor;
 
 class PlayerTurn extends AbstractState {
@@ -57,17 +58,21 @@ class PlayerTurn extends AbstractState {
             (4) TODO: also include the color/size of the player's current bid?
         */
         $model = $this->createModel($active_player_id);
+        $hasBoat4a = $model->village()->hasTileType(TileType::BOAT4A);
+
         return [
             "bidding_info" => array_map(
-                function (MarketLot $mt) use (&$active_player_id) : array {
-                    $hb = $mt->highBid();
-                    $bc = $mt->biddingColor();
-                    $bid = $mt->bidBy($active_player_id);
+                function (MarketLot $lot) use (&$active_player_id, $hasBoat4a): array {
+                    $hb = $lot->highBid();
+                    $bc = $lot->biddingColor();
+                    $bid = $lot->bidBy($active_player_id);
+                    $currentColor = $lot->biddingColor();
                     return [
-                        "tile_id" => $mt->id,
+                        "must_match" => !$hasBoat4a  || $currentColor === WorkerColor::GREEN,
+                        "tile_id" => $lot->id,
                         "color" => $bc === null ? null : $bc->value,
                         "min" => $hb->size()+1,
-                        "moveable" => $mt->hasNonWinningBid($active_player_id),
+                        "moveable" => $lot->hasNonWinningBid($active_player_id),
                         // TODO: determine if this is needed
                         "current_bid" => $bid === null ? null : [
                             "color" => Marshaller::color($bid->color())   ,

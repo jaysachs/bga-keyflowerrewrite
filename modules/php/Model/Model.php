@@ -111,7 +111,7 @@ class Model {
         return $villages[$playerId];
     }
 
-    private function village(): Village {
+    public function village(): Village {
         return $this->villageFor($this->activePlayerId);
     }
 
