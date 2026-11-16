@@ -63,21 +63,19 @@ class PlayerTurn extends AbstractState {
         return [
             "bidding_info" => array_map(
                 function (MarketLot $lot) use (&$active_player_id, $hasBoat4a): array {
-                    $hb = $lot->highBid();
                     $bc = $lot->biddingColor();
                     $bid = $lot->bidBy($active_player_id);
-                    $currentColor = $lot->biddingColor();
                     return [
-                        "must_match" => !$hasBoat4a  || $currentColor === WorkerColor::GREEN,
+                        "must_match" => !$hasBoat4a  || $bc === WorkerColor::GREEN,
                         "tile_id" => $lot->id,
                         "color" => $bc === null ? null : $bc->value,
-                        "min" => $hb->size()+1,
+                        "min" => $lot->highBid()->size()+1,
                         "moveable" => $lot->hasNonWinningBid($active_player_id),
                         // TODO: determine if this is needed
                         "current_bid" => $bid === null ? null : [
                             "color" => Marshaller::color($bid->color())   ,
                             "num" => $bid->size(),
-                            "workers" => array_map(fn ($w) => Marshaller::worker($w), $bid->workers()),
+                            "workers" => Marshaller::workers($bid->workers()),
                         ]
                     ];
                 },
