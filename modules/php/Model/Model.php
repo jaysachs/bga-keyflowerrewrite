@@ -126,8 +126,10 @@ class Model {
         $lot = $market->marketLotById($market_tile_id);
 
         $currentColor = $lot->biddingColor();
-        if ($currentColor !== null && $workerColor != $currentColor && !$hasBoat4a) {
-            throw new InvalidArgumentException("bids must match bid color");
+        if ($currentColor !== null && $workerColor != $currentColor) {
+            if (!$hasBoat4a || $currentColor == WorkerColor::GREEN) {
+                throw new InvalidArgumentException("bids must match bid color");
+            }
         }
 
         if (count(array_unique($moved_bid_ids)) != count($moved_bid_ids)) {
