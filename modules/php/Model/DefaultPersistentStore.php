@@ -102,14 +102,14 @@ class DefaultPersistentStore implements PersistentStore {
             $loc_pos = intval($row['loc_pos']);
             switch ($piece_type) {
                 case $this->STARTPLAYER:
-                    $result->villages[$pid]->hasStartPlayer = true;
+                    $result->villages[$pid]->setHasStartPlayer(true);
                     break;
                 case $this->TILE:
                     $type = TileType::from($subtype);
                     $tileTypes[$id] = $type;
                     switch ($loc_type) {
                         case $this->VILLAGE:
-                            $result->villages[$pid]->tiles[] = new VillageTile($id, $type, $loc_id, $loc_pos);
+                            $result->villages[$pid]->placeTile(new VillageTile($id, $type, $loc_id, $loc_pos));
                             break;
                         case $this->MARKET:
                             $bids[$id] = array_fill_keys($playerIds, []);
@@ -146,7 +146,7 @@ class DefaultPersistentStore implements PersistentStore {
                         case $this->TILE:
                             // activations
                             $vid = $loc_id;
-                            $v = array_find($result->villages[$pid]->tiles, fn ($vt) => $vid == $vt->tile_id);
+                            $v = array_find($result->villages[$pid]->tiles(), fn ($vt) => $vid == $vt->tile_id);
                             if ($v === null) {
                                 $v = $result->market->lotByTileId($loc_id);
                             }
@@ -158,7 +158,7 @@ class DefaultPersistentStore implements PersistentStore {
                             break;
                         case $this->VILLAGE:
                             $vid = $loc_id;
-                            $result->villages[$pid]->workers[] = $worker;
+                            $result->villages[$pid]->addWorker($worker);
                             break;
                         case $this->MARKET:
                             if (!$pid)  {
@@ -175,7 +175,7 @@ class DefaultPersistentStore implements PersistentStore {
                     switch ($loc_type) {
                         case $this->VILLAGE:
                             $vid = $loc_id;
-                            $result->villages[$pid]->skills[] = $skill;
+                            $result->villages[$pid]->addSkill($skill);
                             break;
                         case $this->SKILLPILE:
                             $result->skillPile->put($skill);
@@ -201,7 +201,7 @@ class DefaultPersistentStore implements PersistentStore {
                             break;
                         case $this->TILE:
                             $vid = $loc_id;
-                            $v = array_find($result->villages[$pid]->tiles, fn ($vt) => $vid == $vt->tile_id);
+                            $v = array_find($result->villages[$pid]->tiles(), fn ($vt) => $vid == $vt->tile_id);
                             if ($v === null) {
                                 throw new InvalidArgumentException("couldn't find village tile for player {$pid} tile {$vid}");
                             }
@@ -273,15 +273,15 @@ class DefaultPersistentStore implements PersistentStore {
             array_push($values, ... $this->skillvals($this->BOAT, $mt->cargo(), $mt->id));
         }
         foreach ($data->villages as $village) {
-            foreach ($village->tiles as $pos => $vt) {
+            foreach ($village->tiles() as $pos => $vt) {
                 $values[] = "('{$this->TILE}', {$vt->tile_id}, '{$vt->type->value}', '{$this->VILLAGE}', {$vt->rowcol}, {$vt->orientation}, {$village->playerId})";
                 // FIXME: this doesn't work.
                 // foreach ($vt->activations as $wg) {
                 //     array_push($values, ... $this->workerVals($this->TILE, $wg->workers()));
                 // }
             }
-            array_push($values, ... $this->workervals($this->VILLAGE, $village->workers, null, $village->playerId));
-            array_push($values, ... $this->skillVals($this->VILLAGE, $village->skills, null, $village->playerId));
+            array_push($values, ... $this->workervals($this->VILLAGE, $village->workers(), null, $village->playerId));
+            array_push($values, ... $this->skillVals($this->VILLAGE, $village->skills(), null, $village->playerId));
             if ($village->hasStartPlayer()) {
                 array_push($values, "('{$this->STARTPLAYER}', 1, {$noSubtype}, '{$this->VILLAGE}', {$noLocId}, 0, {$village->playerId})");
             }
