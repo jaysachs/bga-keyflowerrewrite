@@ -82,12 +82,19 @@ export class MarketComponent extends BaseComponent<MarketLot> {
         this.redraw(tileId);
     }
 
-    /** Where a player's bid on a tile is drawn now (along the edge, or as a row in narrow layouts). */
+    /**
+     * The element showing a player's bid on a tile. Each bid is drawn twice, along the tile's edge and
+     * as a row under the tile, and the CSS shows one of them depending on the layout's width; this
+     * returns the one that's shown (the other has no size).
+     */
+    private shownBid(tileId: number, playerId: number): HTMLElement | undefined {
+        return Array.from(document.querySelectorAll<HTMLElement>(`#kf_lot_${tileId} [data-kf-player="${playerId}"]`))
+            .find(e => e.getBoundingClientRect().width > 0);
+    }
+
+    /** Where a player's bid on a tile is drawn now. */
     public bidRect(tileId: number, playerId: number): DOMRect | null {
-        const shown = Array.from(document.querySelectorAll<HTMLElement>(`#kf_lot_${tileId} [data-kf-player="${playerId}"]`))
-            .map(e => e.getBoundingClientRect())
-            .find(r => r.width > 0);
-        return shown ?? null;
+        return this.shownBid(tileId, playerId)?.getBoundingClientRect() ?? null;
     }
 
     /**
@@ -96,8 +103,7 @@ export class MarketComponent extends BaseComponent<MarketLot> {
      * Uses the `translate` property, which applies on top of the edge's rotation. Resolves when done.
      */
     public async flyBid(tileId: number, playerId: number, from: DOMRect): Promise<void> {
-        const el = Array.from(document.querySelectorAll<HTMLElement>(`#kf_lot_${tileId} [data-kf-player="${playerId}"]`))
-            .find(e => e.getBoundingClientRect().width > 0);
+        const el = this.shownBid(tileId, playerId);
         if (!el) { return; }
         const to = el.getBoundingClientRect();
         const dx = (from.left + from.width / 2) - (to.left + to.width / 2);
