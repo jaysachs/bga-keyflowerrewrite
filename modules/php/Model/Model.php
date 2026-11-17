@@ -182,7 +182,7 @@ class Model {
         $this->ps->updateBidWorkerLocations($this->activePlayerId, $lot, $newBid);
         $this->ps->clearPasses();
 
-        return new BidResult($newBid, $lot->id, $moved);
+        return new BidResult($newBid, $lot->tile_id, $moved);
     }
 
     public function passTurn(): void {

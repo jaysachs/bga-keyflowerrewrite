@@ -67,7 +67,7 @@ class PlayerTurn extends AbstractState {
                     $bid = $lot->bidBy($active_player_id);
                     return [
                         "must_match" => !$hasBoat4a  || $bc === WorkerColor::GREEN,
-                        "tile_id" => $lot->id,
+                        "tile_id" => $lot->tile_id,
                         "color" => $bc === null ? null : $bc->value,
                         "min" => $lot->highBid()->size()+1,
                         "moveable" => $lot->hasNonWinningBid($active_player_id),
@@ -119,7 +119,7 @@ class PlayerTurn extends AbstractState {
                 [
                     'num' => count($mb->bid->workers()),
                     'color' => Marshaller::color($mb->bid->color()),
-                    'tile_id' => $mb->sourceTile->id,
+                    'tile_id' => $mb->sourceTile->tile_id,
                     'tiletype' => $mb->sourceTile->type->value,
                     'player_id' => $active_player_id,
                 ]

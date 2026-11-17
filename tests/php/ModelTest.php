@@ -142,7 +142,7 @@ final class ModelTest extends TestCase {
         }
         /** @var TileType */
         $home = array_shift($this->homeTiles);
-        return new Village($pid, [ new VillageTile($this->lastTileId++, $home, 1, 0) ], $workers, [], [], false);
+        return new Village($pid, [ new VillageTile($this->lastTileId++, $home, 1, 0) ], $workers, [], [], [], false);
     }
 
     private function assertWorkerGroupMatches(WorkerGroup $wg, WorkerColor $color, int $num): void {
@@ -183,9 +183,9 @@ final class ModelTest extends TestCase {
         $lot1 = $this->makeLot(TileType::ALEHOUSE);
         $model->allData()->market->addLot($lot1);
 
-        $result = $model->bid($lot1->id, [], 1, WorkerColor::BLUE);
+        $result = $model->bid($lot1->tile_id, [], 1, WorkerColor::BLUE);
 
-        $this->assertEquals($lot1->id, $result->bidTileId);
+        $this->assertEquals($lot1->tile_id, $result->bidTileId);
         $this->assertEquals([], $result->movedBids);
         $this->assertWorkerGroupMatches($result->bid, WorkerColor::BLUE, 1);
 
@@ -197,7 +197,7 @@ final class ModelTest extends TestCase {
         $lot1 = $this->makeLot(TileType::ALEHOUSE);
         $model->allData()->market->addLot($lot1);
 
-        $this->assertThrows(fn () => $model->bid($lot1->id, [], 5, WorkerColor::BLUE));
+        $this->assertThrows(fn () => $model->bid($lot1->tile_id, [], 5, WorkerColor::BLUE));
 
         // also verify store was NOT called
     }
@@ -216,9 +216,9 @@ final class ModelTest extends TestCase {
         $lot1 = $this->makeLot(TileType::ALEHOUSE, [self::PID2 => $this->makeWorkerGroup(WorkerColor::RED, 2)]);
         $model->allData()->market->addLot($lot1);
 
-        $result = $model->bid($lot1->id, [], 3, WorkerColor::RED);
+        $result = $model->bid($lot1->tile_id, [], 3, WorkerColor::RED);
 
-        $this->assertEquals($lot1->id, $result->bidTileId);
+        $this->assertEquals($lot1->tile_id, $result->bidTileId);
         $this->assertEquals([], $result->movedBids);
         $this->assertWorkerGroupMatches($result->bid, WorkerColor::RED, 3);
 
@@ -230,7 +230,7 @@ final class ModelTest extends TestCase {
         $lot1 = $this->makeLot(TileType::ALEHOUSE, [self::PID2 => $this->makeWorkerGroup(WorkerColor::RED, 2)]);
         $model->allData()->market->addLot($lot1);
 
-        $this->assertThrows(fn () => $model->bid($lot1->id, [], 1, WorkerColor::RED));
+        $this->assertThrows(fn () => $model->bid($lot1->tile_id, [], 1, WorkerColor::RED));
     }
 
     public function testBid_overbiddingInsufficientEquals(): void {
@@ -238,7 +238,7 @@ final class ModelTest extends TestCase {
         $lot1 = $this->makeLot(TileType::ALEHOUSE, [self::PID2 => $this->makeWorkerGroup(WorkerColor::RED, 2)]);
         $model->allData()->market->addLot($lot1);
 
-        $this->assertThrows(fn () => $model->bid($lot1->id, [], 2, WorkerColor::RED));
+        $this->assertThrows(fn () => $model->bid($lot1->tile_id, [], 2, WorkerColor::RED));
     }
 
     public function testBid_overbiddingWrongColor(): void {
@@ -246,7 +246,7 @@ final class ModelTest extends TestCase {
         $lot1 = $this->makeLot(TileType::ALEHOUSE, [self::PID2 => $this->makeWorkerGroup(WorkerColor::RED, 2)]);
         $model->allData()->market->addLot($lot1);
 
-        $this->assertThrows(fn () => $model->bid($lot1->id, [], 3, WorkerColor::BLUE));
+        $this->assertThrows(fn () => $model->bid($lot1->tile_id, [], 3, WorkerColor::BLUE));
     }
 
     public function testBid_overbiddingDifferentColorWithBoat4a(): void {
@@ -255,9 +255,9 @@ final class ModelTest extends TestCase {
         $model->allData()->market->addLot($lot1);
         $model->allData()->villages[self::PID1]->placeTile(new VillageTile(50, TileType::BOAT4A, RowCol::fromRowCol(1,1), 1));
 
-        $result = $model->bid($lot1->id, [], 3, WorkerColor::BLUE);
+        $result = $model->bid($lot1->tile_id, [], 3, WorkerColor::BLUE);
 
-        $this->assertEquals($lot1->id, $result->bidTileId);
+        $this->assertEquals($lot1->tile_id, $result->bidTileId);
         $this->assertEquals([], $result->movedBids);
         $this->assertWorkerGroupMatches($result->bid, WorkerColor::BLUE, 3);
     }
@@ -268,7 +268,7 @@ final class ModelTest extends TestCase {
         $model->allData()->market->addLot($lot1);
         $model->allData()->villages[self::PID1]->placeTile(new VillageTile(50, TileType::BOAT4A, RowCol::fromRowCol(1,1), 1));
 
-        $this->assertThrows(fn() => $model->bid($lot1->id, [], 3, WorkerColor::BLUE));
+        $this->assertThrows(fn() => $model->bid($lot1->tile_id, [], 3, WorkerColor::BLUE));
     }
 
     public function testBid_moveBid(): void {
@@ -282,9 +282,9 @@ final class ModelTest extends TestCase {
         $model->allData()->market->addLot($lot1);
         $model->allData()->market->addLot($lot2);
 
-        $result = $model->bid($lot1->id, [$lot2->id], 0, WorkerColor::RED);
+        $result = $model->bid($lot1->tile_id, [$lot2->tile_id], 0, WorkerColor::RED);
 
-        $this->assertEquals($lot1->id, $result->bidTileId);
+        $this->assertEquals($lot1->tile_id, $result->bidTileId);
         $this->assertEquals([new MovedBid($bid1, $lot2)], $result->movedBids);
         $this->assertWorkerGroupMatches($result->bid, WorkerColor::RED, 1);
     }
@@ -300,7 +300,7 @@ final class ModelTest extends TestCase {
         $model->allData()->market->addLot($lot1);
         $model->allData()->market->addLot($lot2);
 
-        $this->assertThrows(fn () => $model->bid($lot1->id, [$lot2->id], 0, WorkerColor::RED));
+        $this->assertThrows(fn () => $model->bid($lot1->tile_id, [$lot2->tile_id], 0, WorkerColor::RED));
     }
 
     public function testBid_moveBidWithHandWorkers(): void {
@@ -316,9 +316,9 @@ final class ModelTest extends TestCase {
         $model->allData()->market->addLot($lot1);
         $model->allData()->market->addLot($lot2);
 
-        $result = $model->bid($lot1->id, [$lot2->id], 1, WorkerColor::RED);
+        $result = $model->bid($lot1->tile_id, [$lot2->tile_id], 1, WorkerColor::RED);
 
-        $this->assertEquals($lot1->id, $result->bidTileId);
+        $this->assertEquals($lot1->tile_id, $result->bidTileId);
         $this->assertEquals([new MovedBid($bid1, $lot2)], $result->movedBids);
         $this->assertWorkerGroupMatches($result->bid, WorkerColor::RED, 2);
     }
@@ -336,6 +336,6 @@ final class ModelTest extends TestCase {
         $model->allData()->market->addLot($lot1);
         $model->allData()->market->addLot($lot2);
 
-        $this->assertThrows(fn () => $result = $model->bid($lot1->id, [$lot2->id], 1, WorkerColor::BLUE));
+        $this->assertThrows(fn () => $result = $model->bid($lot1->tile_id, [$lot2->tile_id], 1, WorkerColor::BLUE));
     }
 }

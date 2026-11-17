@@ -29,5 +29,5 @@ namespace Bga\Games\keyflowerrewrite\Model;
 
 
 class StockTile {
-    public function __construct(public readonly int $id, public TileType $type) {}
+    public function __construct(public readonly int $tile_id, public readonly TileType $type) {}
 }

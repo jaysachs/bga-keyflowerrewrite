@@ -55,6 +55,8 @@ export interface Village {
     workers: Worker[] | undefined;
     winter_tiles: StockTile[] | undefined;
     skills: Skill[] | undefined;
+    // for now at least, reuse the StockTile interface
+    won_tiles: StockTile[] | undefined;
 }
 
 export interface KFGameDatas extends Gamedatas<KFPlayer> {

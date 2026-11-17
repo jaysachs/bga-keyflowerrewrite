@@ -71,7 +71,7 @@ class TilesStock {
                 if ($st->type->season() != $season) {
                     throw new InvalidArgumentException("wrong season for tile {$st->type->value}, expected {$season->value} ");
                 }
-                array_push($ids, $st->id);
+                array_push($ids, $st->tile_id);
             }
         }
         if (count($ids) != count(array_unique($ids))) {
