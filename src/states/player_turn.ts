@@ -16,6 +16,8 @@ interface BidInfo {
     /** Whether the player has an outbid bid here that could be moved to another tile. */
     moveable: boolean;
     current_bid: { color: WorkerColor; num: number; workers: Worker[] } | null;
+    /** Whether bids on this tile must match the current color (reflects boat4a) */
+    must_match: boolean;
 }
 
 interface PlayerTurnArgs {

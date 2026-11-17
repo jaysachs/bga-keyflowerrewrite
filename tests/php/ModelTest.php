@@ -262,6 +262,15 @@ final class ModelTest extends TestCase {
         $this->assertWorkerGroupMatches($result->bid, WorkerColor::BLUE, 3);
     }
 
+    public function testBid_overbiddingWithBoat4aNotAllowedForGreen(): void {
+        $model = $this->initialModel();
+        $lot1 = $this->makeLot(TileType::ALEHOUSE, [self::PID2 => $this->makeWorkerGroup(WorkerColor::GREEN, 2)]);
+        $model->allData()->market->addLot($lot1);
+        $model->allData()->villages[self::PID1]->placeTile(new VillageTile(50, TileType::BOAT4A, RowCol::fromRowCol(1,1), 1));
+
+        $this->assertThrows(fn() => $model->bid($lot1->id, [], 3, WorkerColor::BLUE));
+    }
+
     public function testBid_moveBid(): void {
         $model = $this->initialModel();
         $lot1 = $this->makeLot(TileType::ALEHOUSE, []);
@@ -314,4 +323,19 @@ final class ModelTest extends TestCase {
         $this->assertWorkerGroupMatches($result->bid, WorkerColor::RED, 2);
     }
 
+    public function testBid_moveBidMustHaveOneColor(): void {
+        $model = $this->initialModel();
+        $lot1 = $this->makeLot(TileType::ALEHOUSE, [
+            self::PID2 => $this->makeWorkerGroup(WorkerColor::RED, 1),
+        ]);
+        $bid1 = $this->makeWorkerGroup(WorkerColor::RED, 1);
+        $lot2 = $this->makeLot(TileType::WOODCUTTER, [
+            self::PID1 => $bid1,
+            self::PID2 => $this->makeWorkerGroup(WorkerColor::RED, 2)
+        ]);
+        $model->allData()->market->addLot($lot1);
+        $model->allData()->market->addLot($lot2);
+
+        $this->assertThrows(fn () => $result = $model->bid($lot1->id, [$lot2->id], 1, WorkerColor::BLUE));
+    }
 }
