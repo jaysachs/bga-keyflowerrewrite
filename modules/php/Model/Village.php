@@ -34,8 +34,16 @@ class Village {
      * @param list<Worker> $workers
      * @param list<Skill> $skills
      * @param list<StockTile> $winterTiles
+     * @param list<StockTile> $wonTiles
      */
-    public function __construct(public readonly int $playerId, private array $tiles, private array $workers, private array $skills, private array $winterTiles, private bool $hasStartPlayer) {}
+    public function __construct(
+        public readonly int $playerId,
+        private array $tiles,
+        private array $workers,
+        private array $skills,
+        private array $winterTiles,
+        private array $wonTiles,
+        private bool $hasStartPlayer) {}
 
     /** @return list<Worker> */
     public function takeWorkersFromStock(WorkerColor $color, int $num): array {
@@ -76,6 +84,15 @@ class Village {
     /** @return list<StockTile> */
     public function winterTiles(): array {
         return $this->winterTiles;
+    }
+
+    /** @return list<StockTile> */
+    public function wonTiles(): array {
+        return $this->wonTiles;
+    }
+
+    public function addWonTile(StockTile $tile): void {
+        $this->wonTiles[] = $tile;
     }
 
     public function placeTile(VillageTile $tile): void {

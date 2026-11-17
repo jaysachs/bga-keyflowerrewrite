@@ -38,7 +38,7 @@ class Market {
 
     public function marketLotById(int $tileId): MarketLot {
         foreach ($this->lots as $tile) {
-            if ($tile->id == $tileId) {
+            if ($tile->tile_id == $tileId) {
                 return $tile;
             }
         }
@@ -46,12 +46,12 @@ class Market {
     }
 
     private function validate(): void {
-        $ids = array_map(fn (MarketLot $t) => $t->id, $this->lots);
+        $ids = array_map(fn (MarketLot $t) => $t->tile_id, $this->lots);
         if (count($ids) != count(array_unique($ids))) {
             $x = '';
             $seen =[];
             foreach ($this->lots as $t) {
-                $id = $t->id;
+                $id = $t->tile_id;
                 if (isset($seen[$id])) {
                     $seen[$id]++;
                     $x .= "{$t->type->value}({$id})";
@@ -69,7 +69,7 @@ class Market {
     }
 
     public function lotByTileId(int $id): ?MarketLot {
-        return array_find($this->lots, fn ($t) => $t->id == $id);
+        return array_find($this->lots, fn ($t) => $t->tile_id == $id);
     }
 
     public function replenish(Season $season, TilesStock $stock): void {

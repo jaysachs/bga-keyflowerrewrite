@@ -39,7 +39,7 @@ class AllGameData {
         $this->tilesStock = new TilesStock();
         $this->villages = [];
         foreach ($this->playerIds as $pid) {
-            $this->villages[$pid] = new Village($pid, [], [], [], [], false);
+            $this->villages[$pid] = new Village($pid, [], [], [], [], [], false);
         }
 
         $this->market = new Market();
@@ -100,6 +100,7 @@ class AllGameData {
                 $workers,
                 [],
                 $wts,
+                [],
                 $home == $min);
         }
 

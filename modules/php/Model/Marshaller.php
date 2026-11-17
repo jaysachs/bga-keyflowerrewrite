@@ -79,6 +79,13 @@ class Marshaller {
                 ],
                 $village->tiles()
             ),
+            'won_tiles' => array_map(
+                fn ($wt) => [
+                    'tile_id' => $wt->tile_id,
+                    'tiletype' => $wt->type->value,
+                ],
+                $village->wonTiles()
+            ),
             'player_id' => $village->playerId,
             'has_start_player' => $village->hasStartPlayer(),
         ];
@@ -115,7 +122,7 @@ class Marshaller {
     public static function market(Market $market): array {
         return array_map(
             fn ($mt) => [
-                'id' => $mt->id,
+                'id' => $mt->tile_id,
                 'tiletype' => $mt->type->value,
                 'bids' => array_map(fn ($b, $pid) => [
                         'player_id' => $pid,

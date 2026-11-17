@@ -17,7 +17,7 @@ final class MarketLotTest extends TestCase
     public function testCreationAndGetters() : void{
         $bids = [98 => new WorkerGroup([new Worker(3, WorkerColor::BLUE)])];
         $mt = new MarketLot(1000, TileType::ALEHOUSE, $bids);
-        $this->assertEquals(1000, $mt->id);
+        $this->assertEquals(1000, $mt->tile_id);
         $this->assertEquals(TileType::ALEHOUSE, $mt->type);
         // $this->assertEquals($activations, $mt->activations);
         $this->assertEquals($bids, $mt->bids());

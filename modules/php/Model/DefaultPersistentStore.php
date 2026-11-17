@@ -49,6 +49,7 @@ class DefaultPersistentStore implements PersistentStore {
         $this->SKILLPILE = 'skillpile';
         $this->STOCK = 'stock';
         $this->BOAT = 'boat';
+        $this->WON = 'won';
     }
 
     private const GLOBAL_SEASON = 'season';
@@ -69,10 +70,10 @@ class DefaultPersistentStore implements PersistentStore {
     private readonly string $BOAT;
     private readonly string $SKILLPILE;
     private readonly string $STOCK;
+    private readonly string $WON;
 
     // private readonly string $SCORING;
     // private readonly string $BOX;
-    // private readonly string $WON;
 
     public function readAllData(): AllGameData {
         $playerIds = array_map(fn ($p) => intval($p), $this->db->getSingleFieldList('SELECT player_id FROM player'));
@@ -120,6 +121,9 @@ class DefaultPersistentStore implements PersistentStore {
                             break;
                         case $this->START:
                             $result->tilesStock->addStartTile(new StockTile($id, $type));
+                            break;
+                        case $this->WON:
+                            $result->villages[$pid]->addWonTile(new StockTile($id, $type));
                             break;
                         default:
                             $season = Season::from($loc_type);
@@ -264,7 +268,7 @@ class DefaultPersistentStore implements PersistentStore {
         array_push($values, ... $this->workervals($this->BAG, $data->workerStock->bagWorkers()));
         array_push($values, ... $this->skillVals($this->SKILLPILE, $data->skillPile->skills()));
         foreach ($data->market->lots() as $pos => $mt) {
-            $values[] = "('{$this->TILE}', {$mt->id}, '{$mt->type->value}','{$this->MARKET}', {$noLocId}, {$pos}, {$noPid})";
+            $values[] = "('{$this->TILE}', {$mt->tile_id}, '{$mt->type->value}','{$this->MARKET}', {$noLocId}, {$pos}, {$noPid})";
             // TODO: add bids and activations
         }
         foreach ($data->dock->boats() as $pos => $mt) {
@@ -285,15 +289,18 @@ class DefaultPersistentStore implements PersistentStore {
             if ($village->hasStartPlayer()) {
                 array_push($values, "('{$this->STARTPLAYER}', 1, {$noSubtype}, '{$this->VILLAGE}', {$noLocId}, 0, {$village->playerId})");
             }
+            foreach ($village->wonTiles() as $tile) {
+                $values[] = "('{$this->TILE}', {$tile->tile_id}, '{$tile->type->value}, '{$this->WON}', {$noLocId}, NULL, {$village->playerId})";
+            }
         }
 
         foreach (Season::cases() as $season) {
             foreach ($data->tilesStock->forSeason($season) as $pos => $tile) {
-                $values[] = "('{$this->TILE}', {$tile->id}, '{$tile->type->value}', '{$season->value}', {$noLocId}, {$pos}, {$noPid})";
+                $values[] = "('{$this->TILE}', {$tile->tile_id}, '{$tile->type->value}', '{$season->value}', {$noLocId}, {$pos}, {$noPid})";
             }
         }
         foreach ($data->tilesStock->startTurnTiles() as $pos => $tile) {
-            $values[] = "('{$this->TILE}', {$tile->id}, '{$tile->type->value}', '{$this->START}', {$noLocId}, {$pos}, {$noPid})";
+            $values[] = "('{$this->TILE}', {$tile->tile_id}, '{$tile->type->value}', '{$this->START}', {$noLocId}, {$pos}, {$noPid})";
         }
         if (count($values) > 0) {
             $this->db->execute(
@@ -315,7 +322,7 @@ class DefaultPersistentStore implements PersistentStore {
         $this->db->execute(
             "UPDATE pieces
              SET loc_type='{$this->MARKET}',
-                 loc_id={$bidTile->id},
+                 loc_id={$bidTile->tile_id},
                  player_id={$player_id},
                  loc_pos={$case}
              WHERE id IN ( " . implode(",", $ids) . " )"

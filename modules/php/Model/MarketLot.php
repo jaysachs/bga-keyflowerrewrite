@@ -34,7 +34,7 @@ class MarketLot {
     // private array $activations = [];
     /** @param array<int,WorkerGroup> $bids key is playerId */
     public function __construct(
-        public readonly int $id,
+        public readonly int $tile_id,
         public TileType $type,
         private array $bids = []) {
         // validate we have no bids, or a single high bid.
@@ -42,7 +42,7 @@ class MarketLot {
     }
 
     public static function fromStock(StockTile $st): MarketLot {
-        return new MarketLot($st->id, $st->type);
+        return new MarketLot($st->tile_id, $st->type);
     }
 
     public function bid(int $playerId, WorkerGroup $bid): void {
