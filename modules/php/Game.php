@@ -22,7 +22,11 @@ use Bga\Games\keyflowerrewrite\Model\AllGameData;
 use Bga\Games\keyflowerrewrite\Model\Marshaller;
 use Bga\Games\keyflowerrewrite\Model\Model;
 use Bga\Games\keyflowerrewrite\Model\DefaultPersistentStore;
+use Bga\Games\keyflowerrewrite\Model\ResourceType;
+use Bga\Games\keyflowerrewrite\Model\Season;
+use Bga\Games\keyflowerrewrite\Model\SkillType;
 use Bga\Games\keyflowerrewrite\Model\TileType;
+use Bga\Games\keyflowerrewrite\Model\WorkerColor;
 use Bga\Games\keyflowerrewrite\States\SeasonSetup;
 use Bga\Games\keyflowerrewrite\Utils\Arrays;
 use Bga\Games\keyflowerrewrite\Utils\DefaultDb;
@@ -170,6 +174,22 @@ class Game extends \Bga\GameFramework\Table
                 'tiles' => array_combine(
                     array_map(fn ($t) => $t->value, TileType::cases()),
                     array_map(fn ($t) => $t->translatedName(), TileType::cases())
+                ),
+                'resources' => array_combine(
+                    array_map(fn ($t) => $t->value, ResourceType::cases()),
+                    array_map(fn ($t) => $t->translatedName(), ResourceType::cases())
+                ),
+                'skills' => array_combine(
+                    array_map(fn ($t) => $t->value, SkillType::cases()),
+                    array_map(fn ($t) => $t->translatedName(), SkillType::cases())
+                ),
+                'colors' => array_combine(
+                    array_map(fn ($t) => $t->value, WorkerColor::cases()),
+                    array_map(fn ($t) => $t->translatedName(), WorkerColor::cases())
+                ),
+                'seasons' => array_combine(
+                    array_map(fn ($t) => $t->value, Season::cases()),
+                    array_map(fn ($t) => $t->translatedName(), Season::cases())
                 )
             ],
         ];
