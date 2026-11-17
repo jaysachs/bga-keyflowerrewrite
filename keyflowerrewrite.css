@@ -307,6 +307,11 @@ html {
     margin-left: 2px;
 }
 
+/* Cancel, undo and remove sit apart on the right of the status bar (BGA's guidelines) */
+#generalactions .kf_cancel {
+    margin-left: 16px;
+}
+
 /* Choosing a bid in the status bar: a row per color; tap the third worker to take three */
 
 .kf_pick {
