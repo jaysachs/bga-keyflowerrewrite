@@ -236,7 +236,9 @@ export class PlayerTurnState extends BaseState {
             missing ? _('Bid') : `${_('Bid')} ${total} ${colorName(p.color!)}`,
             () => missing ? this.explain(msg, missing) : this.confirm());
         bid.setAttribute('aria-describedby', 'kf_pick_msg');
-        this.bga.statusBar.addActionButton(_('Cancel'), () => this.showChoices(), { color: 'secondary' });
+        // Cancel in red and set apart on the right: BGA's guidelines reserve red for cancel, undo and exit
+        // ("mandatory for UX consistency"), and grey for disabled.
+        this.bga.statusBar.addActionButton(_('Cancel'), () => this.showChoices(), { color: 'alert', classes: 'kf_cancel' });
 
         if (focused) {
             document.querySelector<HTMLElement>(`#generalactions [data-kf-key="${focused}"]`)?.focus();
