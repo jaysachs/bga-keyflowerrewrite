@@ -58,20 +58,24 @@ export class PlayerTurnState extends BaseState {
         this.showChoices();
     }
 
-    /** Workers added to a bid; moved outbid workers come with them. */
-    async notif_bidMade(args: { player_id: number, marketlot_id: number, bid: Worker[] }) {
+    /**
+     * Workers added to a bid; moved outbid workers come with them. `moved_from` lists the tiles the
+     * moved groups leave: they're taken off there here, so everything happens in this one notification.
+     */
+    async notif_bidMade(args: { player_id: number, marketlot_id: number, bid: Worker[], moved_from: number[] }) {
         // Your bid is now on the tile: stop showing it as pending, or it's counted twice
         // until the turn moves on.
         if (args.player_id == this.bga.players.getCurrentPlayerId()) {
             this.market.setPending(null);
         }
+        // The bid flies to its tile from where a moved group was drawn, or, with workers from
+        // stock only, from the player's panel. Read before the moved groups leave their tiles.
+        const from = args.moved_from.map(id => this.market.bidRect(id, args.player_id)).find(r => r)
+            ?? this.panelOrigin(args.player_id, `.kf_worker[data-kf-color="${args.bid[0]?.color}"]`);
+        args.moved_from.forEach(id => this.market.removeBid(id, args.player_id));
         this.market.addToBid(args.marketlot_id, args.player_id, args.bid);
-        // The bid flies to its tile: a group moved from another tile from where it was (bidMoved
-        // comes just before), workers from stock from the player's panel.
-        const moved = this.movedFrom && this.movedFrom.playerId == args.player_id ? this.movedFrom.rect : null;
-        this.movedFrom = null;
-        const from = moved ?? this.panelOrigin(args.player_id, args.bid[0]?.color);
-        if (from && this.animate()) {
+        // Without any visible origin (no panel shown) the bid just appears.
+        if (from) {
             await this.market.flyBid(args.marketlot_id, args.player_id, from);
         }
         // Your stock is only sent to you: take out the workers that are now on the tile.
@@ -82,36 +86,22 @@ export class PlayerTurnState extends BaseState {
         }
     }
 
-    /** Where the last moved bid was drawn, so bidMade can animate it to its new tile. */
-    private movedFrom: { playerId: number, rect: DOMRect } | null = null;
-
-    /** An outbid bid moved off a tile. */
+    /** An outbid bid moved to another tile. For the log only: bidMade, which follows, moves it. */
     async notif_bidMoved(args: { player_id: number, tile_id: number }) {
-        const rect = this.market.bidRect(args.tile_id, args.player_id);
-        this.movedFrom = rect ? { playerId: args.player_id, rect } : null;
-        this.market.removeBid(args.tile_id, args.player_id);
     }
 
     /**
-     * Where a player's workers come from in their panel: your own worker icon of that color (in your
-     * private row), or, for other players, whose stock is private, their avatar.
+     * Where something a player gives comes from in their panel: for you, the item in your private
+     * row (`item`, a selector: a worker of a color now; later also tools or resources, e.g. paying
+     * for an activation); for other players, whose stock is private, their avatar.
      */
-    private panelOrigin(playerId: number, color: WorkerColor | undefined): DOMRect | null {
+    private panelOrigin(playerId: number, item: string): DOMRect | undefined {
         const candidates = [
-            color && document.querySelector(`#overall_player_board_${playerId} .kf_private .kf_worker[data-kf-color="${color}"]`),
+            document.querySelector(`#overall_player_board_${playerId} .kf_private ${item}`),
             document.getElementById(`avatarwrap_${playerId}`),
             document.getElementById(`overall_player_board_${playerId}`),
         ];
-        for (const c of candidates) {
-            const r = c ? (c as Element).getBoundingClientRect() : null;
-            if (r && r.width > 0) { return r; }
-        }
-        return null;
-    }
-
-    /** Animations are off in replays and fast mode (BGA), and for players who ask for reduced motion. */
-    private animate(): boolean {
-        return this.bga.gameui.bgaAnimationsActive() && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        return candidates.map(c => c?.getBoundingClientRect()).find(r => r && r.width > 0);
     }
 
     override onLeavingState(args: any, isCurrentPlayerActive: boolean): void {
