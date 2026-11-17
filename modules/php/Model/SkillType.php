@@ -32,4 +32,12 @@ enum SkillType: string {
     case ANVIL = "anvil";
     case PICKAXE = "pickaxe";
     case SAW = "saw";
+
+   public function translatedName(): string {
+        return match ($this) {
+            SkillType::ANVIL => "anvil",
+            SkillType::PICKAXE => "pickaxe",
+            SkillType::SAW => "saw",
+        };
+    }
 }

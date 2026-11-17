@@ -33,4 +33,13 @@ enum WorkerColor: string {
     case RED = "red";
     case YELLOW = "yellow";
     case GREEN = "green";
+
+    public function translatedName(): string {
+        return match ($this) {
+            WorkerColor::BLUE => "blue",
+            WorkerColor::RED => "red",
+            WorkerColor::YELLOW => "yellow",
+            WorkerColor::GREEN => "green",
+        };
+    }
 }
