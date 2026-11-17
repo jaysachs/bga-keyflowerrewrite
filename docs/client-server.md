@@ -3,106 +3,211 @@
 ## Aspirational principles, goals, assumptions
 
 1. Game logic / rules implemented just once, typically in the server
-2. Server must offer "all possible legal moves"; avoid allowing client interactions that are not legal.
+2. Server must offer "all possible legal moves"; strive to provide client sufficient information to "know" which interactions are legal.
 3. Minimize the number of back/forth communications. Specifically, prefer to send all legal moves for all pieces in one request, rather than offering "here are pieces with legal moves" and then when a piece is selected, send the legal moves for that piece. This may not be feasible, for example due to excessive payload size.
 
 ## Specific interactions
 
-### Player turn to bid or activate or pass
+### Bidding
 
-There will at most 10-12 tiles available to bid on. In a 6p game, in winter, there will be in addition 6 * 12 possible tiles to activate. (While an individual village might be larger than 12, it's unlikely to have all villages larger than 12.) So let's say there are 100 possible tiles to interact with. (That's an overestimate, which is good.)
+This is for the PlayerTurn state.
 
-*What does a "set of possible bids" for a tile look like?*
+Server provides client information on all biddable tiles, which includes what color and minimum number of workers required to bid. Also available should be which existing bids are "losing", and thus moveable.
 
-A legal bid / activation consists of
-* a worker color
-* 0 or more workers from the player's stock
-* 0 or already-bid groups that are losing their bid
-* matches the existing color of workers on the tile, either bid or activated
-* such that when added to the player's existing bid on that tile (if any), becomes the winning bid.
-* (note to explore consequneces of boat4a)
-The worker color can be "any" (meaning any combination) if this is an activation, the player owns boat4b and there is already a bid and/or activation on the tile
-The worker color can be "one" (meaning "any single color") if this is an bid, the player owns boat4a
+```ts
+interface BidInfo {
+    /** The color a bid must be, or null if any color may be used. */
+    color: WorkerColor | null;
+    /** The smallest total that would be the high bid. */
+    min: number;
+    /** Whether the player has an outbid bid here that could be moved to another tile. */
+    moveable: boolean;
+    /** the player's current bid, which may be "reinforced" */
+    current_bid: { color: WorkerColor; num: number; workers: Worker[] } | null;
+    /** Whether bids on this tile must match the current color (reflects boat4a) */
+    must_match: boolean;
+}
 
-
-A question comes up: is the client responsible for adding up the selections to ensure they meet the criteria, or should the server return "bundles" that include each possible collection of workers-from-stock,existing-losing-bids ?
-
-Suppose a player had losing bids on 4 other tiles, all the same color, and they had 4 of that worker color in their stock. Furthermore suppose they needed a minimum bid of 2 workers for a given tile. The set of legal bids for that tile might be something like:
-
-```json
-   [
-     { "color": "blue", "stock-min": 1, "losing-bid-on-tiles": [201] },
-     { "color": "blue", "stock-min": 1, "losing-bid-on-tiles": [202] },
-     { "color": "blue", "stock-min": 1, "losing-bid-on-tiles": [203] },
-     { "color": "blue", "stock-min": 1, "losing-bid-on-tiles": [204] },
-     { "color": "blue", "stock-min": 0, "losing-bid-on-tiles": [201, 202] },
-     { "color": "blue", "stock-min": 0, "losing-bid-on-tiles": [201, 203] },
-     { "color": "blue", "stock-min": 0, "losing-bid-on-tiles": [201, 204] },
-     { "color": "blue", "stock-min": 0, "losing-bid-on-tiles": [202, 203] },
-     { "color": "blue", "stock-min": 0, "losing-bid-on-tiles": [202, 204] },
-     { "color": "blue", "stock-min": 0, "losing-bid-on-tiles": [203, 204] },
-     { "color": "blue", "stock-min": 0, "losing-bid-on-tiles": [201, 202, 203] },
-     { "color": "blue", "stock-min": 0, "losing-bid-on-tiles": [201, 202, 204] },
-     { "color": "blue", "stock-min": 0, "losing-bid-on-tiles": [202, 203, 204] },
-     { "color": "blue", "stock-min": 0, "losing-bid-on-tiles": [201, 202, 203, 204] },
-   ]
+interface PlayerTurnArgs {
+    /** What the active player may bid on one market lot (PlayerTurn args, in market order). */
+    bidding_info: BidInfo[];
+}
 ```
 
-Compressing down the json size by abbreviating field:
-```json
-   [
-     { "c": 2, "s": 2, "b": [] },
-     { "c": 2, "s": 1, "b": [201] },
-     { "c": 2, "s": 1, "b": [202] },
-     { "c": 2, "s": 1, "b": [203] },
-     { "c": 2, "s": 1, "b": [204] },
-     { "c": 2, "s": 0, "b": [201, 202] },
-     { "c": 2, "s": 0, "b": [201, 203] },
-     { "c": 2, "s": 0, "b": [201, 204] },
-     { "c": 2, "s": 0, "b": [202, 203] },
-     { "c": 2, "s": 0, "b": [202, 204] },
-     { "c": 2, "s": 0, "b": [203, 204] },
-     { "c": 2, "s": 0, "b": [201, 202, 203] },
-     { "c": 2, "s": 0, "b": [201, 202, 204] },
-     { "c": 2, "s": 0, "b": [201, 203, 204] },
-     { "c": 2, "s": 0, "b": [202, 203, 204] },
-     { "c": 2, "s": 0, "b": [201, 202, 203, 204] },
-   ]
+The server call to make a bid is
+
+```ts
+actBid({
+    market_tile_id: number;
+    moved_bid_ids: number[]; // tile_ids from which to move bids
+    numWorkersFromStock: number;
+    color: WorkerColor;
+})
 ```
 
-which is about 400 bytes. With 12 potential tiles to bid on, that's about 4k payload which is fine.
 
-However, now we need to handle activations. Assuming the payload-per-activatable tile is about the same (400 bytes), and let's say we have 20 activatable tiles, puts us a bit over 10k. That's large but not impossible to deal with.
+### Activation
 
-*A note on activations*
+This is for the PlayerTurn state.
 
-The "possible activation" data sent back from the server needs to include, for each possible activation, which positions (1-6) the activating worker group should take.
+Activations will be rendered in distinct rows on the activated tile, top to bottom in order of the activations. (There can be at most 3 activations of a tile.) Ordering within an activation (to handle e.g. boat4b) will be done client-side.
 
-*Is this feasible to support?*
+For several tiles a player needs to supply a component (resource, skill, worker) ("cost") to activate it. Some costs are "fixed" (e.g. a specific worker type), others involve a choice (e.g. any skill). This is similar to activation rewards; some awards are "fixed" (e.g. a set number and type of resource or worker), others involve a choice (e.g. a resource type), and still others involve game state change to pick a random component (e.g. worker from bag or skill from pile). And "upgrade" is the most different kind of reward, and requires separate state/handling.
 
-These payloads will be private. I believe there is an approximately 72MB max size on the gamelog. That leaves us roughly 7200 player actions if the gamelog only consisted of possible moves. With 6 players, that's 1200 possible-move payloads per player, or 300 payloads per season per player. How many "rounds" is a KF season? 20? 30? So for 6p, there are 180 "turns" per player?
+Here is a proposal for handling activations. We extend the state data returned by PlayerTurn
+```ts
+interface PlayerTurnArgs {
+    bidding_info: BidInfo[];
+}
+```
+to be
+```ts
+interface PlayerTurnArgs {
+    bidding_info: BidInfo[];
 
-**Need to find out**: do private notifs / replies from `onEnteringState()` impact the gamelog? If not, then "who cares". Need to find this out.
+    // array keys are tile IDs
+    activation_info: ActivationInfo[];
+}
 
-#### Activation costs
+type ActivationCostType = 'pickaxe' | 'saw' | 'anvil' | 'anyskill' | 'red' | 'yellow' | 'blue' | 'green' | 'anyworker' | 'none';
+type ActivationRewardType = 'green' | 'worker' | 'skill' | 'gold' | 'wood' | 'iron' | 'stone' | 'irongold'
+                        | 'woodgold' | 'stonegold' | 'resource' | 'upgrade';
 
-For several tiles a player needs to supply a component (resource, skill, worker) to activate it. For resource and skill, these are *independent* of the workers used to pay the activation cost. For the tiles with worker costs, Fair, Peddlar and Store require a specific color worker, and this will be easy to build into the existing option bundles, and will not increase the cardinality of bundles. The Tavern, however, has the greatest freedom (any one worker). We can put those choices into the option bundles, which will potentially quadruple the number options (red/green/blue/yellow). Alternatively, we could make this a client-server interaction point; we'd only have to prune the option bundles to include paying the activation cost. There's no need to do this outside of the Tavern, but it might "feel odd" to have those tiles be a special case. It's possibly they could be handled readily client-side, since the client can "know" if there are no more available workers of an existing color.
+// Describes for a give tile (market lot or tile in a village) the activation cost and reward
+interface ActivationInfo {
+    tile_id: number;
+    // owning palyer id if in village; if 0/null means it's a market lot
+    owner_player_id: number | null;
 
-**Need to analyze Tavern activation more closely.**
+    activation_cost_qty: number;
+    activation_cost_type: ActivationCostType;
 
-#### An alternative (or two)
+    activation_reward_type: ActivationRewardType;
+    activation_reward_qty: number;
 
-Suppose we decide to let the client do the addition arithmetic to determin if a bid or activation is legal. We could send out the list of tiles and the size (and color if not the first bid/activation) of the bid required, and of the activation required. As for assembling the set of possible components for a bid or activation, we could also let the client depend on it's already recorded info (though I am not a fan of parsing span contents as data ... could keep as attributes), or we could also just send those out up front as canonical data. Yes, that introduces a point where client/server might be out of sync, but that's not a new issue. It could still happen, and here we're being explicit about "here's the set of things you should look at when letting the user assemble a bid or activation". One about this latter approach I particularly like is that the server can apply any boat4a/boat4b "secret sauce".
+    /** The color an activation must be, or null if any color may be used. */
+    color: WorkerColor | null;
+    /** The smallest number of workers required to activate */
+    min: number;
+    /** The largest number of workers that can be used to activate */
+    max: number;
+    /** Whether the player has an outbid bid here that could be moved to another tile. */
+    moveable: boolean;
+    /** Whether activations on this tile must match the current color (reflects boat4b) */
+    must_match: boolean;
 
-### Moving resources
+    // could include
+    //   available_resources: { type: ResourceType; id: number }[];
+    // for use in selecting resources prior to confirmation
+    // but the client should already have the ResourceStock information which includes this.
+}
+```
 
-For each hex with resources, server provides
+Client flow will critically depend on the activation reward. For fixed known rewards, the client could "give" the reward to the player before any server interaction (At a minimum it could "show" the actual reward.). It's also possible that the client calls the server, which triggers notifications, but permits undo.  (This is possibly ideal.) For randomized rewards, the client should prompt for confirmation before the server call. It seems best if upgrades proceed to a different state entirely, where resources are "tentatively" moved to new tiles to perform upgrades. The process of doing upgrades should at a minimum be restartable, and ideally incrementally undoable.
 
-```map<srcTileId,list<pair<list<resourceIds>,list<pair<destinationTileId,int>>>>```
+Undoable moves should be visible only to the active player, until the activation is "committed". "Committed" depends on the type of activation: random rewards are immediately committed; non-upgrades are committed
 
-which maps tiles with resources to the resources on those tiles, and then from tiles to a list of reachable destinations with cost. It would also return "total movement points remaining". After moving a resource (a server interaction), an updated map is returned.
+This analysis suggests the follow server actions:
+
+```ts
+actActivate( args: {
+    // These first four are *identical* to what is used for `actBid`
+    tile_id: number;
+    moved_bids: number[]; // tile ID(s) containing losing bids being used to support this activation
+    workersFromStock: number;
+    workerColor: workerColor;
+
+    // payment of the "cost" of the activation. (Could maybe combine into one field.)
+    skill_id: number | null;
+    worker_id: number | null;
+
+    // For tiles offering player choice of a resource type to receive
+    resource_reward: ResourceType | null;
+})
+```
+
+The responding notification will be:
+
+```ts
+notif_activationReward(args: {
+    tile_id: number; // activated tile
+    reward_type: ActivationRewardType;
+    skills: { type: SkillType; id: number }[];
+    resources: { type: ResourceType; id: number } [];
+    workers: { type: WorkerColor; id: number }[];
+})
+```
+For workers/skills not on the board (e.g. `getElementById(idFor(thing.id)) === null`), the client animate them from their source (resource stock, worker bag, green stock, skill pile).
+
+For fixed known rewards, we could include an undo but prefer to keep that client-side only. There should be sufficient information in the `ActivationInfo` record for the client to "simulate" the reward.
+
+As mentioned previously, upgrades will actually enter a new game state `UpgradeTile`.
+
+#### Upgrade
+
+(This is a "sub" state of `PlayerTurn`.)
+
+The big choice here is whether to make a server call for each resource move, or one call for all moves.
+
+Propose that at a minimum, the server returns a "matrix" describing the cost in moves from each tile in the player's village, and the cost to upgrade each tile:
+
+```ts
+interface UpgradeTileArgs {
+    // key is the source tile ID for moveable resoruces
+    move_cost: Record<number,{ destination_tile_id: number; moves: number }[]>;
+    // key is the potentially upgradeable tile
+    upgrade_cost: Record<number,{
+        // There are other possible representations, this is just a strawman proposal
+        gold: number;
+        iron: number;
+        wood: number;
+        stone: number;
+        anyresource: number;
+        pickaxe: number;
+        saw: number;
+        anvil: number;
+        anyskill: number;
+    }>
+}
+
+actMoveResource({
+    src_tile_id: number;
+    resource_id: number;
+    dest_tile_id: number;
+})
+
+notif_ResourceMoved(args {
+    src_tile_id: number;
+    resource_id: number;
+    dest_tile_id: number;
+    moves_remaining: number;
+})
+
+actUpgradeTile({
+    tile_id: number;
+    skill_id: number[] | null;
+    resource_id: number[] | null;
+})
+
+notif_TileUpgraded({
+    tile_id: number;
+    skill_id: number[] | null;
+    resource_id: number[] | null;
+})
+
+//  The server just knows what to undo (move or upgradeTile), and also issues an appropriate
+//  `notif_ResourceMoved`, which includes an "update" to remaining resource moves.
+actUndo({})
+
+// Requried:
+actUpgradeDone({})
+// which sends notifs to *all players* on the moves/upgrade, and then transitions to the next player's turn.
+```
+
 
 ### Placing tiles
+
+This is for the `PlaceTiles` state, which happens after all players have passed and chosen boats.
 
 Initial idea is that we return "which tiles can be placed where in what orientation". Each time a tile is placed, we hit the server for updated possibilities.
 
