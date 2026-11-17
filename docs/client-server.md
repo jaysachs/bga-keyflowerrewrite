@@ -50,7 +50,9 @@ actBid({
 
 This is for the PlayerTurn state.
 
-For several tiles a player needs to supply a component (resource, skill, worker) to activate it. For resource and skill, these are *independent* of the workers used to pay the activation cost. For the tiles with worker costs, Fair, Peddlar and Store require a specific color worker, and this will be easy to build into the existing option bundles, and will not increase the cardinality of bundles. The Tavern, however, has the greatest freedom (any one worker). We can put those choices into the option bundles, which will potentially quadruple the number options (red/green/blue/yellow). Alternatively, we could make this a client-server interaction point; we'd only have to prune the option bundles to include paying the activation cost. There's no need to do this outside of the Tavern, but it might "feel odd" to have those tiles be a special case. It's possibly they could be handled readily client-side, since the client can "know" if there are no more available workers of an existing color.
+Activations will be rendered in distinct rows on the activated tile, top to bottom in order of the activations. (There can be at most 3 activations of a tile.) Ordering within an activation (to handle e.g. boat4b) will be done client-side.
+
+For several tiles a player needs to supply a component (resource, skill, worker) ("cost") to activate it. Some costs are "fixed" (e.g. a specific worker type), others involve a choice (e.g. any skill). This is similar to activation rewards; some awards are "fixed" (e.g. a set number and type of resource or worker), others involve a choice (e.g. a resource type), and still others involve game state change to pick a random component (e.g. worker from bag or skill from pile). And "upgrade" is the most different kind of reward, and requires separate state/handling.
 
 Here is a proposal for handling activations. We extend the state data returned by PlayerTurn
 ```ts
@@ -83,6 +85,17 @@ interface ActivationInfo {
     activation_reward_type: ActivationRewardType;
     activation_reward_qty: number;
 
+    /** The color an activation must be, or null if any color may be used. */
+    color: WorkerColor | null;
+    /** The smallest number of workers required to activate */
+    min: number;
+    /** The largest number of workers that can be used to activate */
+    max: number;
+    /** Whether the player has an outbid bid here that could be moved to another tile. */
+    moveable: boolean;
+    /** Whether activations on this tile must match the current color (reflects boat4b) */
+    must_match: boolean;
+
     // could include
     //   available_resources: { type: ResourceType; id: number }[];
     // for use in selecting resources prior to confirmation
@@ -92,7 +105,10 @@ interface ActivationInfo {
 
 Client flow will critically depend on the activation reward. For fixed known rewards, the client could "give" the reward to the player before any server interaction (At a minimum it could "show" the actual reward.). It's also possible that the client calls the server, which triggers notifications, but permits undo.  (This is possibly ideal.) For randomized rewards, the client should prompt for confirmation before the server call. It seems best if upgrades proceed to a different state entirely, where resources are "tentatively" moved to new tiles to perform upgrades. The process of doing upgrades should at a minimum be restartable, and ideally incrementally undoable.
 
+Undoable moves should be visible only to the active player, until the activation is "committed". "Committed" depends on the type of activation: random rewards are immediately committed; non-upgrades are committed
+
 This analysis suggests the follow server actions:
+
 ```ts
 actActivate( args: {
     // These first four are *identical* to what is used for `actBid`
@@ -104,6 +120,9 @@ actActivate( args: {
     // payment of the "cost" of the activation. (Could maybe combine into one field.)
     skill_id: number | null;
     worker_id: number | null;
+
+    // For tiles offering player choice of a resource type to receive
+    resource_reward: ResourceType | null;
 })
 ```
 
@@ -120,11 +139,7 @@ notif_activationReward(args: {
 ```
 For workers/skills not on the board (e.g. `getElementById(idFor(thing.id)) === null`), the client animate them from their source (resource stock, worker bag, green stock, skill pile).
 
-For fixed known rewards, there is an allowable undo
-```ts
-undoActivation(args: {})
-```
-but this returns an error for randomized rewards.
+For fixed known rewards, we could include an undo but prefer to keep that client-side only. There should be sufficient information in the `ActivationInfo` record for the client to "simulate" the reward.
 
 As mentioned previously, upgrades will actually enter a new game state `UpgradeTile`.
 
@@ -138,8 +153,9 @@ Propose that at a minimum, the server returns a "matrix" describing the cost in 
 
 ```ts
 interface UpgradeTileArgs {
-    // key is the source tile ID
+    // key is the source tile ID for moveable resoruces
     move_cost: Record<number,{ destination_tile_id: number; moves: number }[]>;
+    // key is the potentially upgradeable tile
     upgrade_cost: Record<number,{
         // There are other possible representations, this is just a strawman proposal
         gold: number;
@@ -153,34 +169,37 @@ interface UpgradeTileArgs {
         anyskill: number;
     }>
 }
+
 actMoveResource({
     src_tile_id: number;
     resource_id: number;
     dest_tile_id: number;
 })
+
 notif_ResourceMoved(args {
     src_tile_id: number;
     resource_id: number;
     dest_tile_id: number;
     moves_remaining: number;
 })
+
 actUpgradeTile({
     tile_id: number;
     skill_id: number[] | null;
     resource_id: number[] | null;
 })
+
 notif_TileUpgraded({
     tile_id: number;
     skill_id: number[] | null;
     resource_id: number[] | null;
 })
-actUndoResourceMove({})
-actUndoTileUpgrade({})
-// or, perhaps better:
-actUndo({})
-//    in which the server just knows what to undo, and also issues an appropriate notif.
 
-// We also need
+//  The server just knows what to undo (move or upgradeTile), and also issues an appropriate
+//  `notif_ResourceMoved`, which includes an "update" to remaining resource moves.
+actUndo({})
+
+// Requried:
 actUpgradeDone({})
 // which sends notifs to *all players* on the moves/upgrade, and then transitions to the next player's turn.
 ```
