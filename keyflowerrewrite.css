@@ -3,11 +3,18 @@
  */
 
 /*
- * Background: a pale linen instead of BGA's wood, from the mockup (Light), so the page takes its
- * look from the game's own world rather than BGA's generic one. BGA puts its wood on html.
+ * Background: a light handmade paper instead of BGA's wood, so the page takes its look from the
+ * game's world (the mockup's light background, made greyer). BGA's guidelines ask for "a subtle
+ * playing mat look", texture over flat colors and "a touch of blur", never reducing the visibility
+ * of components. Three layers, all generated (no image files): soft large-scale mottling, a fine
+ * grain, and the page gently darker towards the window's edges. BGA puts its wood on html.
  */
 html {
-    background: #f1ece2 repeating-linear-gradient(45deg, rgb(120 100 70 / 0.025) 0 2px, transparent 2px 5px);
+    background:
+        radial-gradient(ellipse at center, transparent 55%, rgb(60 58 52 / 0.10) 100%) fixed,
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.36  0 0 0 0 0.34  0 0 0 0 0.3  0 0 0 0.16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.02' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.4  0 0 0 0 0.36  0 0 0 0.12 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+        #f1f0ec;
 }
 
 /* No drop shadows on BGA's boxes (player panels, status bar, avatars, the sections under the game) */
