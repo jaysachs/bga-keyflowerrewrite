@@ -3,6 +3,23 @@
  */
 
 /*
+ * Background: a pale linen instead of BGA's wood, from the mockup (Light), so the page takes its
+ * look from the game's own world rather than BGA's generic one. BGA puts its wood on html.
+ */
+html {
+    background: #f1ece2 repeating-linear-gradient(45deg, rgb(120 100 70 / 0.025) 0 2px, transparent 2px 5px);
+}
+
+/* No drop shadows on BGA's boxes (player panels, status bar, avatars, the sections under the game) */
+#overall-content .player-board,
+#overall-content #page-title,
+#overall-content .player-board .avatar,
+#overall-content .pagesection,
+#overall-content .pagesection h3 {
+    box-shadow: none;
+}
+
+/*
  * Workers: the mockup's meeples (Daniel's own drawings, not the publisher's art), as SVG inside
  * the CSS, so no image files are added. Each has a darker shape under it that works as an
  * outline, so the meeples stay visible when faded (outbid bids) and on any background.
