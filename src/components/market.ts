@@ -2,6 +2,7 @@ import { KFGameDatas, KFPlayer, MarketLot, Worker, WorkerColor } from "../kfdata
 import { BaseComponent } from "../libs/basecomponent";
 import { Html } from "../libs/html";
 import { MoreAnimations } from "../libs/more-animations";
+import { activationRows, activationSummary } from "./activations";
 import { TranslationComponent } from "./translation";
 
 /** One bid as shown on a tile. */
@@ -183,13 +184,14 @@ export class MarketComponent extends BaseComponent<MarketLot> {
         const tileButton = Html.button({
                 classes: ['kf_lot_tile', canClick ? 'kf_selectable' : '', this.selected == mt.id ? 'kf_selected' : ''],
                 attrs: {
-                    'aria-label': `${this.translations.tileName(mt.tiletype)}. ${this.bidSummary(this.sortedBids(mt))}`,
+                    'aria-label': [this.translations.tileName(mt.tiletype), this.bidSummary(this.sortedBids(mt)), activationSummary(mt.activations)].filter(x => x).join('. '),
                     // Not choosable now, a tap shows the tile's rules instead (keyflower.ts)
                     'aria-haspopup': canClick ? null : 'dialog',
                     'aria-pressed': this.selected == mt.id ? true : null,
                 },
             },
-            Html.div({ id: `kf_tile_${mt.id}`, classes: 'kf_tile', attrs: { 'data-kf-tile': mt.tiletype }, title: this.translations.tileName(mt.tiletype) })
+            Html.div({ id: `kf_tile_${mt.id}`, classes: 'kf_tile', attrs: { 'data-kf-tile': mt.tiletype }, title: this.translations.tileName(mt.tiletype) }),
+            activationRows(mt.activations),
         );
         tileButton.addEventListener('click', () => {
             if (this.selectable.has(mt.id)) {

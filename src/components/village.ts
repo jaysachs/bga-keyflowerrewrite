@@ -2,6 +2,7 @@ import { KFGameDatas, KFPlayer, Village, VillageTile } from "../kfdata";
 import { BaseComponent } from "../libs/basecomponent";
 import { Html } from "../libs/html";
 import { RowCol } from "../rowcol";
+import { activationRows } from "./activations";
 import { TranslationComponent } from "./translation";
 
 /**
@@ -53,10 +54,20 @@ export class VillageComponent extends BaseComponent<any> {
                         classes: 'kf_village_map',
                         style: [`--kf-row-span: ${maxRow - minRow}`, `--kf-col-span: ${maxCol - minCol}`],
                     },
-                    ...village.tiles.map((t, i) => this.tileDiv(t, rcs[i]!.row - minRow, rcs[i]!.col - minCol))
+                    ...village.tiles.flatMap((t, i) => this.tileDivs(t, rcs[i]!.row - minRow, rcs[i]!.col - minCol))
                 )
             )
         );
+    }
+
+    /**
+     * The tile, and the workers used on it this season in a layer of their own at the same place,
+     * so they stay upright while the tile turns to its orientation.
+     */
+    private tileDivs(tile: VillageTile, row: number, col: number): HTMLElement[] {
+        const uses = activationRows(tile.activations);
+        if (uses) { uses.style.cssText = `--kf-row: ${row}; --kf-col: ${col}`; }
+        return uses ? [this.tileDiv(tile, row, col), uses] : [this.tileDiv(tile, row, col)];
     }
 
     /** row and col are counted from the village's top-left; data-kf-rowcol keeps the real position. */

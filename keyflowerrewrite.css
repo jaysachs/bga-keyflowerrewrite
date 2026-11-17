@@ -494,6 +494,38 @@ html {
     color: #1a5fb4;
 }
 
+/*
+ * Workers used on a tile this season (activations.ts), as in the mockup: one row per use, in order,
+ * over the illustration, starting 20% from the left and 42% down. Workers are 21px at game size;
+ * a large use gets smaller workers so its row stays within 62% of the tile's width.
+ */
+.kf_uses {
+    --kf-use-size: calc(var(--kf-tile-w) * 17 / 128 + 4px);
+    position: absolute;
+    left: calc(var(--kf-tile-w) * 0.2);
+    top: calc(var(--kf-tile-h) * 0.42);
+    width: calc(var(--kf-tile-w) * 0.62);
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+}
+
+/* In a village the rows are a layer of their own over the tile, so they don't turn with it */
+.kf_village_map .kf_uses {
+    left: calc(var(--kf-col) * var(--kf-col-step) * var(--kf-tile-w) + var(--kf-tile-w) * 0.2);
+    top: calc(var(--kf-row) * var(--kf-row-step) * var(--kf-tile-h) + var(--kf-tile-h) * 0.42);
+}
+
+.kf_use {
+    display: flex;
+}
+
+.kf_use .kf_worker {
+    width: min(var(--kf-use-size), calc(var(--kf-tile-w) * 0.62 / var(--n)));
+    height: min(var(--kf-use-size), calc(var(--kf-tile-w) * 0.62 / var(--n)));
+    filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.55));
+}
+
 /* Workers, from the old game's sprite */
 
 .kf_workers {
