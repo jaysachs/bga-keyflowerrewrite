@@ -1,5 +1,6 @@
 import { AnimationManager } from "../bgalibs/bga-animations";
-import { MarketComponent, tileName, workerIcons } from "../components/market";
+import { MarketComponent, workerIcons } from "../components/market";
+import { TranslationComponent } from "../components/translation";
 import { KFGameDatas, KFPlayer, MarketLot, Worker, WorkerColor } from "../kfdata";
 import { Html } from "../libs/html";
 import { BaseState } from "./base";
@@ -43,7 +44,8 @@ export class PlayerTurnState extends BaseState {
     private pick: Pick | null = null;
     private readonly onTile = (mt: MarketLot) => this.startPick(mt.id);
 
-    constructor(bga: Bga<KFPlayer, KFGameDatas>, animationManager: AnimationManager, private market: MarketComponent) {
+    constructor(bga: Bga<KFPlayer, KFGameDatas>, animationManager: AnimationManager, private market: MarketComponent,
+        private translations: TranslationComponent) {
         super(bga, animationManager);
     }
 
@@ -161,7 +163,7 @@ export class PlayerTurnState extends BaseState {
     private showPick(): void {
         const p = this.pick!;
         const mt = this.market.tile(p.tileId)!;
-        const name = tileName(this.bga.gameui.gamedatas, mt.tiletype);
+        const name = this.translations.tileName(mt.tiletype);
         const need = this.needed(p.tileId);
         const total = p.color ? this.total(p) : 0;
         const fixedColor = this.info(p.tileId)?.current_bid?.color ?? this.info(p.tileId)?.color ?? null;
@@ -200,7 +202,7 @@ export class PlayerTurnState extends BaseState {
                 }),
                 ...this.movable(p.tileId, color).map(m => {
                     const pressed = on && p.moved.includes(m.tileId);
-                    const from = tileName(this.bga.gameui.gamedatas, this.market.tile(m.tileId)!.tiletype);
+                    const from = this.translations.tileName(this.market.tile(m.tileId)!.tiletype);
                     const b = Html.button({
                             classes: ['kf_pick_worker', 'kf_pick_group', pressed ? 'kf_on' : ''],
                             attrs: { 'aria-pressed': pressed, 'aria-label': `${m.num} ${colorName(color)}, ${_('outbid on')} ${from}`, 'data-kf-key': `from:${m.tileId}` },

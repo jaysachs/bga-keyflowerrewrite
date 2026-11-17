@@ -10,6 +10,7 @@
 
 import { DockComponent } from "./components/dock";
 import { MarketComponent } from "./components/market";
+import { TranslationComponent } from "./components/translation";
 import { VillageComponent } from "./components/village";
 import { KFGameDatas, KFPlayer } from "./kfdata";
 import { BaseGame } from "./libs/basegame";
@@ -20,6 +21,7 @@ import { IDS, View } from "./view";
 
 export class Game extends BaseGame<KFPlayer, KFGameDatas> {
 
+    private translationComponent: TranslationComponent;
     private marketComponent: MarketComponent;
     private dockComponent: DockComponent;
     private villageComponent: VillageComponent;
@@ -27,7 +29,8 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
     constructor(bga: Bga<KFPlayer, KFGameDatas>) {
         super(bga);
 
-        this.marketComponent = new MarketComponent(bga);
+        this.translationComponent = new TranslationComponent(bga);
+        this.marketComponent = new MarketComponent(bga, this.translationComponent);
         this.dockComponent = new DockComponent(bga);
         this.villageComponent = new VillageComponent(bga);
     }
@@ -51,7 +54,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
     }
 
     private registerStates(): void {
-        this.bga.states.register('PlayerTurn', new PlayerTurnState(this.bga, this.animationManager, this.marketComponent));
+        this.bga.states.register('PlayerTurn', new PlayerTurnState(this.bga, this.animationManager, this.marketComponent, this.translationComponent));
         this.bga.states.register('SeasonSetup', new SeasonSetupState(this.bga, this.animationManager));
     }
 
