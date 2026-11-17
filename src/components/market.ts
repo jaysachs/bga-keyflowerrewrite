@@ -1,6 +1,7 @@
 import { KFGameDatas, KFPlayer, MarketLot, Worker, WorkerColor } from "../kfdata";
 import { BaseComponent } from "../libs/basecomponent";
 import { Html } from "../libs/html";
+import { TranslationComponent } from "./translation";
 
 /** One bid as shown on a tile. */
 interface ShownBid {
@@ -39,7 +40,7 @@ export class MarketComponent extends BaseComponent<MarketLot> {
     private selected: number | null = null;
     private pending: PendingBid | null = null;
 
-    public constructor(private bga: Bga<KFPlayer, KFGameDatas>) {
+    public constructor(private bga: Bga<KFPlayer, KFGameDatas>, private translations: TranslationComponent) {
         super();
     }
 
@@ -158,12 +159,12 @@ export class MarketComponent extends BaseComponent<MarketLot> {
         const tileButton = Html.button({
                 classes: ['kf_lot_tile', canClick ? 'kf_selectable' : '', this.selected == mt.id ? 'kf_selected' : ''],
                 attrs: {
-                    'aria-label': `${tileName(mt.tiletype)}. ${this.bidSummary(this.sortedBids(mt))}`,
+                    'aria-label': `${this.translations.tileName(mt.tiletype)}. ${this.bidSummary(this.sortedBids(mt))}`,
                     'aria-disabled': canClick ? null : true,
                     'aria-pressed': this.selected == mt.id ? true : null,
                 },
             },
-            Html.div({ id: `kf_tile_${mt.id}`, classes: 'kf_tile', attrs: { 'data-kf-tile': mt.tiletype }, title: tileName(mt.tiletype) })
+            Html.div({ id: `kf_tile_${mt.id}`, classes: 'kf_tile', attrs: { 'data-kf-tile': mt.tiletype }, title: this.translations.tileName(mt.tiletype) })
         );
         tileButton.addEventListener('click', () => {
             if (this.selectable.has(mt.id)) {
@@ -232,10 +233,4 @@ export function workerIcons(color: WorkerColor, num: number): HTMLElement {
             ? [icon(), Html.span({ classes: 'kf_count', text: `×${num}` })]
             : Array.from({ length: num }, icon))
     );
-}
-
-/** A readable name until the server sends translated names: "keystonequarry" stays as it is. */
-export function tileName(tiletype: string): string {
-    const t = tiletype.replace(/_u$/, '');
-    return t.charAt(0).toUpperCase() + t.slice(1);
 }
