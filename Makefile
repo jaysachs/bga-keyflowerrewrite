@@ -2,7 +2,7 @@
 #
 ROOT=$(HOME)/projects/bga
 GAME=keyflowerrewrite
-SFTP=sftp://vagabond:@1.studio.boardgamearena.com:2022
+SFTP=sftp://vagabond:@sftp.studio.boardgamearena.com
 
 #STATS=modules/php/Stats.php
 #GENSTATS=$(ROOT)/bgautil/genstats/genstats.php
@@ -39,7 +39,7 @@ phpstan: build $(STUBS)
 	phpstan --autoload-file=$(STUBS) --level=$(PHPSTAN_LEVEL) --memory-limit=1G analyse modules/php modules/php/Model tests/php
 
 deploy: test phpstan
-	lftp -e 'cd $(GAME); mirror -e -R --exclude .vscode/ --exclude .git/ --exclude Makefile --exclude docs/ --exclude work/ --exclude local/ --exclude backup/ --exclude bga-framework.d.ts --exclude node_modules/ --exclude _ide_helper.php; exit' $(SFTP)
+	lftp -e 'cd $(GAME); mirror -e -R --exclude .vscode/ --exclude .git/ --exclude work/ --exclude local/ --exclude backup/ --exclude bga-framework.d.ts --exclude node_modules/ --exclude _ide_helper.php; exit' $(SFTP)
 
 clean:
 	rm -rf $(WORK) $(TS_STUBS) $(JS) $(STATS)
