@@ -33,6 +33,7 @@ use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\keyflowerrewrite\Game;
 use Bga\Games\keyflowerrewrite\Model\MarketLot;
 use Bga\Games\keyflowerrewrite\Model\Marshaller;
+use Bga\Games\keyflowerrewrite\Model\ResourceType;
 use Bga\Games\keyflowerrewrite\Model\TileType;
 use Bga\Games\keyflowerrewrite\Model\WorkerColor;
 
@@ -87,7 +88,21 @@ class PlayerTurn extends AbstractState {
      * @param list<int> $moved_bid_ids the tiles to move bids from
      */
     #[PossibleAction]
-    public function actActivate(int $active_player_id, int $tile_id,array $moved_bid_ids, int $workersFromStock, WorkerColor $workerColor): void {
+    public function actActivate(
+        int $active_player_id,
+        int $tile_id,
+        #[IntArrayParam()] array $moved_bid_ids,
+        int $numWorkersFromStock,
+        string $workerColor,
+        ?int $skill_pmt_id,
+        ?int $worker_pmt_id,
+        ?string $resource_type_reward): void {
+
+        $model = $this->createModel($active_player_id);
+        $workerColor = WorkerColor::from($workerColor);
+        $requested_resource = $resource_type_reward ? ResourceType::from($resource_type_reward): null;
+        $activationResult = $model->activate($tile_id, $moved_bid_ids, $numWorkersFromStock, $workerColor, $skill_pmt_id, $worker_pmt_id, $requested_resource);
+
         /*
          verify:
             1. tile_id is a tile in some village

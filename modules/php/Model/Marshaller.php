@@ -76,6 +76,7 @@ class Marshaller {
                     'tiletype' => $vt->type->value,
                     'rowcol' => $vt->rowcol,
                     'orientation' => $vt->orientation,
+                    'activations' => self::activations($vt->activationSet()),
                 ],
                 $village->tiles()
             ),
@@ -116,6 +117,15 @@ class Marshaller {
         return $color === null ? null : $color->value;
     }
 
+    /** @return array<mixed> */
+    public static function activations(ActivationSet $activationSet): array {
+        $result = [];
+        foreach ($activationSet->activations() as $pos => $act) {
+            $result[$pos] = self::workers($act->workers());
+        }
+        return $result;
+    }
+
     /**
      * @return array<mixed>
      */
@@ -124,6 +134,7 @@ class Marshaller {
             fn ($mt) => [
                 'id' => $mt->tile_id,
                 'tiletype' => $mt->type->value,
+                'activations' => self::activations($mt->activationSet()),
                 'bids' => array_map(fn ($b, $pid) => [
                         'player_id' => $pid,
                         // FIXME: need positions?
