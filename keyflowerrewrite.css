@@ -51,6 +51,20 @@ html {
     --kf-row-step: 0.5;
 }
 
+/*
+ * Phones: BGA shrinks its status bar and player panels to fit the screen (zoom, from
+ * --bga-framework-parts-zoom: 0.73 at 360px wide), which left the status bar's text at about 13px.
+ * Its content is shown at full size again: it spans the screen, so the text just wraps. The bid
+ * picker's buttons in it get their full size back too, so they're easy to tap.
+ */
+.mobile_version #pagemaintitle_wrap {
+    zoom: calc(1 / var(--bga-framework-parts-zoom, 1));
+}
+
+.mobile_version #pagemaintitletext {
+    font-size: 15px;
+}
+
 /* Phones and narrow windows: tiles shrink so three fit across the market, with their bids in rows
    under them (below). BGA's minimum width is 360px: tiles are then about 104px. */
 @media (max-width: 499px) {
