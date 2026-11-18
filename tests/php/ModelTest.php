@@ -43,6 +43,11 @@ class TestStore implements PersistentStore {
     {
     }
 
+    public function updateActivatedWorkerLocations(int $player_id, int $tile_id, int $activationPos, WorkerGroup $group): void
+    {
+
+    }
+
     #[Override]
     public function incPasses(): void
     {

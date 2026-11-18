@@ -346,6 +346,18 @@ class DefaultPersistentStore implements PersistentStore {
         }
     }
 
+    public function updateActivatedWorkerLocations(int $player_id, int $tile_id, int $activationPos, WorkerGroup $group): void {
+        $ids = array_map(fn ($w) => $w->id, $group->workers());
+        $this->db->execute(
+            "UPDATE pieces
+             SET loc_type='{$this->TILE}',
+                 loc_id={$tile_id},
+                 player_id={$player_id},
+                 loc_pos={$activationPos}
+             WHERE id IN ( " . implode(",", $ids) . " )"
+        );
+    }
+
     public function updateBidWorkerLocations(int $player_id, MarketLot $bidTile, WorkerGroup $newBid): void {
         $ids = array_map(fn ($w) => $w->id, $newBid->workers());
         $case = "CASE id "

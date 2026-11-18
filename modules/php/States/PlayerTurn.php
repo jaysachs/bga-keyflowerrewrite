@@ -103,18 +103,11 @@ class PlayerTurn extends AbstractState {
         $requested_resource = $resource_type_reward ? ResourceType::from($resource_type_reward): null;
         $activationResult = $model->activate($tile_id, $moved_bid_ids, $numWorkersFromStock, $workerColor, $skill_pmt_id, $worker_pmt_id, $requested_resource);
 
-        /*
-         verify:
-            1. tile_id is a tile in some village
-            2. the tile has an activation reward
-            3. moved_bid_ids refer to active player's bids
-            4. moved_bid_ids are currently losing
-            5. moved_bid_ids are unique
-            6. all moved_bid groups have the same type
-            7. worker_type is same as all moved_bid groups
-            8. if there are already activations or bids on this tile, worker type should match
-                unless player has boat4b
-        */
+        $this->notify->all('tileActivated', '${player_name} activated tile {$tile_id}', []);
+        if ($activationResult->isUpgrade) {
+            // transition to upgrade state
+        } else {
+        }
     }
 
     /**

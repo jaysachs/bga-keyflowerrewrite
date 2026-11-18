@@ -112,4 +112,126 @@ class AllGameData {
         return $result;
     }
 
+    /**
+     * @return array{workers:list<Worker>|null,resources:list<Resource>|null,skills:list<Skill>|null,upgrades:int|null}
+     */
+    public function takeActivationRewards(ActivationReward $rewardType, ?ResourceType $requested): array {
+        $skills = null;
+        $resources = null;
+        $workers = null;
+        $upgrades = null;
+
+        switch ($rewardType) {
+            case ActivationReward::RESOURCE_1:
+                if (!$requested) {
+                    throw new InvalidArgumentException("selected resource reward requires a specific type requested");
+                }
+                $resources = $this->resourceStock->take($requested, 1);
+                $requested = null;
+                break;
+            case ActivationReward::GOLD:
+                $resources = $this->resourceStock->take(ResourceType::GOLD, 1); break;
+            case ActivationReward::GOLD_2:
+                $resources = $this->resourceStock->take(ResourceType::GOLD, 2); break;
+            case ActivationReward::GOLD_3:
+                $resources = $this->resourceStock->take(ResourceType::GOLD, 3); break;
+            case ActivationReward::WOOD:
+                $resources = $this->resourceStock->take(ResourceType::WOOD, 1); break;
+            case ActivationReward::WOOD_2:
+                $resources = $this->resourceStock->take(ResourceType::WOOD, 2); break;
+            case ActivationReward::WOOD_3:
+                $resources = $this->resourceStock->take(ResourceType::WOOD, 3); break;
+            case ActivationReward::IRON:
+                $resources = $this->resourceStock->take(ResourceType::IRON, 1); break;
+            case ActivationReward::IRON_2:
+                $resources = $this->resourceStock->take(ResourceType::IRON, 2); break;
+            case ActivationReward::IRON_3:
+                $resources = $this->resourceStock->take(ResourceType::IRON, 3); break;
+            case ActivationReward::STONE:
+                $resources = $this->resourceStock->take(ResourceType::STONE, 1); break;
+            case ActivationReward::STONE_2:
+                $resources = $this->resourceStock->take(ResourceType::STONE, 2); break;
+            case ActivationReward::STONE_3:
+                $resources = $this->resourceStock->take(ResourceType::STONE, 3); break;
+            case ActivationReward::IRON_GOLD:
+                $resources = array_merge(
+                    $resources = $this->resourceStock->take(ResourceType::IRON, 1),
+                    $resources = $this->resourceStock->take(ResourceType::GOLD, 1)
+                );
+                break;
+            case ActivationReward::WOOD_GOLD:
+                $resources = array_merge(
+                    $resources = $this->resourceStock->take(ResourceType::WOOD, 1),
+                    $resources = $this->resourceStock->take(ResourceType::GOLD, 1)
+                );
+                break;
+            case ActivationReward::STONE_GOLD:
+                $resources = array_merge(
+                    $resources = $this->resourceStock->take(ResourceType::STONE, 1),
+                    $resources = $this->resourceStock->take(ResourceType::GOLD, 1)
+                );
+                break;
+            case ActivationReward::RESOURCE_3:
+                 $resources = array_merge(
+                    $resources = $this->resourceStock->take(ResourceType::WOOD, 1),
+                    $resources = $this->resourceStock->take(ResourceType::STONE, 1),
+                    $resources = $this->resourceStock->take(ResourceType::IRON, 1)
+                );
+                break;
+            case ActivationReward::SKILL_ANY:
+                 $skills = $this->skillPile->take(1);
+                 break;
+            case ActivationReward::SKILL_ANY_2:
+                 $skills = $this->skillPile->take(2);
+                 break;
+            case  ActivationReward::SKILL_ANY_3:
+                $skills = $this->skillPile->take(3);
+                break;
+            case ActivationReward::WORKER_ANY:
+                $workers = $this->workerStock->takeFromBag(1);
+                break;
+            case ActivationReward::WORKER_ANY_2:
+                $workers = $this->workerStock->takeFromBag(2);
+                break;
+            case ActivationReward::WORKER_ANY_3:
+                $workers = $this->workerStock->takeFromBag(3);
+                break;
+            case ActivationReward::WORKER_GREEN:
+                $workers = $this->workerStock->takeGreens(1);
+                break;
+            case ActivationReward::WORKER_GREEN_2:
+                $workers = $this->workerStock->takeGreens(2);
+                break;
+            case ActivationReward::UPGRADE_1:
+                $upgrades = 1;
+                break;
+            case ActivationReward::UPGRADE_2:
+                $upgrades = 2;
+                break;
+            case ActivationReward::UPGRADE_3:
+                $upgrades = 3;
+                break;
+            case ActivationReward::UPGRADE_4:
+                $upgrades = 4;
+                break;
+            case ActivationReward::UPGRADE_5:
+                $upgrades = 5;
+                break;
+            case ActivationReward::UPGRADE_6:
+                $upgrades = 6;
+                break;
+            default:
+                throw new InvalidArgumentException("Unknown reward type: {$rewardType->value}");
+        }
+        if ($requested) {
+            throw new InvalidArgumentException("cannot specify a resource type");
+        }
+         return [
+            "resources" => $resources,
+            "skills" => $skills,
+            "workers" => $workers,
+            "upgrades" => $upgrades,
+        ];
+    }
+
 }
