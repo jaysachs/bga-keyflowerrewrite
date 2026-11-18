@@ -817,7 +817,8 @@ html {
 }
 
 /* Never below iOS's smallest text style (Caption 2, 11pt): the clock at 12, messages at 13 */
-.mobile_version #overall-content .player_board_inner [id^="timeToThink_"] {
+.mobile_version #overall-content .player_board_inner [id^="timeToThink_"],
+.mobile_version #overall-content .player_board_inner .player_elo_wrap {
     font-size: calc(12px / var(--bga-framework-parts-zoom, 1));
 }
 
