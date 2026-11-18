@@ -346,6 +346,14 @@ html {
     margin: 6px 0;
 }
 
+/* Phones: one color per line, so a color's workers never share a line with another color's */
+@media (max-width: 499px) {
+    .kf_pick {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
 .kf_pick_row {
     display: flex;
     flex-wrap: wrap;
