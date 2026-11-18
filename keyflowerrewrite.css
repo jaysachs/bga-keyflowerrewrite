@@ -528,3 +528,255 @@ html {
 [data-kf-tile="turnorder46"] { background-position: -1200% -300%; }
 [data-kf-tile="turnorder56a"] { background-position: -1400% -300%; }
 [data-kf-tile="turnorder56b"] { background-position: -1500% -300%; }
+
+/*
+ * Player panels laid out as in the mockup: avatar in a ring of the player's color, name, and on the
+ * right the score over the online dot and flag; the game's own content below, full width. BGA's
+ * panel parts stay (only their places and sizes change): the name's box, the score's box and the
+ * content box are flattened (display: contents) so their parts sit on one grid.
+ * --kf-player-color is set on each panel by PanelsComponent. Names keep BGA's player color.
+ */
+#overall-content .player-board[id^="overall_player_board_"] {
+    padding: 8px 10px 8px 14px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+}
+
+#overall-content .player-board[id^="overall_player_board_"] > .player_board_inner {
+    display: grid;
+    /* avatar (with the online badge) | name (over BGA's rank badge) | star | score (over the clock) | flag */
+    grid-template-columns: 26px minmax(0, 1fr) auto auto auto;
+    grid-template-rows: 22px 18px;
+    grid-auto-rows: auto;
+    column-gap: 6px;
+    align-items: center;
+}
+
+#overall-content .player_board_inner > .player-name,
+#overall-content .player_board_inner > .player_board_content,
+#overall-content .player_board_inner > .player_board_content > .player_score {
+    display: contents;
+}
+
+/* Avatar: always the player's own (BGA swaps in an hourglass on their turn; the outline below marks
+   the active panel instead), in a ring of their color */
+#overall-content .player_board_inner > [id^="avatarwrap_"] {
+    display: block !important;
+    grid-area: 1 / 1 / 3 / 2;
+    width: 26px;
+    height: 26px;
+}
+
+#overall-content .player_board_inner > [id^="avatarwrap_"] > .avatar {
+    width: 26px;
+    height: 26px;
+    box-sizing: border-box;
+    border: 3px solid var(--kf-player-color, #6a6a6a);
+}
+
+#overall-content .player_board_inner [id^="avatar_active_wrap_"] {
+    display: none !important;
+}
+
+/* The players who must act now: an outline around their panel, as in the mockup (kf_active, set by
+   PanelsComponent) */
+#overall-content .player-board.kf_active {
+    outline: 3px solid #1f2328;
+    outline-offset: -1px;
+}
+
+/* Name: 15px bold, cut with an ellipsis when long */
+#overall-content .player_board_inner .player-name > a {
+    grid-area: 1 / 2 / 2 / 4;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 15px;
+    line-height: 22px;
+}
+
+/* Score on the right of the name, star first: "★ 13" */
+#overall-content .player_board_inner .player_score [id^="icon_point_"] {
+    grid-area: 1 / 4;
+    justify-self: end;
+    font-size: 13px;
+    color: #1f2328;   /* dark, as in the mockup, instead of BGA's orange */
+}
+
+#overall-content .player_board_inner .player_score_value {
+    grid-area: 1 / 5 / 2 / 6;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Under the name: BGA's rank badge (and Studio's player switch); under the score: clock, flag */
+#overall-content .player_board_inner .player_elo_wrap {
+    grid-area: 2 / 2;
+    justify-self: start;
+    font-size: 12px;
+}
+
+#overall-content .player_board_inner .player-name > .expressswitch {
+    grid-area: 2 / 2;
+    justify-self: end;
+}
+
+#overall-content .player_board_inner .player-name > .player_status,
+#overall-content .player_board_inner .player-name > .bga-flag {
+    position: static;
+    align-self: center;
+}
+
+/* Online status (a dot, or a phone for players on mobile) as a badge on the avatar's corner, the
+   way chat apps show presence */
+#overall-content .player_board_inner .player-name > .player_status {
+    grid-area: 1 / 1 / 3 / 2;
+    align-self: end;
+    justify-self: end;
+    z-index: 1;
+    margin: 0 -4px 2px 0;
+    padding: 1px;
+    border-radius: 50%;
+    background: #fff;
+    font-size: 10px;
+    line-height: 1;
+}
+
+/* The clock (timed games only), under the score, before the flag */
+#overall-content .player_board_inner [id^="timeToThink_"] {
+    grid-area: 2 / 3 / 3 / 5;
+    justify-self: end;
+    font-size: 12px;
+}
+
+#overall-content .player_board_inner .player-name > .bga-flag {
+    grid-area: 2 / 5;
+    justify-self: end;
+}
+
+/* The game's own content and anything else BGA adds: full width, below */
+#overall-content .player_board_inner .player-board-game-specific-content,
+#overall-content .player_board_inner [id^="player_table_status_"],
+#overall-content .player_board_inner > #current_player_board,
+#overall-content .player_board_inner > .player_panel_content {
+    grid-column: 1 / -1;
+}
+
+/* Chips under the name (PanelsComponent), as in the mockup */
+#overall-content .kf_chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 6px;
+    font-size: 12px;
+}
+
+#overall-content .kf_pchip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin-top: 6px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: #eef0f3;
+    color: #1f2328;
+}
+
+/* "Your turn" / "Playing": only on the active player's panel */
+#overall-content .kf_chip_turn {
+    display: none;
+    background: #1f2328;
+    color: #fff;
+    font-weight: bold;
+}
+
+#overall-content .player-board.kf_active .kf_chip_turn {
+    display: inline-flex;
+}
+
+/* The start player's meeple, from the game's sprite */
+#overall-content .kf_starter {
+    flex: none;
+    width: 17px;
+    height: 17px;
+    background: url('img/tiles-symbols.png') -201px -40px;
+}
+
+/* Your workers, tools and winter tiles (PanelsComponent), as in the mockup: workers on one row, tools on
+   the next, each with its count beside it, then your winter tiles */
+#overall-content .kf_private {
+    display: grid;
+    grid-template-columns: repeat(4, max-content);
+    gap: 6px 14px;
+    align-items: center;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid rgb(0 0 0 / 0.1);
+}
+
+#overall-content .kf_counted .kf_count {
+    margin-left: 0;
+}
+
+#overall-content .kf_counted {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #1f2328;
+}
+
+/* 24px icons: workers are the market's .kf_worker (17px) scaled up; tools come from the game's
+   sprite, drawn at 32px */
+#overall-content .kf_private .kf_worker {
+    flex: none;
+    zoom: 1.41;
+}
+
+#overall-content .kf_icon_skill {
+    display: inline-block;
+    flex: none;
+    background-image: url('img/tiles-symbols.png');
+}
+
+#overall-content .kf_icon_skill { width: 32px; height: 32px; zoom: 0.75; }
+#overall-content .kf_icon_skill[data-kf-kind="anvil"] { background-position: -402px -15px; }
+#overall-content .kf_icon_skill[data-kf-kind="pickaxe"] { background-position: -468px -15px; }
+#overall-content .kf_icon_skill[data-kf-kind="saw"] { background-position: -402px -66px; }
+
+/* Outbid groups: one line each, full width */
+#overall-content .kf_private_outbid {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#overall-content .kf_private_outbid:empty {
+    display: none;
+}
+
+#overall-content .kf_outbid_where {
+    margin-left: 4px;
+    font-size: 13px;
+    font-weight: normal;
+    color: #57606a;
+}
+
+#overall-content .kf_private_winter {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+#overall-content .kf_private_winter:empty {
+    display: none;
+}
+
+/* Player panels in white, like the status bar and the villages, so the colors stand out */
+#overall-content .player-board {
+    background-color: #fff;
+}

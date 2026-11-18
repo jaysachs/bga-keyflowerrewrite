@@ -10,6 +10,7 @@
 
 import { DockComponent } from "./components/dock";
 import { MarketComponent } from "./components/market";
+import { PanelsComponent } from "./components/panels";
 import { TranslationComponent } from "./components/translation";
 import { VillageComponent } from "./components/village";
 import { KFGameDatas, KFPlayer } from "./kfdata";
@@ -25,6 +26,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
     private marketComponent: MarketComponent;
     private dockComponent: DockComponent;
     private villageComponent: VillageComponent;
+    private panelsComponent: PanelsComponent;
 
     constructor(bga: Bga<KFPlayer, KFGameDatas>) {
         super(bga);
@@ -33,6 +35,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
         this.marketComponent = new MarketComponent(bga, this.translationComponent, this.moreAnimations);
         this.dockComponent = new DockComponent(bga);
         this.villageComponent = new VillageComponent(bga);
+        this.panelsComponent = new PanelsComponent(bga, this.translationComponent);
     }
 
     override async setup(gamedatas: KFGameDatas) {
@@ -51,10 +54,16 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
             this.dockComponent.setup(),
             this.villageComponent.setup());
         this.bga.gameArea.getElement().appendChild(mainElem);
+        this.panelsComponent.setup();
+    }
+
+    /** BGA calls this whenever the active player changes. */
+    onUpdateActionButtons(stateName: string, args: any): void {
+        this.panelsComponent.markActive();
     }
 
     private registerStates(): void {
-        this.bga.states.register('PlayerTurn', new PlayerTurnState(this.bga, this.animationManager, this.marketComponent, this.translationComponent));
+        this.bga.states.register('PlayerTurn', new PlayerTurnState(this.bga, this.animationManager, this.marketComponent, this.translationComponent, this.panelsComponent));
         this.bga.states.register('SeasonSetup', new SeasonSetupState(this.bga, this.animationManager));
     }
 
