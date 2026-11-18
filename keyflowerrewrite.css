@@ -51,6 +51,15 @@ html {
     --kf-row-step: 0.5;
 }
 
+/* Phones and narrow windows: tiles shrink so three fit across the market, with their bids in rows
+   under them (below). BGA's minimum width is 360px: tiles are then about 104px. */
+@media (max-width: 499px) {
+    #kf_main {
+        --kf-tile-w: min(128px, calc((100vw - 48px) / 3));
+        --kf-tile-h: calc(var(--kf-tile-w) * 0.875);
+    }
+}
+
 /* Villages: yours first, then the others in turn order */
 
 #kf_villages {
@@ -61,10 +70,25 @@ html {
 }
 
 .kf_village {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
     background: rgba(255, 255, 255, 0.6);
     border-left: 4px solid var(--kf-player-color);
     border-radius: 8px;
     padding: 8px 12px 12px;
+}
+
+/* A village wider than the screen scrolls sideways; its name stays in place */
+.kf_village_scroll {
+    overflow-x: auto;
+}
+
+/* Phones: one village per row, each as wide as the screen */
+@media (max-width: 499px) {
+    .kf_village {
+        flex: 1 1 100%;
+    }
 }
 
 .kf_village_name {
@@ -103,7 +127,8 @@ html {
 /*
  * Market: each tile with the bids on it. Bids sit along the tile's edges, as on the table: each
  * player always has the same edge, yours at the bottom (data-kf-edge, 0 top, clockwise to 5 upper
- * left). Where two tiles with their edges don't fit side by side, bids are rows under the tile.
+ * left). Where three tiles with their edges don't fit side by side (phones, narrow windows), bids are
+ * rows under the tile.
  */
 
 #kf_market {
@@ -219,7 +244,7 @@ html {
     display: none;
 }
 
-@container (max-width: 367px) {
+@container (max-width: 499px) {
     .kf_lot_box {
         width: var(--kf-tile-w);
         height: var(--kf-tile-h);
@@ -247,26 +272,25 @@ html {
     font-size: 12px;
 }
 
+/* A row under the tile, as along the edges: avatar, then workers; outbid in a grey frame */
 .kf_bid {
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 1px 6px 1px 4px;
-    border-left: 4px solid var(--kf-player-color);
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.75);
-}
-
-.kf_bid_player {
-    font-weight: bold;
-    max-width: 60px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    justify-content: center;
+    gap: 1px;
+    padding: 1px 4px;
+    border-radius: 10px;
 }
 
 .kf_bid.kf_outbid {
-    border-left-color: #a8a8a8;   /* the row says "outbid" in words */
+    outline: 1.5px solid #9a9a9a;
+    outline-offset: 1px;
+}
+
+.kf_bid.kf_outbid .kf_avatar {
+    border-color: #a8a8a8;
+    filter: grayscale(1);
+    opacity: 0.6;
 }
 
 .kf_bid.kf_moving {
@@ -276,10 +300,6 @@ html {
 .kf_pending {
     outline: 2px dashed #1a73e8;
     outline-offset: -1px;
-}
-
-.kf_tag {
-    font-style: italic;
 }
 
 .kf_chip {

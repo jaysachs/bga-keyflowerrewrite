@@ -230,7 +230,11 @@ export class MarketComponent extends BaseComponent<MarketLot> {
         );
     }
 
-    /** A bid as a row under the tile, for narrow screens. */
+    /**
+     * A bid as a row under the tile, for narrow screens: as along the edges, the player's avatar then
+     * their workers, and an outbid bid in a grey frame (a name and the word "outbid" don't fit beside
+     * three workers under a phone-sized tile). The tile button's label still reads it all out.
+     */
     private bidRow(b: ShownBid): HTMLElement {
         const player = this.bga.gameui.gamedatas.players[b.playerId]!;
         return Html.div({
@@ -238,11 +242,10 @@ export class MarketComponent extends BaseComponent<MarketLot> {
                 attrs: { 'data-kf-player': b.playerId },
                 style: `--kf-player-color: #${player.color}`,
             },
-            Html.span({ classes: 'kf_bid_player', text: player.name }),
+            Html.img({ classes: 'kf_avatar', attrs: { src: this.bga.players.getPlayerAvatarUrl(b.playerId, 32), alt: '' } }),
             workerIcons(b.color, b.num),
             b.added ? Html.span({ classes: 'kf_chip', text: `+${b.added}` }) : undefined,
             b.moving ? Html.span({ classes: 'kf_chip', text: `−${b.num}` }) : undefined,
-            b.outbid && !b.added && !b.moving ? Html.span({ classes: 'kf_tag', text: _('outbid') }) : undefined,
         );
     }
 

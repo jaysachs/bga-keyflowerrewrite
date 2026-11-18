@@ -45,11 +45,14 @@ export class VillageComponent extends BaseComponent<any> {
                 style: `--kf-player-color: #${player.color}`,
             },
             Html.div({ classes: 'kf_village_name', text: player.name }),
-            Html.div({
-                    classes: 'kf_village_map',
-                    style: [`--kf-row-span: ${maxRow - minRow}`, `--kf-col-span: ${maxCol - minCol}`],
-                },
-                ...village.tiles.map((t, i) => this.tileDiv(t, rcs[i]!.row - minRow, rcs[i]!.col - minCol))
+            // The map scrolls sideways when the village is wider than the screen (phones); the name stays.
+            Html.div({ classes: 'kf_village_scroll' },
+                Html.div({
+                        classes: 'kf_village_map',
+                        style: [`--kf-row-span: ${maxRow - minRow}`, `--kf-col-span: ${maxCol - minCol}`],
+                    },
+                    ...village.tiles.map((t, i) => this.tileDiv(t, rcs[i]!.row - minRow, rcs[i]!.col - minCol))
+                )
             )
         );
     }
