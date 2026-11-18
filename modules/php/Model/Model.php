@@ -311,12 +311,12 @@ class Model {
         // TODO: need to handle boat4b
         $assembled = $this->assembleValidatedWorkerGroup($moved_bid_ids, $numWorkersFromStock, $workerColor);
 
-        $t->activationSet()->add($assembled["group"]);
+        $t->productionActivations()->add($assembled["group"]);
 
         $rewards = $this->allData()->takeActivationRewards($rewardType, $requested_reward_type);
 
-        $this->ps->updateActivatedWorkerLocations($this->activePlayerId, $t->tile_id, $t->activationSet()->lastActivationSize(), $assembled["group"]);
-        $this->ps->updateRewards($rewards);
+        $this->ps->updateActivatedWorkerLocations($this->activePlayerId, $t->tile_id, $t->productionActivations()->lastActivationSize(), $assembled["group"]);
+        // $this->ps->updateRewards($rewards);
         $this->ps->clearPasses();
 
         /*

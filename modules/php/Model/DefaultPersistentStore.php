@@ -241,7 +241,7 @@ class DefaultPersistentStore implements PersistentStore {
             }
             foreach ($pacts as $a) {
                 if (count($a) > 0) {
-                    $v->activationSet()->add(new WorkerGroup($a));
+                    $v->productionActivations()->add(new WorkerGroup($a));
                 }
             }
         }
@@ -277,9 +277,9 @@ class DefaultPersistentStore implements PersistentStore {
     }
 
     /** @return list<string> */
-    private function activationVals(ActivationSet $activationSet, int $tile_id): array {
+    private function activationVals(ProductionActivations $productionActivations, int $tile_id): array {
         $result = [];
-        foreach ($activationSet->activations() as $apos => $activation) {
+        foreach ($productionActivations->activations() as $apos => $activation) {
             foreach ($activation->workers() as $worker) {
                 $result[] = "('{$this->WORKER}', {$worker->id}, '{$worker->color->value}', '{$this->TILE}', {$tile_id}, {$apos}, 'NULL')";
             }
@@ -299,7 +299,7 @@ class DefaultPersistentStore implements PersistentStore {
         array_push($values, ... $this->skillVals($this->SKILLPILE, $data->skillPile->skills()));
         foreach ($data->market->lots() as $pos => $mt) {
             $values[] = "('{$this->TILE}', {$mt->tile_id}, '{$mt->type->value}','{$this->MARKET}', {$noLocId}, {$pos}, {$noPid})";
-            array_push($values, ... $this->activationVals($mt->activationSet(), $mt->tile_id));
+            array_push($values, ... $this->activationVals($mt->productionActivations(), $mt->tile_id));
             foreach ($mt->bids() as $pid => $bid) {
                 foreach ($bid->workers() as $bpos => $worker) {
                     $values[] = "('{$this->WORKER}', {$worker->id}, '{$worker->color->value}', '{$this->TILE}', {$mt->tile_id}, {$bpos}, {$pid})";
@@ -315,7 +315,7 @@ class DefaultPersistentStore implements PersistentStore {
         foreach ($data->villages as $village) {
             foreach ($village->tiles() as $pos => $vt) {
                 $values[] = "('{$this->TILE}', {$vt->tile_id}, '{$vt->type->value}', '{$this->VILLAGE}', {$vt->rowcol}, {$vt->orientation}, {$village->playerId})";
-                array_push($values, ... $this->activationVals($vt->activationSet(), $vt->tile_id));
+                array_push($values, ... $this->activationVals($vt->productionActivations(), $vt->tile_id));
             }
             array_push($values, ... $this->workervals($this->VILLAGE, $village->workers(), null, $village->playerId));
             array_push($values, ... $this->skillVals($this->VILLAGE, $village->skills(), null, $village->playerId));

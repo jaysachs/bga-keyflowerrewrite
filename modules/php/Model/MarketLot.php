@@ -37,7 +37,7 @@ class MarketLot {
         public readonly int $tile_id,
         public TileType $type,
         private array $bids = [],
-        private ActivationSet $activationSet = new ActivationSet()) {
+        private ProductionActivations $productionActivations = new ProductionActivations()) {
         // validate we have no bids, or a single high bid.
         $this->highBid();
     }
@@ -114,5 +114,5 @@ class MarketLot {
         return $winner === null ? new WorkerGroup([]) : $winner;
     }
 
-    public function activationSet(): ActivationSet { return $this->activationSet; }
+    public function productionActivations(): ProductionActivations { return $this->productionActivations; }
 }

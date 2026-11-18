@@ -38,7 +38,7 @@ class VillageTile {
         public readonly int $rowcol,
         public readonly int $orientation,
         private array $resources = [],
-        private ActivationSet $activationSet = new ActivationSet()) { }
+        private ProductionActivations $productionActivations = new ProductionActivations()) { }
 
     /** @return list<Resource> */
     public function resources(): array { return $this->resources; }
@@ -47,5 +47,5 @@ class VillageTile {
         $this->resources[] = $res;
     }
 
-    public function activationSet(): ActivationSet { return $this->activationSet; }
+    public function productionActivations(): ProductionActivations { return $this->productionActivations; }
 }

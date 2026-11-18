@@ -29,7 +29,7 @@ namespace Bga\Games\keyflowerrewrite\Model;
 
 use InvalidArgumentException;
 
-class ActivationSet {
+class ProductionActivations {
     /** @param array<int,WorkerGroup>  $activations */
     public function __construct(private array $activations = []) { }
 
