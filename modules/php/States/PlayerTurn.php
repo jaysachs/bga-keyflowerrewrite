@@ -135,7 +135,7 @@ class PlayerTurn extends AbstractState {
                 'color' => Marshaller::color($bid->color()),
                 'tiletype' => $model->market()->marketLotById($market_tile_id)->type->value,
                 // the tiles the moved bids (bidMoved, just before) leave, so the client can show the whole bid in one step
-                'moved_from' => array_map(fn ($mb) => $mb->sourceTile->id, $bidResult->movedBids),
+                'moved_from' => array_map(fn ($mb) => $mb->sourceTile->tile_id, $bidResult->movedBids),
                 'bid' => array_map(fn ($w) => [
                     // FIXME: do we need position too?
                     'id' => $w->id,
