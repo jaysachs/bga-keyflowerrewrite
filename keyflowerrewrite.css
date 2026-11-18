@@ -787,3 +787,25 @@ html {
 #overall-content .player-board {
     background-color: #fff;
 }
+
+/*
+ * Phones: BGA shrinks the player panels to fit two per row (zoom, from --bga-framework-parts-zoom:
+ * 0.73 at 360px wide), which left names and counts at about 11px. Their text is scaled back up so
+ * it reads at about 14px (chips 12px); the layout stays BGA's.
+ */
+.mobile_version #overall-content .player-board[id^="overall_player_board_"] > .player_board_inner {
+    grid-template-rows: auto auto;
+}
+
+.mobile_version #overall-content .player_board_inner .player-name > a,
+.mobile_version #overall-content .player_board_inner .player_score_value,
+.mobile_version #overall-content .kf_counted {
+    font-size: calc(14px / var(--bga-framework-parts-zoom, 1));
+    line-height: 1.3;
+}
+
+.mobile_version #overall-content .kf_chips,
+.mobile_version #overall-content .kf_outbid_where {
+    font-size: calc(12px / var(--bga-framework-parts-zoom, 1));
+}
+
