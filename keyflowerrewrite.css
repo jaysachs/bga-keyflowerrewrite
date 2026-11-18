@@ -809,6 +809,13 @@ html {
     font-size: calc(12px / var(--bga-framework-parts-zoom, 1));
 }
 
+/* BGA's small icons (online status, flag, premium ribbon) at their normal size: undo BGA's shrinking on them */
+.mobile_version #overall-content .player_board_inner .player-name > .player_status,
+.mobile_version #overall-content .player_board_inner .player-name > .bga-flag,
+.mobile_version #overall-content .player_board_inner .emblempremium {
+    zoom: calc(1 / var(--bga-framework-parts-zoom, 1));
+}
+
 /* Never below iOS's smallest text style (Caption 2, 11pt): the clock at 12, messages at 13 */
 .mobile_version #overall-content .player_board_inner [id^="timeToThink_"] {
     font-size: calc(12px / var(--bga-framework-parts-zoom, 1));
