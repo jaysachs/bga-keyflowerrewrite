@@ -1,4 +1,5 @@
 import { BgaAnimations } from "../bgalibs/bga-animations";
+import { center } from "./utils";
 
 export type AnimationList = (() => Promise<any>)[];
 
@@ -17,14 +18,17 @@ export class MoreAnimations {
     }
 
     /**
-     * Moves an element, already in its new place, in from `dx`, `dy` pixels away: it starts slightly
-     * larger, as if lifted, and settles. Longer moves take longer, up to 0.9s. Uses the `translate`
-     * property, which applies on top of any `transform` the element has (e.g. a rotation).
+     * Moves an element, already in its new place (`to`, by default where it's drawn now), in from
+     * `from`, center to center: it starts slightly larger, as if lifted, and settles. Longer moves
+     * take longer, up to 0.9s. Uses the `translate` property, which applies on top of any
+     * `transform` the element has (e.g. a rotation).
      */
-    async animateMove(el: HTMLElement, dx: number, dy: number): Promise<void> {
+    async animateMove(el: HTMLElement, from: DOMRect, to: DOMRect = el.getBoundingClientRect()): Promise<void> {
         if (!this.animationsActive()) {
             return;
         }
+        const start = center(from), end = center(to);
+        const dx = start.x - end.x, dy = start.y - end.y;
         const move = el.animate([
             { translate: `${dx}px ${dy}px`, scale: '1.15', zIndex: 10 },
             { translate: '0 0', scale: '1', zIndex: 10 },

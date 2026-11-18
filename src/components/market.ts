@@ -2,7 +2,6 @@ import { KFGameDatas, KFPlayer, MarketLot, Worker, WorkerColor } from "../kfdata
 import { BaseComponent } from "../libs/basecomponent";
 import { Html } from "../libs/html";
 import { MoreAnimations } from "../libs/more-animations";
-import { center } from "../libs/utils";
 import { TranslationComponent } from "./translation";
 
 /** One bid as shown on a tile. */
@@ -106,9 +105,9 @@ export class MarketComponent extends BaseComponent<MarketLot> {
      */
     public async flyBid(tileId: number, playerId: number, from: DOMRect): Promise<void> {
         const el = this.shownBid(tileId, playerId);
-        if (!el) { return; }
-        const start = center(from), end = center(el.getBoundingClientRect());
-        await this.animations.animateMove(el, start.x - end.x, start.y - end.y);
+        if (el) {
+            await this.animations.animateMove(el, from);
+        }
     }
 
     /** The tiles that can be clicked; an empty list makes the market read-only. */
