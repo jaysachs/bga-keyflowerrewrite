@@ -29,14 +29,23 @@ namespace Bga\Games\keyflowerrewrite\Model;
 
 
 class VillageTile {
+    /**
+     * @param list<Resource> $resources
+     */
     public function __construct(
         public readonly int $tile_id,
         public readonly TileType $type,
         public readonly int $rowcol,
-        public readonly int $orientation) {
+        public readonly int $orientation,
+        private array $resources = [],
+        private ActivationSet $activationSet = new ActivationSet()) { }
 
-        }
-        // public array $activations = [],
-    /** @var list<Resource> */
-    public array $resources = [];
+    /** @return list<Resource> */
+    public function resources(): array { return $this->resources; }
+
+    public function addResource(Resource $res): void {
+        $this->resources[] = $res;
+    }
+
+    public function activationSet(): ActivationSet { return $this->activationSet; }
 }

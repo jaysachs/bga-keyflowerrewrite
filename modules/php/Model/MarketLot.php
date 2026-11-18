@@ -36,7 +36,8 @@ class MarketLot {
     public function __construct(
         public readonly int $tile_id,
         public TileType $type,
-        private array $bids = []) {
+        private array $bids = [],
+        private ActivationSet $activationSet = new ActivationSet()) {
         // validate we have no bids, or a single high bid.
         $this->highBid();
     }
@@ -112,4 +113,6 @@ class MarketLot {
         // return $winner;
         return $winner === null ? new WorkerGroup([]) : $winner;
     }
+
+    public function activationSet(): ActivationSet { return $this->activationSet; }
 }

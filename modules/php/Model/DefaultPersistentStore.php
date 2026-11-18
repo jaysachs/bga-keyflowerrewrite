@@ -81,8 +81,11 @@ class DefaultPersistentStore implements PersistentStore {
         $seasonString = $this->globals->get(self::GLOBAL_SEASON, null);
         $result = new AllGameData($playerIds, $seasonString === null ? null : Season::from(strval($seasonString)));
 
-        /** @var array<int,array<int,list<Worker>>> */
+        /** @var array<int,array<int,list<Worker>>> tile x playerid x workers */
         $bids = [];
+
+        /** @var array<int,array<int,list<Worker>>> tile x activation row x workers */
+        $acts = [];
 
         /** @var array<int,TileType> */
         $tileTypes = [];
@@ -101,6 +104,7 @@ class DefaultPersistentStore implements PersistentStore {
             $pid = intval($row['player_id']);
             $loc_id = intval($row['loc_id']);
             $loc_pos = intval($row['loc_pos']);
+
             switch ($piece_type) {
                 case $this->STARTPLAYER:
                     $result->villages[$pid]->setHasStartPlayer(true);
@@ -111,9 +115,11 @@ class DefaultPersistentStore implements PersistentStore {
                     switch ($loc_type) {
                         case $this->VILLAGE:
                             $result->villages[$pid]->placeTile(new VillageTile($id, $type, $loc_id, $loc_pos));
+                            $acts[$id] = [];
                             break;
                         case $this->MARKET:
                             $bids[$id] = array_fill_keys($playerIds, []);
+                            $acts[$id] = [];
                             // $result->market->addTile(new MarketLot($id, $type));
                             break;
                         case $this->DOCK:
@@ -149,16 +155,10 @@ class DefaultPersistentStore implements PersistentStore {
                             break;
                         case $this->TILE:
                             // activations
-                            $vid = $loc_id;
-                            $v = array_find($result->villages[$pid]->tiles(), fn ($vt) => $vid == $vt->tile_id);
-                            if ($v === null) {
-                                $v = $result->market->lotByTileId($loc_id);
+                            if (!isset($acts[$loc_id][$loc_pos])) {
+                                $acts[$loc_id][$loc_pos] = [];
                             }
-                            if ($v === null) {
-                                throw new InvalidArgumentException("couldn't find village tile for player {$pid} tile {$vid}");
-                            }
-                            // FIXME: need position!
-                            // $v->activations[] = $worker;
+                            $acts[$loc_id][$loc_pos][] = $worker;
                             break;
                         case $this->VILLAGE:
                             $vid = $loc_id;
@@ -209,7 +209,7 @@ class DefaultPersistentStore implements PersistentStore {
                             if ($v === null) {
                                 throw new InvalidArgumentException("couldn't find village tile for player {$pid} tile {$vid}");
                             }
-                            $v->resources[] = $resource;
+                            $v->addResource($resource);
                             break;
                         // case 'scoring':
                         default:
@@ -225,6 +225,25 @@ class DefaultPersistentStore implements PersistentStore {
         foreach ($bids as $mid => $pbids) {
             $wgb = array_map(fn ($b) => new WorkerGroup($b), array_filter($pbids, fn (array $pbid) => count($pbid) > 0));
             $result->market->addLot(new MarketLot($mid, $tileTypes[$mid], $wgb));
+        }
+        foreach ($acts as $tid => $pacts) {
+            $v = $result->market->lotByTileId($tid);
+            if ($v === null) {
+                foreach ($result->playerIds as $pid) {
+                    $v = array_find($result->villages[$pid]->tiles(), fn ($vt) => $tid == $vt->tile_id);
+                    if ($v !== null) {
+                        break;
+                    }
+                }
+            }
+            if ($v === null) {
+                throw new InvalidArgumentException("couldn't find tile {$tid}");
+            }
+            foreach ($pacts as $a) {
+                if (count($a) > 0) {
+                    $v->activationSet()->add(new WorkerGroup($a));
+                }
+            }
         }
         return $result;
     }
@@ -257,6 +276,17 @@ class DefaultPersistentStore implements PersistentStore {
         return $result;
     }
 
+    /** @return list<string> */
+    private function activationVals(ActivationSet $activationSet, int $tile_id): array {
+        $result = [];
+        foreach ($activationSet->activations() as $apos => $activation) {
+            foreach ($activation->workers() as $worker) {
+                $result[] = "('{$this->WORKER}', {$worker->id}, '{$worker->color->value}', '{$this->TILE}', {$tile_id}, {$apos}, 'NULL')";
+            }
+        }
+        return $result;
+    }
+
     public function saveAllData(AllGameData $data): void {
         $values = [];
 
@@ -269,7 +299,13 @@ class DefaultPersistentStore implements PersistentStore {
         array_push($values, ... $this->skillVals($this->SKILLPILE, $data->skillPile->skills()));
         foreach ($data->market->lots() as $pos => $mt) {
             $values[] = "('{$this->TILE}', {$mt->tile_id}, '{$mt->type->value}','{$this->MARKET}', {$noLocId}, {$pos}, {$noPid})";
-            // TODO: add bids and activations
+            array_push($values, ... $this->activationVals($mt->activationSet(), $mt->tile_id));
+            foreach ($mt->bids() as $pid => $bid) {
+                foreach ($bid->workers() as $bpos => $worker) {
+                    $values[] = "('{$this->WORKER}', {$worker->id}, '{$worker->color->value}', '{$this->TILE}', {$mt->tile_id}, {$bpos}, {$pid})";
+                }
+            }
+            // TODO: add bids
         }
         foreach ($data->dock->boats() as $pos => $mt) {
             $values[] = "('tile', {$mt->id}, '{$mt->type->value}','{$this->DOCK}', {$noLocId}, {$pos}, {$noPid})";
@@ -279,10 +315,7 @@ class DefaultPersistentStore implements PersistentStore {
         foreach ($data->villages as $village) {
             foreach ($village->tiles() as $pos => $vt) {
                 $values[] = "('{$this->TILE}', {$vt->tile_id}, '{$vt->type->value}', '{$this->VILLAGE}', {$vt->rowcol}, {$vt->orientation}, {$village->playerId})";
-                // FIXME: this doesn't work.
-                // foreach ($vt->activations as $wg) {
-                //     array_push($values, ... $this->workerVals($this->TILE, $wg->workers()));
-                // }
+                array_push($values, ... $this->activationVals($vt->activationSet(), $vt->tile_id));
             }
             array_push($values, ... $this->workervals($this->VILLAGE, $village->workers(), null, $village->playerId));
             array_push($values, ... $this->skillVals($this->VILLAGE, $village->skills(), null, $village->playerId));
@@ -290,7 +323,7 @@ class DefaultPersistentStore implements PersistentStore {
                 array_push($values, "('{$this->STARTPLAYER}', 1, {$noSubtype}, '{$this->VILLAGE}', {$noLocId}, 0, {$village->playerId})");
             }
             foreach ($village->wonTiles() as $tile) {
-                $values[] = "('{$this->TILE}', {$tile->tile_id}, '{$tile->type->value}, '{$this->WON}', {$noLocId}, NULL, {$village->playerId})";
+                $values[] = "('{$this->TILE}', {$tile->tile_id}, '{$tile->type->value}, '{self::WON}', {$noLocId}, NULL, {$village->playerId})";
             }
         }
 
