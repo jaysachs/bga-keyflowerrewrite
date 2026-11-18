@@ -36,10 +36,10 @@ enum Season: string {
 
     public function translatedName(): string {
         return match ($this) {
-            Season::SPRING => "Spring",
-            Season::SUMMER => "Summer",
-            Season::FALL => "Autumn",
-            Season::WINTER => "Winter",
+            Season::SPRING => clienttranslate("Spring"),
+            Season::SUMMER => clienttranslate("Summer"),
+            Season::FALL => clienttranslate("Autumn"),
+            Season::WINTER => clienttranslate("Winter"),
         };
     }
 }

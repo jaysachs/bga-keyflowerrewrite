@@ -36,10 +36,10 @@ enum WorkerColor: string {
 
     public function translatedName(): string {
         return match ($this) {
-            WorkerColor::BLUE => "blue",
-            WorkerColor::RED => "red",
-            WorkerColor::YELLOW => "yellow",
-            WorkerColor::GREEN => "green",
+            WorkerColor::BLUE => clienttranslate("blue"),
+            WorkerColor::RED => clienttranslate("red"),
+            WorkerColor::YELLOW => clienttranslate("yellow"),
+            WorkerColor::GREEN => clienttranslate("green"),
         };
     }
 }
