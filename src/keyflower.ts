@@ -30,7 +30,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
         super(bga);
 
         this.translationComponent = new TranslationComponent(bga);
-        this.marketComponent = new MarketComponent(bga, this.translationComponent);
+        this.marketComponent = new MarketComponent(bga, this.translationComponent, this.moreAnimations);
         this.dockComponent = new DockComponent(bga);
         this.villageComponent = new VillageComponent(bga);
     }
