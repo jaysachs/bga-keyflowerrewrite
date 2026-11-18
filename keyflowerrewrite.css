@@ -63,6 +63,7 @@ html {
 
 .mobile_version #pagemaintitletext {
     font-size: 15px;
+    line-height: 1.35;
 }
 
 /* Phones and narrow windows: tiles shrink so three fit across the market, with their bids in rows
