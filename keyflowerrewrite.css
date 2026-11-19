@@ -755,6 +755,11 @@ html {
     font-size: calc(12px / var(--bga-framework-parts-zoom, 1));
 }
 
+/* BGA's own phone CSS draws the online status at 16px: 11px, about its size on desktop */
+.mobile_version #overall-content .player_board_inner .player-name > .player_status {
+    font-size: 11px;
+}
+
 /* The start player's meeple at its normal size too */
 .mobile_version #overall-content .player-name > .kf_starter {
     width: calc(18px / var(--bga-framework-parts-zoom, 1));
