@@ -27,6 +27,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
+use InvalidArgumentException;
 
 class Village {
     /**
@@ -72,6 +73,14 @@ class Village {
         $this->workers[] = $worker;
     }
 
+    public function takeWorker(int $id): void {
+        $i = array_find_key($this->workers, fn(Worker $w) => $w->id == $id);
+        if ($i === null) {
+            throw new InvalidArgumentException("no worker with id {$id}");
+        }
+        array_splice($this->workers, $i, 1);
+    }
+
     /** @return list<Skill> */
     public function skills(): array {
         return $this->skills;
@@ -79,6 +88,14 @@ class Village {
 
     public function addSkill(Skill $skill): void {
         $this->skills[] = $skill;
+    }
+
+    public function takeSkill(int $id): void {
+        $i = array_find_key($this->skills, fn(Skill $s) => $s->id == $id);
+        if ($i === null) {
+            throw new InvalidArgumentException("no skill with id {$id}");
+        }
+        array_splice($this->skills, $i, 1);
     }
 
     /** @return list<StockTile> */

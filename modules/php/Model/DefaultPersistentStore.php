@@ -346,8 +346,9 @@ class DefaultPersistentStore implements PersistentStore {
         }
     }
 
-    public function updateActivatedWorkerLocations(int $player_id, int $tile_id, int $activationPos, WorkerGroup $group): void {
+    public function updateActivation(int $player_id, int $tile_id, int $activationPos, WorkerGroup $group, ProductionResult $productionResult): void {
         $ids = array_map(fn ($w) => $w->id, $group->workers());
+        // TODO: include $productionResult
         $this->db->execute(
             "UPDATE pieces
              SET loc_type='{$this->TILE}',

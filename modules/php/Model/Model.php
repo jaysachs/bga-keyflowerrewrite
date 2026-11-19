@@ -199,30 +199,10 @@ class Model {
     }
 
     /**
-     * @param list<int> $moved_bid_ids the tiles to move bids from
+     * @param MarketLot|VillageTile $tile
+     * @return array{worker:?Worker,skill:?Skill}
      */
-    public function activate(
-        int $tile_id,
-        array $moved_bid_ids,
-        int $numWorkersFromStock,
-        WorkerColor $workerColor,
-        ?int $skill_pmt_id,
-        ?int $worker_pmt_id,
-        ?ResourceType $requested_reward_type): ActivationResult {
-        $t = array_find($this->market()->lots(), fn (MarketLot $mt) => $mt->tile_id == $tile_id);
-        if ($t === null) {
-            foreach ($this->villages() as $village) {
-                $t = array_find($village->tiles(), fn ($vt) => $vt->tile_id == $tile_id);
-                if ($t) {
-                    break;
-                }
-            }
-            throw new InvalidArgumentException("no activatable tile {$tile_id}");
-        }
-        $rewardType = $t->type->activationReward();
-        if ($rewardType == ActivationReward::NONE) {
-            throw new InvalidArgumentException("tile {$tile_id} {$t->type->value} is not activatable");
-        }
+    private function computeActivationCost(mixed $tile, ?int $skill_pmt_id, ?int $worker_pmt_id): array {
         $skill = null;
         if ($skill_pmt_id !== null) {
             $skill = array_find($this->village()->skills(), fn ($s) => $s->id == $skill_pmt_id);
@@ -240,7 +220,7 @@ class Model {
         if ($worker && $skill) {
             throw new InvalidArgumentException("both skill and worker provided");
         }
-        switch ($t->type->activationCost()) {
+        switch ($tile->type->activationCost()) {
             case ActivationCost::SKILL_ANY:
                 if (! $skill) {
                     throw new InvalidArgumentException("skill required to active, non provided");
@@ -300,22 +280,64 @@ class Model {
                 }
                 break;
         }
+        return [
+            "skill" => $skill,
+            "worker" => $worker,
+        ];
+    }
+
+    /**
+     * @param list<int> $moved_bid_ids the tiles to move bids from
+     */
+    public function activate(
+        int $tile_id,
+        array $moved_bid_ids,
+        int $numWorkersFromStock,
+        WorkerColor $workerColor,
+        ?int $skill_pmt_id,
+        ?int $worker_pmt_id,
+        ?ResourceType $requested_reward_type): ActivationResult {
+
+        $t = array_find($this->market()->lots(), fn (MarketLot $mt) => $mt->tile_id == $tile_id);
+        if ($t === null) {
+            foreach ($this->villages() as $village) {
+                $t = array_find($village->tiles(), fn ($vt) => $vt->tile_id == $tile_id);
+                if ($t) {
+                    break;
+                }
+            }
+            throw new InvalidArgumentException("no activatable tile {$tile_id}");
+        }
+        $rewardType = $t->type->activationReward();
+        if ($rewardType == ActivationReward::NONE) {
+            throw new InvalidArgumentException("tile {$t->tile_id} {$t->type->value} is not activatable");
+        }
+
+        $costResult = $this->computeActivationCost($t, $skill_pmt_id, $worker_pmt_id);
+        $worker = $costResult["worker"];
+        $skill = $costResult["skill"];
+
         if ($worker) {
             $this->allData()->workerStock->putInBag($worker);
-            // TODO: remove from village
+            $this->village()->takeWorker($worker->id);
         } else if ($skill) {
             $this->allData()->skillPile->put($skill);
-            // TODO: remove from village
+            $this->village()->takeSkill($skill->id);
         }
 
         // TODO: need to handle boat4b
-        $assembled = $this->assembleValidatedWorkerGroup($moved_bid_ids, $numWorkersFromStock, $workerColor);
+        $activationInfo = $this->assembleValidatedWorkerGroup($moved_bid_ids, $numWorkersFromStock, $workerColor);
+        $activatingWorkerGroup = $activationInfo["group"];
+        $t->productionActivations()->add($activatingWorkerGroup);
 
-        $t->productionActivations()->add($assembled["group"]);
+        $result = $this->allData()->takeActivationRewards($rewardType, $requested_reward_type);
 
-        $rewards = $this->allData()->takeActivationRewards($rewardType, $requested_reward_type);
-
-        $this->ps->updateActivatedWorkerLocations($this->activePlayerId, $t->tile_id, $t->productionActivations()->lastActivationSize(), $assembled["group"]);
+        $this->ps->updateActivation(
+            $this->activePlayerId,
+            $t->tile_id,
+            count($t->productionActivations()->activations()) - 1,
+            $activatingWorkerGroup,
+            $result);
         // $this->ps->updateRewards($rewards);
         $this->ps->clearPasses();
 

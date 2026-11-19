@@ -11,6 +11,7 @@ use Bga\Games\keyflowerrewrite\Model\{
     Model,
     MovedBid,
     PersistentStore,
+    ProductionResult,
     RowCol,
     Season,
     TileType,
@@ -43,7 +44,7 @@ class TestStore implements PersistentStore {
     {
     }
 
-    public function updateActivatedWorkerLocations(int $player_id, int $tile_id, int $activationPos, WorkerGroup $group): void
+    public function updateActivation(int $player_id, int $tile_id, int $activationPos, WorkerGroup $group, ProductionResult $prodResult): void
     {
 
     }

@@ -112,10 +112,7 @@ class AllGameData {
         return $result;
     }
 
-    /**
-     * @return array{workers:list<Worker>|null,resources:list<Resource>|null,skills:list<Skill>|null,upgrades:int|null}
-     */
-    public function takeActivationRewards(ActivationReward $rewardType, ?ResourceType $requested): array {
+    public function takeActivationRewards(ActivationReward $rewardType, ?ResourceType $requested): ProductionResult {
         $skills = null;
         $resources = null;
         $workers = null;
@@ -226,12 +223,7 @@ class AllGameData {
         if ($requested) {
             throw new InvalidArgumentException("cannot specify a resource type");
         }
-         return [
-            "resources" => $resources,
-            "skills" => $skills,
-            "workers" => $workers,
-            "upgrades" => $upgrades,
-        ];
+        return new ProductionResult($workers, $resources, $skills, $upgrades);
     }
 
 }
