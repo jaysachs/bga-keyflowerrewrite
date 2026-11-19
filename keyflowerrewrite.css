@@ -610,7 +610,7 @@ html {
 
 #overall-content .player_board_inner .player-name > a:first-child {
     display: inline-block;
-    max-width: calc(100% - 24px);
+    max-width: calc(100% - 46px - 24px);   /* the line includes BGA's avatar (46px with its gap) */
     overflow: hidden;
     text-overflow: ellipsis;
     vertical-align: bottom;
@@ -621,7 +621,7 @@ html {
 }
 
 .mobile_version #overall-content .player_board_inner .player-name > a:first-child {
-    max-width: calc(100% - 24px / var(--bga-framework-parts-zoom, 1));
+    max-width: calc(100% - 46px - 24px / var(--bga-framework-parts-zoom, 1));
 }
 
 /* The start player: the purple meeple right after their name (PanelsComponent), so it takes no line
