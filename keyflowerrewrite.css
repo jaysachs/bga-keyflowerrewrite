@@ -617,7 +617,11 @@ html {
 }
 
 .mobile_version #overall-content .player_board_inner .player-name {
-    padding-right: calc(46px / var(--bga-framework-parts-zoom, 1));
+    padding-right: calc(48px / var(--bga-framework-parts-zoom, 1));
+}
+
+.mobile_version #overall-content .player_board_inner .player-name > a:first-child {
+    max-width: calc(100% - 24px / var(--bga-framework-parts-zoom, 1));
 }
 
 /* The start player: the purple meeple right after their name (PanelsComponent), so it takes no line
