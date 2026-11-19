@@ -105,16 +105,10 @@ html {
     padding: 8px 12px 12px;
 }
 
-/* A village wider than the screen scrolls sideways; its name stays in place */
+/* Each village is as wide as its tiles, so small villages share a row, also on phones. One wider than
+   the screen stops at the screen's width (max-width above) and scrolls sideways; its name stays in place */
 .kf_village_scroll {
     overflow-x: auto;
-}
-
-/* Phones: one village per row, each as wide as the screen */
-@media (max-width: 499px) {
-    .kf_village {
-        flex: 1 1 100%;
-    }
 }
 
 .kf_village_name {
