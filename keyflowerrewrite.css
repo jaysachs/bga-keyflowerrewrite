@@ -270,12 +270,14 @@ html {
     margin-left: 2px;
 }
 
-/* Rows under the tile: only where the edges don't fit */
+/* Rows under the tile: only where the edges don't fit. With bids along the edges, a tile takes 184px
+   (128px and 28px each side), so three need 552px; with bids under it, 140px. Below 552px, bids go
+   under the tiles, which keeps three tiles across (and on phones, the tiles shrink to fit, above) */
 .kf_bids {
     display: none;
 }
 
-@container (max-width: 499px) {
+@container (max-width: 551px) {
     .kf_lot_box {
         width: var(--kf-tile-w);
         height: var(--kf-tile-h);
