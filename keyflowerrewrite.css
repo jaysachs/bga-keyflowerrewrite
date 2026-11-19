@@ -600,8 +600,8 @@ html {
    take a line (its text stays for screen readers) */
 #overall-content .kf_chip_start {
     position: absolute;
-    left: 30px;
-    top: 24px;
+    left: 29px;
+    top: 21px;
     margin: 0;
     padding: 0;
     background: none;
@@ -609,8 +609,8 @@ html {
 }
 
 #overall-content .kf_chip_start .kf_starter {
-    width: 15px;
-    height: 16px;
+    width: 18px;
+    height: 19px;
     filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff);
 }
 
@@ -763,11 +763,11 @@ html {
 }
 
 .mobile_version #overall-content .kf_chip_start {
-    top: 22px;   /* less padding on phones */
+    top: 19px;   /* less padding on phones */
 }
 
 .mobile_version #overall-content .kf_chip_start .kf_starter {
-    width: calc(15px / var(--bga-framework-parts-zoom, 1));
-    height: calc(16px / var(--bga-framework-parts-zoom, 1));
+    width: calc(18px / var(--bga-framework-parts-zoom, 1));
+    height: calc(19px / var(--bga-framework-parts-zoom, 1));
 }
 

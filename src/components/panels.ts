@@ -24,6 +24,10 @@ export class PanelsComponent {
             const id = Number(key);
             document.getElementById(`overall_player_board_${id}`)?.style.setProperty('--kf-player-color', `#${player.color}`);
             this.bga.playerPanels.getElement(id).append(this.chips(id, id == me, id == gamedatas.startPlayerId));
+            if (id == gamedatas.startPlayerId) {
+                // The meeple has no visible label (once known, it isn't needed); hover or tap shows one.
+                this.bga.gameui.addTooltip(`kf_start_${id}`, _('Start player'), '');
+            }
         });
         this.markActive();
         this.updatePrivateRow();
@@ -70,7 +74,7 @@ export class PanelsComponent {
         return Html.div({ classes: 'kf_chips' },
             Html.span({ classes: ['kf_pchip', 'kf_chip_turn'], text: mine ? _('Your turn') : _('Playing') }),
             start
-                ? Html.span({ classes: ['kf_pchip', 'kf_chip_start'] },
+                ? Html.span({ id: `kf_start_${id}`, classes: ['kf_pchip', 'kf_chip_start'] },
                     Html.span({ classes: 'kf_starter', attrs: { 'aria-hidden': true } }),
                     document.createTextNode(_('Start player')))
                 : undefined);
