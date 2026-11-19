@@ -118,6 +118,7 @@ html {
 }
 
 .kf_village_name {
+    color: var(--kf-player-color);   /* player names in their color, as BGA's guidelines ask (C.3) */
     font-weight: bold;
     margin-bottom: 8px;
 }
