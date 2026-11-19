@@ -635,7 +635,7 @@ html {
     display: inline-block;
     width: 18px;
     height: 19px;
-    margin-left: 4px;
+    margin: -2px 0 -2px 4px;   /* taller than the text: doesn't make the name's line taller */
     vertical-align: -3px;
     filter: none;
 }
@@ -759,7 +759,7 @@ html {
 .mobile_version #overall-content .player-name > .kf_starter {
     width: calc(18px / var(--bga-framework-parts-zoom, 1));
     height: calc(19px / var(--bga-framework-parts-zoom, 1));
-    margin-left: calc(4px / var(--bga-framework-parts-zoom, 1));
+    margin: -2px 0 -2px calc(4px / var(--bga-framework-parts-zoom, 1));
 }
 
 /* BGA's small icons (online status, flag, premium ribbon) at their normal size: undo BGA's shrinking on them */
@@ -788,7 +788,15 @@ html {
 .mobile_version #overall-content .player-board[id^="overall_player_board_"] {
     padding-top: 6px;
     padding-bottom: 6px;
-    margin-bottom: 5px;
+    margin-bottom: 0;   /* BGA's own gap between the rows is enough (about 4px) */
+}
+
+/* Your workers and tools: no separator line and less space above them */
+.mobile_version #overall-content .kf_private {
+    margin-top: 2px;
+    padding-top: 0;
+    border-top: 0;
+    row-gap: 2px;
 }
 
 .mobile_version #overall-content .player-board.kf_active .kf_chip_turn {
