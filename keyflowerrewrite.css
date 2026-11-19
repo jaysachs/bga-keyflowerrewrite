@@ -66,6 +66,17 @@ html {
     line-height: 1.35;
 }
 
+/* BGA's line height around it (32px) spread a wrapped status line apart */
+.mobile_version #maintitlebar_content > div:has(> #pagemaintitletext) {
+    line-height: 20px;
+}
+
+/* Once the status bar sticks to the top, BGA sets its width without its padding, so it was a few pixels
+   wider than the screen and its text was cut off on the right */
+.mobile_version #page-title {
+    box-sizing: border-box;
+}
+
 /* Phones and narrow windows: tiles shrink so three fit across the market, with their bids in rows
    under them (below). BGA's minimum width is 360px: tiles are then about 104px. */
 @media (max-width: 499px) {
@@ -365,7 +376,9 @@ html {
 @media (max-width: 499px) {
     .kf_pick {
         flex-direction: column;
-        align-items: center;
+        align-items: flex-start;   /* rows start together, so each count sits under the same count */
+        width: fit-content;
+        margin-inline: auto;
     }
 }
 
