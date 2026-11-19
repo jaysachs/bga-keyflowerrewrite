@@ -601,6 +601,25 @@ html {
     color: #1f2328;
 }
 
+/* The name's line stops before BGA's online status and flag, which BGA pins to the corner: a long
+   name is cut with an ellipsis instead of running under them (and keeps the start meeple in view) */
+#overall-content .player_board_inner .player-name {
+    padding-right: 52px;
+    white-space: nowrap;
+}
+
+#overall-content .player_board_inner .player-name > a:first-child {
+    display: inline-block;
+    max-width: calc(100% - 24px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+}
+
+.mobile_version #overall-content .player_board_inner .player-name {
+    padding-right: calc(46px / var(--bga-framework-parts-zoom, 1));
+}
+
 /* The start player: the purple meeple right after their name (PanelsComponent), so it takes no line
    and covers nothing, neither the avatar (players recognize each other by it) nor BGA's icons */
 #overall-content .player-name > .kf_starter {
