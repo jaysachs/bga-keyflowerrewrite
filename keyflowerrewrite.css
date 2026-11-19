@@ -547,6 +547,11 @@ html {
 
 /* Avatar in a ring of the player's color. On a player's turn BGA swaps it for its hourglass, as in
    every BGA game: the hourglass gets the same ring. */
+#overall-content .player_board_inner > [id^="avatarwrap_"],
+#overall-content .player_board_inner > [id^="avatar_active_wrap_"] {
+    margin-top: 4px;   /* centered on the two lines beside it (name; score and rank) */
+}
+
 #overall-content .player_board_inner > [id^="avatarwrap_"] > .avatar,
 #overall-content .player_board_inner > [id^="avatar_active_wrap_"] > .avatar {
     width: 32px;
