@@ -733,6 +733,12 @@ html {
     display: none;
 }
 
+/* Desktop: 8px between the panels, as in the mockup. BGA puts 8px under each panel and its grid adds
+   6px more between them (14px in all) */
+.desktop_version #overall-content #player_boards {
+    row-gap: 0;
+}
+
 /* Player panels in white, like the status bar and the villages, so the colors stand out */
 #overall-content .player-board {
     background-color: #fff;
