@@ -66,9 +66,19 @@ html {
     line-height: 1.35;
 }
 
-/* BGA's line height around it (32px) spread a wrapped status line apart */
+/* BGA gives the status bar's content a 42px minimum height; a one-line status is shorter, and sat at its
+   top. Centered instead */
+.mobile_version #maintitlebar_content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* BGA's line height around it (32px) spread a wrapped status line apart. Balanced lines, so the last
+   word doesn't end up alone beside the buttons */
 .mobile_version #maintitlebar_content > div:has(> #pagemaintitletext) {
     line-height: 20px;
+    text-wrap: balance;
 }
 
 /* Once the status bar sticks to the top, BGA sets its width without its padding, so it was a few pixels
