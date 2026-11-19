@@ -6,10 +6,11 @@ const WORKER_COLORS: WorkerColor[] = ['red', 'yellow', 'blue', 'green'];
 const SKILLS: SkillType[] = ['anvil', 'pickaxe', 'saw'];
 
 /**
- * BGA's player panels, laid out as in the mockup (the CSS does the layout): each panel gets its
- * player's color for the avatar's ring, chips under the name ("Your turn" or "Playing" on the
- * active player's panel, "Start player"), and in your own panel your workers, tools, outbid groups
- * and winter tiles, which the server sends to you only.
+ * BGA's player panels, as in the mockup. BGA's own parts stay where BGA puts them; this adds, with
+ * the CSS: the player's color for the avatar's ring, the active player's mark (kf_active: a bar down
+ * the panel's edge and a "Your turn" or "Playing" chip), the start player's meeple after their name
+ * (with a tooltip), and in your own panel your workers, tools, outbid groups and winter tiles, which
+ * the server sends to you only.
  */
 export class PanelsComponent {
 
@@ -39,7 +40,7 @@ export class PanelsComponent {
     }
 
     /**
-     * Marks the panels of the players who must act now (kf_active: the outline and the turn chip).
+     * Marks the panels of the players who must act now (kf_active: the bar and the turn chip).
      * Call on every change of active player; BGA's own hourglass markers aren't reliable for this.
      */
     public markActive(): void {
@@ -74,7 +75,7 @@ export class PanelsComponent {
         );
     }
 
-    /** "Your turn"/"Playing" (the CSS shows it on the active player's panel only). */
+    /** "Your turn"/"Playing" (the CSS shows it on the active player's panel only, and not on phones). */
     private chips(mine: boolean): HTMLElement {
         return Html.div({ classes: 'kf_chips' },
             Html.span({ classes: ['kf_pchip', 'kf_chip_turn'], text: mine ? _('Your turn') : _('Playing') }));
