@@ -23,10 +23,13 @@ export class PanelsComponent {
         Object.entries(gamedatas.players).forEach(([key, player]) => {
             const id = Number(key);
             document.getElementById(`overall_player_board_${id}`)?.style.setProperty('--kf-player-color', `#${player.color}`);
-            this.bga.playerPanels.getElement(id).append(this.chips(id, id == me, id == gamedatas.startPlayerId));
-            document.getElementById(`overall_player_board_${id}`)?.classList.toggle('kf_start_player', id == gamedatas.startPlayerId);
+            this.bga.playerPanels.getElement(id).append(this.chips(id == me));
             if (id == gamedatas.startPlayerId) {
-                // The meeple has no visible label (once known, it isn't needed); hover or tap shows one.
+                // The start player's meeple, right after their name: no visible label (once known, it isn't
+                // needed), hover or tap shows one. BGA places the online status and flag itself, absolutely,
+                // so following the name is what keeps it clear of them.
+                document.querySelector(`#player_name_${id} > a`)?.after(
+                    Html.span({ id: `kf_start_${id}`, classes: 'kf_starter', attrs: { role: 'img', 'aria-label': _('Start player') } }));
                 this.bga.gameui.addTooltip(`kf_start_${id}`, _('Start player'), '');
             }
         });
@@ -70,15 +73,10 @@ export class PanelsComponent {
         );
     }
 
-    /** "Your turn"/"Playing" (the CSS shows it on the active player's panel only) and "Start player". */
-    private chips(id: number, mine: boolean, start: boolean): HTMLElement {
+    /** "Your turn"/"Playing" (the CSS shows it on the active player's panel only). */
+    private chips(mine: boolean): HTMLElement {
         return Html.div({ classes: 'kf_chips' },
-            Html.span({ classes: ['kf_pchip', 'kf_chip_turn'], text: mine ? _('Your turn') : _('Playing') }),
-            start
-                ? Html.span({ id: `kf_start_${id}`, classes: ['kf_pchip', 'kf_chip_start'] },
-                    Html.span({ classes: 'kf_starter', attrs: { 'aria-hidden': true } }),
-                    document.createTextNode(_('Start player')))
-                : undefined);
+            Html.span({ classes: ['kf_pchip', 'kf_chip_turn'], text: mine ? _('Your turn') : _('Playing') }));
     }
 
     /** An icon with its count beside it. */

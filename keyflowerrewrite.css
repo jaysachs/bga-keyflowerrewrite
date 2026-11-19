@@ -601,28 +601,15 @@ html {
     color: #1f2328;
 }
 
-/* The start player: the purple meeple in the panel's top right corner, after the flag, so it takes no
-   line and covers nothing (the avatar matters: players recognize each other by it). The name's line
-   makes room for it on the start player's panel only (kf_start_player). The text stays for screen
-   readers; hover or tap shows it as a tooltip. */
-#overall-content .player-board.kf_start_player .player-name {
-    margin-right: 22px;
-}
-
-#overall-content .kf_chip_start {
-    position: absolute;
-    right: 8px;
-    top: 8px;
-    margin: 0;
-    padding: 0;
-    background: none;
-    font-size: 0;
-}
-
-#overall-content .kf_chip_start .kf_starter {
+/* The start player: the purple meeple right after their name (PanelsComponent), so it takes no line
+   and covers nothing, neither the avatar (players recognize each other by it) nor BGA's icons */
+#overall-content .player-name > .kf_starter {
+    display: inline-block;
     width: 18px;
     height: 19px;
-    filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff);
+    margin-left: 4px;
+    vertical-align: -3px;
+    filter: none;
 }
 
 /* "Your turn" / "Playing": only on the active player's panel */
@@ -740,6 +727,13 @@ html {
     font-size: calc(12px / var(--bga-framework-parts-zoom, 1));
 }
 
+/* The start player's meeple at its normal size too */
+.mobile_version #overall-content .player-name > .kf_starter {
+    width: calc(18px / var(--bga-framework-parts-zoom, 1));
+    height: calc(19px / var(--bga-framework-parts-zoom, 1));
+    margin-left: calc(4px / var(--bga-framework-parts-zoom, 1));
+}
+
 /* BGA's small icons (online status, flag, premium ribbon) at their normal size: undo BGA's shrinking on them */
 .mobile_version #overall-content .player_board_inner .player-name > .player_status,
 .mobile_version #overall-content .player_board_inner .player-name > .bga-flag,
@@ -773,16 +767,4 @@ html {
     display: none;
 }
 
-.mobile_version #overall-content .kf_chip_start {
-    top: 6px;   /* less padding on phones */
-}
-
-.mobile_version #overall-content .player-board.kf_start_player .player-name {
-    margin-right: calc(20px / var(--bga-framework-parts-zoom, 1));
-}
-
-.mobile_version #overall-content .kf_chip_start .kf_starter {
-    width: calc(18px / var(--bga-framework-parts-zoom, 1));
-    height: calc(19px / var(--bga-framework-parts-zoom, 1));
-}
-
+.mobile_version 
