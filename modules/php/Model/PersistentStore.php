@@ -31,7 +31,7 @@ interface PersistentStore {
     public function readAllData(): AllGameData;
     public function saveAllData(AllGameData $data): void;
     public function updateBidWorkerLocations(int $player_id, MarketLot $bidTile, WorkerGroup $newBid): void;
-    public function updateActivation(int $player_id, int $tile_id, int $activationPos, WorkerGroup $group, ProductionResult $productionResult): void;
+    public function updateActivation(int $player_id, int $tile_id, int $activationPos, WorkerGroup $group, ProductionResult $productionResult, ActivationPayment $payment): void;
     public function clearPasses(): void;
     public function incPasses(): void;
     public function numPasses(): int;

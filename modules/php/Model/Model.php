@@ -200,9 +200,8 @@ class Model {
 
     /**
      * @param MarketLot|VillageTile $tile
-     * @return array{worker:?Worker,skill:?Skill}
      */
-    private function computeActivationCost(mixed $tile, ?int $skill_pmt_id, ?int $worker_pmt_id): array {
+    private function computeActivationCost(mixed $tile, ?int $skill_pmt_id, ?int $worker_pmt_id): ActivationPayment {
         $skill = null;
         if ($skill_pmt_id !== null) {
             $skill = array_find($this->village()->skills(), fn ($s) => $s->id == $skill_pmt_id);
@@ -280,10 +279,7 @@ class Model {
                 }
                 break;
         }
-        return [
-            "skill" => $skill,
-            "worker" => $worker,
-        ];
+        return new ActivationPayment($worker, $skill);
     }
 
     /**
@@ -313,17 +309,8 @@ class Model {
             throw new InvalidArgumentException("tile {$t->tile_id} {$t->type->value} is not activatable");
         }
 
-        $costResult = $this->computeActivationCost($t, $skill_pmt_id, $worker_pmt_id);
-        $worker = $costResult["worker"];
-        $skill = $costResult["skill"];
-
-        if ($worker) {
-            $this->allData()->workerStock->putInBag($worker);
-            $this->village()->takeWorker($worker->id);
-        } else if ($skill) {
-            $this->allData()->skillPile->put($skill);
-            $this->village()->takeSkill($skill->id);
-        }
+        $payment = $this->computeActivationCost($t, $skill_pmt_id, $worker_pmt_id);
+        $this->allData()->applyActivationPayment($this->activePlayerId, $payment);
 
         // TODO: need to handle boat4b
         $activationInfo = $this->assembleValidatedWorkerGroup($moved_bid_ids, $numWorkersFromStock, $workerColor);
@@ -337,23 +324,12 @@ class Model {
             $t->tile_id,
             count($t->productionActivations()->activations()) - 1,
             $activatingWorkerGroup,
-            $result);
+            $result,
+            $payment);
         // $this->ps->updateRewards($rewards);
         $this->ps->clearPasses();
 
-        /*
-         verify:
-            1. tile_id is a tile in some village or the market
-            2. the tile has an activation reward
-            3. moved_bid_ids refer to active player's bids
-            4. moved_bid_ids are currently losing
-            5. moved_bid_ids are unique
-            6. all moved_bid groups have the same type
-            7. worker_type is same as all moved_bid groups
-            8. if there are already activations or bids on this tile, worker type should match
-                unless player has boat4b
-        */
-        return new ActivationResult(false);
+        return new ActivationResult($t, $result, $activatingWorkerGroup, $activationInfo["movedBids"]);
     }
 
     public function passTurn(): void {

@@ -27,6 +27,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
+use InvalidArgumentException;
 
 class ProductionResult {
     /**
@@ -39,6 +40,11 @@ class ProductionResult {
         public readonly ?array $workers,
         public readonly ?array $resources,
         public readonly ?array $skills,
-        public readonly ?int $upgrades) {}
+        public readonly ?int $upgrades) {
+            $specified = ($workers ? 1 : 0) + ($resources ? 1 : 0) + ($skills ? 1 : 0) + ($upgrades ? 1 : 0);
+            if ($specified != 1) {
+                throw new InvalidArgumentException("must specify exactly one of workers, resources, skills, and upgrades");
+            }
+        }
 
 }

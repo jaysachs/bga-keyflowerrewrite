@@ -5,6 +5,7 @@ declare(strict_types=1);
 use PHPUnit\Framework\TestCase;
 
 use Bga\Games\keyflowerrewrite\Model\{
+    ActivationPayment,
     AllGameData,
     Market,
     MarketLot,
@@ -44,7 +45,7 @@ class TestStore implements PersistentStore {
     {
     }
 
-    public function updateActivation(int $player_id, int $tile_id, int $activationPos, WorkerGroup $group, ProductionResult $prodResult): void
+    public function updateActivation(int $player_id, int $tile_id, int $activationPos, WorkerGroup $group, ProductionResult $productionResult, ActivationPayment $payment): void
     {
 
     }

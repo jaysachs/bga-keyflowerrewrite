@@ -96,17 +96,25 @@ class PlayerTurn extends AbstractState {
         string $workerColor,
         ?int $skill_pmt_id,
         ?int $worker_pmt_id,
-        ?string $resource_type_reward): void {
+        ?string $resource_type_reward): mixed {
 
         $model = $this->createModel($active_player_id);
         $workerColor = WorkerColor::from($workerColor);
         $requested_resource = $resource_type_reward ? ResourceType::from($resource_type_reward): null;
         $activationResult = $model->activate($tile_id, $moved_bid_ids, $numWorkersFromStock, $workerColor, $skill_pmt_id, $worker_pmt_id, $requested_resource);
 
-        $this->notify->all('tileActivated', '${player_name} activated tile {$tile_id}', []);
-        if ($activationResult->isUpgrade) {
-            // transition to upgrade state
+        $this->notify->all(
+            'tileActivated',
+            '${player_name} activated tile {$tile_id}', [
+                'tile_id' => $tile_id,
+                // 'tiletype' => $mb->sourceTile->type->value,
+                'player_id' => $active_player_id,
+            ]);
+        if ($activationResult->prodResult->upgrades > 0) {
+            // FIXME: transition to upgrade state
+            return null;
         } else {
+            return NextPlayer::class;
         }
     }
 

@@ -112,6 +112,20 @@ class AllGameData {
         return $result;
     }
 
+    public function applyActivationPayment(int $playerId, ActivationPayment $payment): void {
+        $worker = $payment->worker;
+        $skill = $payment->skill;
+
+        if ($worker) {
+            $this->workerStock->putInBag($worker);
+            $this->villages[$playerId]->takeWorker($worker->id);
+        } else if ($skill) {
+            $this->skillPile->put($skill);
+            $this->villages[$playerId]->takeSkill($skill->id);
+        }
+
+    }
+
     public function takeActivationRewards(ActivationReward $rewardType, ?ResourceType $requested): ProductionResult {
         $skills = null;
         $resources = null;

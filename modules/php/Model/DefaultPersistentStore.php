@@ -346,9 +346,9 @@ class DefaultPersistentStore implements PersistentStore {
         }
     }
 
-    public function updateActivation(int $player_id, int $tile_id, int $activationPos, WorkerGroup $group, ProductionResult $productionResult): void {
+    // TODO: this also needs to update anything paid as cost
+    public function updateActivation(int $player_id, int $tile_id, int $activationPos, WorkerGroup $group, ProductionResult $productionResult, ActivationPayment $payment): void {
         $ids = array_map(fn ($w) => $w->id, $group->workers());
-        // TODO: include $productionResult
         $this->db->execute(
             "UPDATE pieces
              SET loc_type='{$this->TILE}',
@@ -357,6 +357,42 @@ class DefaultPersistentStore implements PersistentStore {
                  loc_pos={$activationPos}
              WHERE id IN ( " . implode(",", $ids) . " )"
         );
+        if ($productionResult->workers) {
+            $ids = array_map(fn ($w) => $w->id, $productionResult->workers);
+            $this->db->execute(
+                "UPDATE pieces
+                SET loc_type='{$this->VILLAGE}',
+                    loc_id=NULL,
+                    player_id={$player_id},
+                    loc_pos=NULL
+                WHERE id IN ( " . implode(",", $ids) . " )"
+            );
+        }
+        else if ($productionResult->skills) {
+            $ids = array_map(fn ($w) => $w->id, $productionResult->skills);
+            $this->db->execute(
+                "UPDATE pieces
+                SET loc_type='{$this->VILLAGE}',
+                    loc_id=NULL,
+                    player_id={$player_id},
+                    loc_pos=NULL
+                WHERE id IN ( " . implode(",", $ids) . " )"
+            );
+        }
+        else if ($productionResult->resources) {
+            $ids = array_map(fn ($w) => $w->id, $productionResult->resources);
+            $this->db->execute(
+                "UPDATE pieces
+                SET loc_type='{$this->TILE}',
+                    loc_id={$tile_id},
+                    player_id=NULL,
+                    loc_pos=NULL
+                WHERE id IN ( " . implode(",", $ids) . " )"
+            );
+        } else {
+            // do nothing for upgrades? or store a global counter of upgrade moves remaining?
+        }
+        // TODO: include $productionResult
     }
 
     public function updateBidWorkerLocations(int $player_id, MarketLot $bidTile, WorkerGroup $newBid): void {

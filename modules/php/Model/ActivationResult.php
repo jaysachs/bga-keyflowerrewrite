@@ -28,5 +28,14 @@ declare(strict_types=1);
 namespace Bga\Games\keyflowerrewrite\Model;
 
 class ActivationResult {
-    public function __construct(public readonly bool $isUpgrade) {}
+    /**
+     * @param VillageTile|MarketLot $tile
+     * @param list<MovedBid> $movedBids
+     */
+    public function __construct(
+        public readonly mixed $tile,
+        public readonly ProductionResult $prodResult,
+        public readonly WorkerGroup $activingWorkerGroup,
+        public readonly array $movedBids
+        ) {}
 }
