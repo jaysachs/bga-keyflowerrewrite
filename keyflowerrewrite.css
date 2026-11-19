@@ -774,6 +774,30 @@ html {
     zoom: calc(1 / var(--bga-framework-parts-zoom, 1));
 }
 
+/* Your workers and tools, and the coin, at a fixed size: BGA's shrinking depends on the phone's width
+   (0.73 at 360px, 0.88 at 430px), so without this they changed size from phone to phone while the
+   text beside them didn't */
+.mobile_version #overall-content .kf_private .kf_worker {
+    zoom: calc(1.18 / var(--bga-framework-parts-zoom, 1));   /* 17px x 1.18: 20px */
+}
+
+.mobile_version #overall-content .kf_icon_skill {
+    zoom: calc(0.625 / var(--bga-framework-parts-zoom, 1));   /* 32px x 0.625: 20px */
+}
+
+.mobile_version #overall-content .kf_counted {
+    gap: calc(3px / var(--bga-framework-parts-zoom, 1));
+}
+
+.mobile_version #overall-content .kf_private {
+    column-gap: calc(10px / var(--bga-framework-parts-zoom, 1));
+}
+
+.mobile_version #overall-content .player_board_inner .player_score [id^="icon_point_"] {
+    width: calc(16px / var(--bga-framework-parts-zoom, 1));
+    height: calc(16px / var(--bga-framework-parts-zoom, 1));
+}
+
 /* Never below iOS's smallest text style (Caption 2, 11pt): the clock at 12, messages at 13 */
 .mobile_version #overall-content .player_board_inner [id^="timeToThink_"],
 .mobile_version #overall-content .player_board_inner .player_elo_wrap {
