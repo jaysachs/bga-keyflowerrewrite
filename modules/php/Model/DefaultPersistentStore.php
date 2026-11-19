@@ -357,6 +357,28 @@ class DefaultPersistentStore implements PersistentStore {
                  loc_pos={$activationPos}
              WHERE id IN ( " . implode(",", $ids) . " )"
         );
+        if ($payment->worker) {
+            // FIXME: need to get right loc_pos in bag
+            $this->db->execute(
+                "UPDATE pieces
+                SET loc_type='{$this->BAG}',
+                    loc_id=NULL,
+                    player_id=NULL,
+                    loc_pos=FIXME
+                WHERE id = {$payment->worker->id}"
+            );
+        }
+        if ($payment->skill) {
+            // FIXME: need to get right loc_pos in skillpile
+            $this->db->execute(
+                "UPDATE pieces
+                SET loc_type='{$this->SKILLPILE}',
+                    loc_id=NULL,
+                    player_id=NULL,
+                    loc_pos=FIXME
+                WHERE id = {$payment->skill->id}"
+            );
+        }
         if ($productionResult->workers) {
             $ids = array_map(fn ($w) => $w->id, $productionResult->workers);
             $this->db->execute(
@@ -392,7 +414,6 @@ class DefaultPersistentStore implements PersistentStore {
         } else {
             // do nothing for upgrades? or store a global counter of upgrade moves remaining?
         }
-        // TODO: include $productionResult
     }
 
     public function updateBidWorkerLocations(int $player_id, MarketLot $bidTile, WorkerGroup $newBid): void {
