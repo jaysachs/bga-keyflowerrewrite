@@ -36,9 +36,9 @@ export class TranslationComponent {
         return this.name('skills', skill);
     }
 
-    private name(table: keyof KFGameDatas['translations'], key: string): string {
-        const names: Record<string, string> | undefined = this.bga.gameui.gamedatas.translations?.[table];
-        const name = names?.[key];
-        return name ? _(name) : key;
+    private name(table: keyof KFGameDatas['translations'], item: string): string {
+        const names: Record<string, string> = this.bga.gameui.gamedatas.translations[table]!;
+        const name = names[item];
+        return name ? _(name) : item;
     }
 }
