@@ -24,6 +24,7 @@ export class PanelsComponent {
             const id = Number(key);
             document.getElementById(`overall_player_board_${id}`)?.style.setProperty('--kf-player-color', `#${player.color}`);
             this.bga.playerPanels.getElement(id).append(this.chips(id == me));
+            document.getElementById(`overall_player_board_${id}`)?.classList.toggle('kf_start_player', id == gamedatas.startPlayerId);
             if (id == gamedatas.startPlayerId) {
                 // The start player's meeple, right after their name: no visible label (once known, it isn't
                 // needed), hover or tap shows one. BGA places the online status and flag itself, absolutely,

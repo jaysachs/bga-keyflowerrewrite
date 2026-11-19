@@ -610,7 +610,7 @@ html {
 
 #overall-content .player_board_inner .player-name > a:first-child {
     display: inline-block;
-    max-width: calc(100% - 46px - 24px);   /* the line includes BGA's avatar (46px with its gap) */
+    max-width: calc(100% - 46px);   /* the line includes BGA's avatar (46px with its gap) */
     overflow: hidden;
     text-overflow: ellipsis;
     vertical-align: bottom;
@@ -620,7 +620,12 @@ html {
     padding-right: calc(48px / var(--bga-framework-parts-zoom, 1));
 }
 
-.mobile_version #overall-content .player_board_inner .player-name > a:first-child {
+/* The start player's name leaves room for the meeple after it */
+#overall-content .player-board.kf_start_player .player_board_inner .player-name > a:first-child {
+    max-width: calc(100% - 46px - 24px);
+}
+
+.mobile_version #overall-content .player-board.kf_start_player .player_board_inner .player-name > a:first-child {
     max-width: calc(100% - 46px - 24px / var(--bga-framework-parts-zoom, 1));
 }
 
