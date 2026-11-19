@@ -596,6 +596,24 @@ html {
     color: #1f2328;
 }
 
+/* The start player: the purple meeple as a badge on the avatar's lower right corner, so it doesn't
+   take a line (its text stays for screen readers) */
+#overall-content .kf_chip_start {
+    position: absolute;
+    left: 30px;
+    top: 24px;
+    margin: 0;
+    padding: 0;
+    background: none;
+    font-size: 0;
+}
+
+#overall-content .kf_chip_start .kf_starter {
+    width: 15px;
+    height: 16px;
+    filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff);
+}
+
 /* "Your turn" / "Playing": only on the active player's panel */
 #overall-content .kf_chip_turn {
     display: none;
@@ -732,8 +750,7 @@ html {
 /*
  * Phones: BGA's guidelines want a 4-player game's panels in a quarter of the screen at most. Panels
  * are two per row, so each row is as tall as its tallest panel. Less padding; "Your turn" is left to
- * the hourglass, the bar and the status bar; the start player chip is just the purple meeple, as a
- * badge on the avatar (its text stays for screen readers).
+ * the hourglass, the bar and the status bar.
  */
 .mobile_version #overall-content .player-board[id^="overall_player_board_"] {
     padding-top: 6px;
@@ -745,20 +762,12 @@ html {
     display: none;
 }
 
-/* The start player's meeple as a badge on the avatar's lower right corner, so it doesn't take a line */
 .mobile_version #overall-content .kf_chip_start {
-    position: absolute;
-    left: 30px;
-    top: 22px;
-    margin: 0;
-    padding: 0;
-    background: none;
-    font-size: 0;
+    top: 22px;   /* less padding on phones */
 }
 
 .mobile_version #overall-content .kf_chip_start .kf_starter {
     width: calc(15px / var(--bga-framework-parts-zoom, 1));
     height: calc(16px / var(--bga-framework-parts-zoom, 1));
-    filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff);
 }
 
