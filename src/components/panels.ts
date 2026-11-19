@@ -24,6 +24,7 @@ export class PanelsComponent {
             const id = Number(key);
             document.getElementById(`overall_player_board_${id}`)?.style.setProperty('--kf-player-color', `#${player.color}`);
             this.bga.playerPanels.getElement(id).append(this.chips(id, id == me, id == gamedatas.startPlayerId));
+            document.getElementById(`overall_player_board_${id}`)?.classList.toggle('kf_start_player', id == gamedatas.startPlayerId);
             if (id == gamedatas.startPlayerId) {
                 // The meeple has no visible label (once known, it isn't needed); hover or tap shows one.
                 this.bga.gameui.addTooltip(`kf_start_${id}`, _('Start player'), '');

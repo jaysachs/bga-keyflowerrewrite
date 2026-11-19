@@ -596,12 +596,18 @@ html {
     color: #1f2328;
 }
 
-/* The start player: the purple meeple as a badge on the avatar's lower right corner, so it doesn't
-   take a line (its text stays for screen readers) */
+/* The start player: the purple meeple in the panel's top right corner, after the flag, so it takes no
+   line and covers nothing (the avatar matters: players recognize each other by it). The name's line
+   makes room for it on the start player's panel only (kf_start_player). The text stays for screen
+   readers; hover or tap shows it as a tooltip. */
+#overall-content .player-board.kf_start_player .player-name {
+    margin-right: 22px;
+}
+
 #overall-content .kf_chip_start {
     position: absolute;
-    left: 29px;
-    top: 21px;
+    right: 8px;
+    top: 8px;
     margin: 0;
     padding: 0;
     background: none;
@@ -763,7 +769,11 @@ html {
 }
 
 .mobile_version #overall-content .kf_chip_start {
-    top: 19px;   /* less padding on phones */
+    top: 6px;   /* less padding on phones */
+}
+
+.mobile_version #overall-content .player-board.kf_start_player .player-name {
+    margin-right: calc(20px / var(--bga-framework-parts-zoom, 1));
 }
 
 .mobile_version #overall-content .kf_chip_start .kf_starter {
