@@ -748,8 +748,8 @@ html {
 /* The start player's meeple as a badge on the avatar's lower right corner, so it doesn't take a line */
 .mobile_version #overall-content .kf_chip_start {
     position: absolute;
-    left: 34px;
-    top: 24px;
+    left: 30px;
+    top: 22px;
     margin: 0;
     padding: 0;
     background: none;
