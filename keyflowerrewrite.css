@@ -729,3 +729,30 @@ html {
     line-height: 1.35;
 }
 
+/*
+ * Phones: BGA's guidelines want a 4-player game's panels in a quarter of the screen at most. Panels
+ * are two per row, so each row is as tall as its tallest panel. Less padding; "Your turn" is left to
+ * the hourglass, the bar and the status bar; the start player chip is just the purple meeple (its
+ * text stays for screen readers).
+ */
+.mobile_version #overall-content .player-board[id^="overall_player_board_"] {
+    padding-top: 6px;
+    padding-bottom: 6px;
+    margin-bottom: 5px;
+}
+
+.mobile_version #overall-content .player-board.kf_active .kf_chip_turn {
+    display: none;
+}
+
+.mobile_version #overall-content .kf_chip_start {
+    padding: 0;
+    background: none;
+    font-size: 0;
+}
+
+.mobile_version #overall-content .kf_chip_start .kf_starter {
+    width: calc(16px / var(--bga-framework-parts-zoom, 1));
+    height: calc(17px / var(--bga-framework-parts-zoom, 1));
+}
+
