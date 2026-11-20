@@ -141,29 +141,41 @@ class AllGameData {
                 $requested = null;
                 break;
             case ActivationReward::GOLD:
-                $resources = $this->resourceStock->take(ResourceType::GOLD, 1); break;
+                $resources = $this->resourceStock->take(ResourceType::GOLD, 1);
+                break;
             case ActivationReward::GOLD_2:
-                $resources = $this->resourceStock->take(ResourceType::GOLD, 2); break;
+                $resources = $this->resourceStock->take(ResourceType::GOLD, 2);
+                break;
             case ActivationReward::GOLD_3:
-                $resources = $this->resourceStock->take(ResourceType::GOLD, 3); break;
+                $resources = $this->resourceStock->take(ResourceType::GOLD, 3);
+                break;
             case ActivationReward::WOOD:
-                $resources = $this->resourceStock->take(ResourceType::WOOD, 1); break;
+                $resources = $this->resourceStock->take(ResourceType::WOOD, 1);
+                break;
             case ActivationReward::WOOD_2:
-                $resources = $this->resourceStock->take(ResourceType::WOOD, 2); break;
+                $resources = $this->resourceStock->take(ResourceType::WOOD, 2);
+                break;
             case ActivationReward::WOOD_3:
-                $resources = $this->resourceStock->take(ResourceType::WOOD, 3); break;
+                $resources = $this->resourceStock->take(ResourceType::WOOD, 3);
+                break;
             case ActivationReward::IRON:
-                $resources = $this->resourceStock->take(ResourceType::IRON, 1); break;
+                $resources = $this->resourceStock->take(ResourceType::IRON, 1);
+                break;
             case ActivationReward::IRON_2:
-                $resources = $this->resourceStock->take(ResourceType::IRON, 2); break;
+                $resources = $this->resourceStock->take(ResourceType::IRON, 2);
+                break;
             case ActivationReward::IRON_3:
-                $resources = $this->resourceStock->take(ResourceType::IRON, 3); break;
+                $resources = $this->resourceStock->take(ResourceType::IRON, 3);
+                break;
             case ActivationReward::STONE:
-                $resources = $this->resourceStock->take(ResourceType::STONE, 1); break;
+                $resources = $this->resourceStock->take(ResourceType::STONE, 1);
+                break;
             case ActivationReward::STONE_2:
-                $resources = $this->resourceStock->take(ResourceType::STONE, 2); break;
+                $resources = $this->resourceStock->take(ResourceType::STONE, 2);
+                break;
             case ActivationReward::STONE_3:
-                $resources = $this->resourceStock->take(ResourceType::STONE, 3); break;
+                $resources = $this->resourceStock->take(ResourceType::STONE, 3);
+                break;
             case ActivationReward::IRON_GOLD:
                 $resources = array_merge(
                     $resources = $this->resourceStock->take(ResourceType::IRON, 1),
@@ -190,11 +202,11 @@ class AllGameData {
                 );
                 break;
             case ActivationReward::SKILL_ANY:
-                 $skills = $this->skillPile->take(1);
-                 break;
+                $skills = $this->skillPile->take(1);
+                break;
             case ActivationReward::SKILL_ANY_2:
-                 $skills = $this->skillPile->take(2);
-                 break;
+                $skills = $this->skillPile->take(2);
+                break;
             case  ActivationReward::SKILL_ANY_3:
                 $skills = $this->skillPile->take(3);
                 break;

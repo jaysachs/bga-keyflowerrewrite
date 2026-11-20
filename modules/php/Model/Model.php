@@ -27,6 +27,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
+use Bga\Games\keyflowerrewrite\Utils\Log;
 use InvalidArgumentException;
 use UnexpectedValueException;
 

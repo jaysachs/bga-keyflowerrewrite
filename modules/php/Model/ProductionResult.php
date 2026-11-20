@@ -41,7 +41,8 @@ class ProductionResult {
         public readonly ?array $resources,
         public readonly ?array $skills,
         public readonly ?int $upgrades) {
-            $specified = ($workers ? 1 : 0) + ($resources ? 1 : 0) + ($skills ? 1 : 0) + ($upgrades ? 1 : 0);
+            // TODO: keep this validation?
+            $specified = ($workers !== null ? 1 : 0) + ($resources !== null ? 1 : 0) + ($skills !== null ? 1 : 0) + ($upgrades !== null ? 1 : 0);
             if ($specified != 1) {
                 throw new InvalidArgumentException("must specify exactly one of workers, resources, skills, and upgrades");
             }

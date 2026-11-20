@@ -35,7 +35,7 @@ class ActivationResult {
     public function __construct(
         public readonly mixed $tile,
         public readonly ProductionResult $prodResult,
-        public readonly WorkerGroup $activingWorkerGroup,
+        public readonly WorkerGroup $activatingWorkerGroup,
         public readonly array $movedBids
-        ) {}
+    ) {}
 }

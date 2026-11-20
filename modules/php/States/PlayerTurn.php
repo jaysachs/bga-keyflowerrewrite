@@ -33,9 +33,12 @@ use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\keyflowerrewrite\Game;
 use Bga\Games\keyflowerrewrite\Model\MarketLot;
 use Bga\Games\keyflowerrewrite\Model\Marshaller;
+use Bga\Games\keyflowerrewrite\Model\MovedBid;
 use Bga\Games\keyflowerrewrite\Model\ResourceType;
 use Bga\Games\keyflowerrewrite\Model\TileType;
 use Bga\Games\keyflowerrewrite\Model\WorkerColor;
+use Bga\Games\keyflowerrewrite\Utils\Log;
+use InvalidArgumentException;
 
 class PlayerTurn extends AbstractState {
     public function __construct(Game $game)
@@ -93,28 +96,60 @@ class PlayerTurn extends AbstractState {
         int $tile_id,
         #[IntArrayParam()] array $moved_bid_ids,
         int $numWorkersFromStock,
-        string $workerColor,
+        string $color,
         ?int $skill_pmt_id,
         ?int $worker_pmt_id,
         ?string $resource_type_reward): mixed {
 
         $model = $this->createModel($active_player_id);
-        $workerColor = WorkerColor::from($workerColor);
+        $workerColor = WorkerColor::from($color);
         $requested_resource = $resource_type_reward ? ResourceType::from($resource_type_reward): null;
-        $activationResult = $model->activate($tile_id, $moved_bid_ids, $numWorkersFromStock, $workerColor, $skill_pmt_id, $worker_pmt_id, $requested_resource);
+        try {
+            $activationResult = $model->activate($tile_id, $moved_bid_ids, $numWorkersFromStock, $workerColor, $skill_pmt_id, $worker_pmt_id, $requested_resource);
+        } catch (InvalidArgumentException $e) {
+            $this->game->error("HERE " . $e->getMessage());
+            Log::error("OTHER PLACE");
+            return null;
+        }
+
+        $this->notifyMovedBids($active_player_id, $activationResult->movedBids);
 
         $this->notify->all(
             'tileActivated',
-            '${player_name} activated tile {$tile_id}', [
+            '${player_name} activated tile {$tiletype}', [
                 'tile_id' => $tile_id,
-                // 'tiletype' => $mb->sourceTile->type->value,
+                'tiletype' => $activationResult->tile->type->value,
                 'player_id' => $active_player_id,
+                'workers' => Marshaller::workers($activationResult->activatingWorkerGroup->workers()),
+                'produced' => [
+                    'workers' => Marshaller::workers($activationResult->prodResult->workers),
+                    'resources' => Marshaller::resources($activationResult->prodResult->resources),
+                    'skills' => Marshaller::skills($activationResult->prodResult->skills),
+                    'upgrades' => $activationResult->prodResult->upgrades,
+                ]
             ]);
         if ($activationResult->prodResult->upgrades > 0) {
             // FIXME: transition to upgrade state
             return null;
         } else {
             return NextPlayer::class;
+        }
+    }
+
+    /** @param list<MovedBid> $movedBids */
+    private function notifyMovedBids(int $active_player_id, array $movedBids): void {
+        foreach ($movedBids as $mb) {
+            $this->game->notify->all(
+                'bidMoved',
+                '${player_name} moved bid of ${num} ${color} from ${tiletype}',
+                [
+                    'num' => count($mb->bid->workers()),
+                    'color' => Marshaller::color($mb->bid->color()),
+                    'tile_id' => $mb->sourceTile->tile_id,
+                    'tiletype' => $mb->sourceTile->type->value,
+                    'player_id' => $active_player_id,
+                ]
+            );
         }
     }
 
@@ -128,19 +163,7 @@ class PlayerTurn extends AbstractState {
         $bidResult = $model->bid($market_tile_id, $moved_bid_ids, $numWorkersFromStock, $workerColor);
         $bid = $bidResult->bid;
 
-        foreach ($bidResult->movedBids as $mb) {
-            $this->game->notify->all(
-                'bidMoved',
-                '${player_name} moved bid of ${num} ${color} from ${tiletype}',
-                [
-                    'num' => count($mb->bid->workers()),
-                    'color' => Marshaller::color($mb->bid->color()),
-                    'tile_id' => $mb->sourceTile->tile_id,
-                    'tiletype' => $mb->sourceTile->type->value,
-                    'player_id' => $active_player_id,
-                ]
-            );
-        }
+        $this->notifyMovedBids($active_player_id, $bidResult->movedBids);
         $this->game->notify->all(
             'bidMade',
             '${player_name} bid ${num} ${color} on ${tiletype}',

@@ -204,6 +204,14 @@ class DefaultPersistentStore implements PersistentStore {
                             $result->resourceStock->put($resource);
                             break;
                         case $this->TILE:
+                            // $mt = $result->market->marketLotById($loc_id);
+                            // if ($mt === null) {
+                            //     throw new InvalidArgumentException("couldn't find market tile for tile {$loc_id}");
+                            // }
+                            // TODO: populate activations
+                            //$mt->productionActivations()->add
+                            break;
+                        case $this->VILLAGE:
                             $vid = $loc_id;
                             $v = array_find($result->villages[$pid]->tiles(), fn ($vt) => $vid == $vt->tile_id);
                             if ($v === null) {
@@ -306,6 +314,11 @@ class DefaultPersistentStore implements PersistentStore {
                 }
             }
             // TODO: add bids
+        }
+        foreach (ResourceType::cases() as $rt) {
+            foreach ($data->resourceStock->ofType($rt) as $pos => $r) {
+                $values[] = "('resource', {$r->id}, '{$r->type->value}', '{$this->STOCK}', {$noLocId}, {$pos}, {$noPid})";
+            }
         }
         foreach ($data->dock->boats() as $pos => $mt) {
             $values[] = "('tile', {$mt->id}, '{$mt->type->value}','{$this->DOCK}', {$noLocId}, {$pos}, {$noPid})";
