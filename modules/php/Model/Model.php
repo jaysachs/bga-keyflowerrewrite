@@ -328,6 +328,11 @@ class Model {
 
         $result = $this->allData()->takeActivationRewards($rewardType, $requested_reward_type);
 
+        // TODO: rewards need to be placed:
+        //    workers, skills in player's village "house"
+        //    resources on activated tile if in player's village
+        //    resources on player's home tile if in market or other village
+
         $this->ps->updateActivation(
             $this->activePlayerId,
             $t->tile_id,
