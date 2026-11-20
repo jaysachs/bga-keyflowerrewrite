@@ -336,9 +336,13 @@ class Model {
         $activatingWorkerGroup = $activationInfo["group"];
 
         $currentColor = $t->currentColor();
-        if ($currentColor !== null && $activatingWorkerGroup->color() !== $currentColor) {
-            if (!$hasBoat4b) {
+        if ($currentColor !== null) {
+            if ($activatingWorkerGroup->color() !== $currentColor && !$hasBoat4b) {
                 throw new InvalidArgumentException("activations must match tile color {$currentColor->value} != {$activatingWorkerGroup->color()?->value}");
+            }
+        } else {
+            if ($activatingWorkerGroup->color() === null) {
+                throw new InvalidArgumentException("activations on empty tile must have a single color");
             }
         }
 

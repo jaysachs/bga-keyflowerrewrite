@@ -208,6 +208,39 @@ final class ModelTest extends TestCase {
         return new Village($pid, [ new VillageTile($this->lastTileId++, $home, 1, 0) ], $workers, [], [], [], false);
     }
 
+    public function testActivate_boat4b_works(): void {
+        $lot1 = $this->addLot(TileType::ALEHOUSE);
+        $lot1->bid(SELF::PID1, new WorkerGroup([$this->makeWorker(WorkerColor::BLUE)]));
+        $worker = $this->makeWorker(WorkerColor::YELLOW);
+        $this->model->allData()->workerStock->takeFromBag(200);
+        $this->model->AllData()->workerStock->putInBag($worker);
+        $this->model->village()->placeTile(new VillageTile(50, TileType::BOAT4B, RowCol::fromRowCol(1,1), 1));
+
+        $wg = new WorkerGroup([$this->makeWorker(WorkerColor::YELLOW), $this->makeWorker(WorkerColor::RED)]);
+        foreach ($wg->workers() as $w) {
+            $this->model->village()->addWorker($w);
+        }
+
+        $result = $this->model->activate($lot1->tile_id, [], 0, 1, 1, 0);
+
+        $this->assertEquals(new ActivationResult($lot1, new ProductionResult([$worker], null, null, null), $wg, []), $result);
+    }
+
+    public function testActivate_boat4b_failsIfFirstWorkers(): void {
+        $lot1 = $this->addLot(TileType::ALEHOUSE);
+        $worker = $this->makeWorker(WorkerColor::YELLOW);
+        $this->model->allData()->workerStock->takeFromBag(200);
+        $this->model->allData()->workerStock->putInBag($worker);
+        $this->model->village()->placeTile(new VillageTile(50, TileType::BOAT4B, RowCol::fromRowCol(1,1), 1));
+
+        $wg = new WorkerGroup([$this->makeWorker(WorkerColor::YELLOW), $this->makeWorker(WorkerColor::RED)]);
+        foreach ($wg->workers() as $w) {
+            $this->model->village()->addWorker($w);
+        }
+
+        $this->assertThrows(fn () => $this->model->activate($lot1->tile_id, [], 0, 1, 1, 0));
+    }
+
     public function testActivate_emptyLot(): void {
         $lot1 = $this->addLot(TileType::ALEHOUSE);
         $worker = $this->makeWorker(WorkerColor::YELLOW);
