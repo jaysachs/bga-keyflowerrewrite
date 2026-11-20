@@ -336,9 +336,9 @@ class Model {
         $activatingWorkerGroup = $activationInfo["group"];
 
         $currentColor = $t->currentColor();
-        if ($currentColor !== null && $activatingWorkerGroup->color() != $currentColor) {
+        if ($currentColor !== null && $activatingWorkerGroup->color() !== $currentColor) {
             if (!$hasBoat4b) {
-                throw new InvalidArgumentException("activations must match tile color {$currentColor->value} != {$activatingWorkerGroup->color()->value}");
+                throw new InvalidArgumentException("activations must match tile color {$currentColor->value} != {$activatingWorkerGroup->color()?->value}");
             }
         }
 
