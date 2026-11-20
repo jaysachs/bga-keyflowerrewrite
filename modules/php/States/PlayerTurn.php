@@ -37,8 +37,6 @@ use Bga\Games\keyflowerrewrite\Model\MovedBid;
 use Bga\Games\keyflowerrewrite\Model\ResourceType;
 use Bga\Games\keyflowerrewrite\Model\TileType;
 use Bga\Games\keyflowerrewrite\Model\WorkerColor;
-use Bga\Games\keyflowerrewrite\Utils\Log;
-use InvalidArgumentException;
 
 class PlayerTurn extends AbstractState {
     public function __construct(Game $game)
@@ -104,13 +102,7 @@ class PlayerTurn extends AbstractState {
         $model = $this->createModel($active_player_id);
         $workerColor = WorkerColor::from($color);
         $requested_resource = $resource_type_reward ? ResourceType::from($resource_type_reward): null;
-        try {
-            $activationResult = $model->activate($tile_id, $moved_bid_ids, $numWorkersFromStock, $workerColor, $skill_pmt_id, $worker_pmt_id, $requested_resource);
-        } catch (InvalidArgumentException $e) {
-            $this->game->error("HERE " . $e->getMessage());
-            Log::error("OTHER PLACE");
-            return null;
-        }
+        $activationResult = $model->activate($tile_id, $moved_bid_ids, $numWorkersFromStock, $workerColor, $skill_pmt_id, $worker_pmt_id, $requested_resource);
 
         $this->notifyMovedBids($active_player_id, $activationResult->movedBids);
 
