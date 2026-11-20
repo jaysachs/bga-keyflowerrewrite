@@ -65,7 +65,7 @@ class PlayerTurn extends AbstractState {
         return [
             "bidding_info" => array_map(
                 function (MarketLot $lot) use (&$active_player_id, $hasBoat4a): array {
-                    $bc = $lot->biddingColor();
+                    $bc = $lot->currentColor();
                     $bid = $lot->bidBy($active_player_id);
                     return [
                         "must_match" => !$hasBoat4a  || $bc === WorkerColor::GREEN,

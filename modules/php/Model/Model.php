@@ -174,7 +174,7 @@ class Model {
 
         $lot = $market->marketLotById($market_tile_id);
 
-        $currentColor = $lot->biddingColor();
+        $currentColor = $lot->currentColor();
         if ($currentColor !== null && $workerColor != $currentColor) {
             if (!$hasBoat4a || $currentColor == WorkerColor::GREEN) {
                 throw new InvalidArgumentException("bids must match bid color");
@@ -291,10 +291,11 @@ class Model {
         array $moved_bid_ids,
         int $numWorkersFromStock,
         WorkerColor $workerColor,
-        ?int $skill_pmt_id,
-        ?int $worker_pmt_id,
-        ?ResourceType $requested_reward_type): ActivationResult {
+        ?int $skill_pmt_id = null,
+        ?int $worker_pmt_id = null,
+        ?ResourceType $requested_reward_type = null): ActivationResult {
 
+        /** @var MarketLot|VillageTile|null */
         $t = array_find($this->market()->lots(), fn (MarketLot $mt) => $mt->tile_id == $tile_id);
         if ($t === null) {
             foreach ($this->villages() as $village) {
@@ -308,6 +309,13 @@ class Model {
         $rewardType = $t->type->activationReward();
         if ($rewardType == ActivationReward::NONE) {
             throw new InvalidArgumentException("tile {$t->tile_id} {$t->type->value} is not activatable");
+        }
+
+        $currentColor = $t->currentColor();
+        if ($currentColor !== null && $workerColor != $currentColor) {
+            // if (!$hasBoat4a || $currentColor == WorkerColor::GREEN) {
+                throw new InvalidArgumentException("bids must match bid color");
+            // }
         }
 
         $payment = $this->computeActivationCost($t, $skill_pmt_id, $worker_pmt_id);

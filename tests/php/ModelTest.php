@@ -15,6 +15,7 @@ use Bga\Games\keyflowerrewrite\Model\{
     ProductionResult,
     RowCol,
     Season,
+    TilesStock,
     TileType,
     Village,
     VillageTile,
@@ -167,7 +168,9 @@ final class ModelTest extends TestCase {
     private function initialModel(): Model {
         $pids = [self::PID1, self::PID2];
 
-        $ps = new TestStore(AllGameData::newGameDataFor($pids));
+        $data = AllGameData::newGameDataFor($pids);
+        $data->market->removeUnbidLots();
+        $ps = new TestStore($data);
         // make it non-identical
         $ps->saveAllData(AllGameData::newGameDataFor($pids));
 
@@ -179,6 +182,82 @@ final class ModelTest extends TestCase {
         ];
         return $model;
     }
+
+    public function testActivate_emptyLot(): void {
+        $model = $this->initialModel();
+        $lot1 = $this->makeLot(TileType::ALEHOUSE);
+        $model->allData()->market->addLot($lot1);
+        $worker = new Worker(56, WorkerColor::YELLOW);
+        $model->allData()->workerStock->takeFromBag(200);
+        $model->AllData()->workerStock->putInBag($worker);
+        $result = $model->activate($lot1->tile_id, [], 1, WorkerColor::BLUE);
+
+        $this->assertEquals($lot1->tile_id, $result->tile->tile_id);
+        $this->assertEquals([], $result->movedBids);
+        $this->assertWorkerGroupMatches($result->activatingWorkerGroup, WorkerColor::BLUE, 1);
+        $this->assertEquals(new ProductionResult([$worker], null, null, null), $result->prodResult);
+    }
+
+    public function testActivate_matchesColor(): void {
+        $model = $this->initialModel();
+        $lot1 = $this->makeLot(TileType::ALEHOUSE);
+        $lot1->bid(SELF::PID1, new WorkerGroup([new Worker(52, WorkerColor::BLUE)]));
+        $model->allData()->market->addLot($lot1);
+        $worker = new Worker(56, WorkerColor::YELLOW);
+        $model->allData()->workerStock->takeFromBag(200);
+        $model->AllData()->workerStock->putInBag($worker);
+
+        $result = $model->activate($lot1->tile_id, [], 1, WorkerColor::BLUE);
+
+        $this->assertEquals($lot1->tile_id, $result->tile->tile_id);
+        $this->assertEquals([], $result->movedBids);
+        $this->assertWorkerGroupMatches($result->activatingWorkerGroup, WorkerColor::BLUE, 1);
+        $this->assertEquals(new ProductionResult([$worker], null, null, null), $result->prodResult);
+    }
+
+    public function testActivate_doesNotMatchBidColor(): void {
+        $model = $this->initialModel();
+        $lot1 = $this->makeLot(TileType::ALEHOUSE);
+        $lot1->bid(SELF::PID1, new WorkerGroup([new Worker(52, WorkerColor::YELLOW)]));
+        $model->allData()->market->addLot($lot1);
+        $this->assertThrows(fn () => $model->activate($lot1->tile_id, [], 1, WorkerColor::BLUE), "color mismatch should fail");
+    }
+
+    public function testActivate_doesNotMatchActivationColor(): void {
+        $model = $this->initialModel();
+        $lot1 = $this->makeLot(TileType::ALEHOUSE);
+        $lot1->productionActivations()->add(new WorkerGroup([new Worker(52, WorkerColor::YELLOW)]));
+        $model->allData()->market->addLot($lot1);
+        $this->assertThrows(fn () => $model->activate($lot1->tile_id, [], 1, WorkerColor::BLUE), "color mismatch should fail");
+    }
+
+    public function testActivate_costPaid(): void {
+        $model = $this->initialModel();
+        //            TileType::FAIR => ActivationCost::WORKER_RED,
+        $lot1 = $this->makeLot(TileType::FAIR);
+        $model->allData()->market->addLot($lot1);
+        $model->allData()->workerStock->takeGreens(100);
+        $reward = new Worker(57, WorkerColor::GREEN);
+        $model->allData()->workerStock->putGreen($reward);
+        $pmt = new Worker(51, WorkerColor::RED);
+        $model->allData()->villages[self::PID1]->addWorker($pmt);
+
+        $result = $model->activate($lot1->tile_id, [], 1, WorkerColor::BLUE, null, $pmt->id);
+
+        $this->assertEquals($lot1->tile_id, $result->tile->tile_id);
+        $this->assertEquals([], $result->movedBids);
+        $this->assertWorkerGroupMatches($result->activatingWorkerGroup, WorkerColor::BLUE, 1);
+        $this->assertEquals(new ProductionResult([$reward], null, null, null), $result->prodResult);
+    }
+
+    public function testActivate_costNotPaid(): void {
+        $model = $this->initialModel();
+        //            TileType::FAIR => ActivationCost::WORKER_RED,
+        $lot1 = $this->makeLot(TileType::FAIR);
+        $model->allData()->market->addLot($lot1);
+        $this->assertThrows(fn () => $model->activate($lot1->tile_id, [], 1, WorkerColor::BLUE), "cost not paid should fail");
+    }
+
 
     /** @param array<int,WorkerGroup> $bids */
     private function makeLot(TileType $type, array $bids = []): MarketLot {

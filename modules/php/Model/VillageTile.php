@@ -47,5 +47,9 @@ class VillageTile {
         $this->resources[] = $res;
     }
 
+    public function currentColor(): ?WorkerColor {
+        return $this->productionActivations->currentColor();
+    }
+
     public function productionActivations(): ProductionActivations { return $this->productionActivations; }
 }

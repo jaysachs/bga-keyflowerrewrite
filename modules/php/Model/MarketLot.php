@@ -72,7 +72,7 @@ class MarketLot {
         return null;
     }
 
-    public function biddingColor(): ?WorkerColor {
+    public function currentColor(): ?WorkerColor {
         // TODO: take into account any activations.
         // color of lowest bid is the bid color
         $lowest = null;
@@ -81,7 +81,7 @@ class MarketLot {
                 $lowest = $bid;
             }
         }
-        return $lowest === null ? null : $lowest->color();
+        return $lowest === null ? $this->productionActivations->currentColor() : $lowest->color();
     }
 
     /** Returns true if the player has a non-empty bid that is not the high bid */

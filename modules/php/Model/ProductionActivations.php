@@ -60,4 +60,8 @@ class ProductionActivations {
         }
         $this->activations[] = $wg;
     }
+
+    public function currentColor(): ?WorkerColor {
+        return null;
+    }
 }
