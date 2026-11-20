@@ -93,16 +93,17 @@ class PlayerTurn extends AbstractState {
         int $active_player_id,
         int $tile_id,
         #[IntArrayParam()] array $moved_bid_ids,
-        int $numWorkersFromStock,
-        string $color,
+        ?int $num_blue,
+        ?int $num_red,
+        ?int $num_yellow,
+        ?int $num_green,
         ?int $skill_pmt_id,
         ?int $worker_pmt_id,
         ?string $resource_type_reward): mixed {
 
         $model = $this->createModel($active_player_id);
-        $workerColor = WorkerColor::from($color);
         $requested_resource = $resource_type_reward ? ResourceType::from($resource_type_reward): null;
-        $activationResult = $model->activate($tile_id, $moved_bid_ids, $numWorkersFromStock, $workerColor, $skill_pmt_id, $worker_pmt_id, $requested_resource);
+        $activationResult = $model->activate($tile_id, $moved_bid_ids, $num_blue, $num_red, $num_yellow, $num_green, $skill_pmt_id, $worker_pmt_id, $requested_resource);
 
         $this->notifyMovedBids($active_player_id, $activationResult->movedBids);
 

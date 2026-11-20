@@ -120,11 +120,18 @@ class Model {
      * @param array<int,int> $moved_bid_ids
      * @return array{group:WorkerGroup,movedBids:list<MovedBid>}
      */
-    private function assembleValidatedWorkerGroup(array $moved_bid_ids, int $numWorkersFromStock, WorkerColor $workerColor): array {
+    private function assembleValidatedWorkerGroup(array $moved_bid_ids, int $numBlue, int $numRed, int $numYellow, int $numGreen): array {
         if (count(array_unique($moved_bid_ids)) != count($moved_bid_ids)) {
             throw new InvalidArgumentException("cannot move the same bid multiple times");
         }
-
+        $numWorkersFromStock = $numBlue + $numRed + $numYellow + $numGreen;
+        $workerColor = null;
+        if ($numWorkersFromStock == max($numBlue, $numRed, $numYellow, $numGreen)) {
+            if ($numBlue > 0) { $workerColor = WorkerColor::BLUE; }
+            else if ($numRed > 0) { $workerColor = WorkerColor::RED; }
+            else if ($numYellow > 0) { $workerColor = WorkerColor::YELLOW; }
+            else if ($numGreen > 0) { $workerColor = WorkerColor::GREEN; }
+        }
         /** @var list<MovedBid> */
         $moved = [];
         foreach ($moved_bid_ids as $movedBidTileId) {
@@ -136,7 +143,10 @@ class Model {
             if ($bid === $movedBidTile->highBid()) {
                 throw new InvalidArgumentException("cannot move a high bid {$movedBidTileId}");
             }
-            if ($bid->color() != $workerColor) {
+            if ($workerColor === null) {
+                $workerColor = $bid->color();
+            }
+            else if ($bid->color() != $workerColor) {
                 throw new InvalidArgumentException("cannot mix colors in a bid");
             }
             // FIXME: remove from market tile? Or leave empty?
@@ -146,8 +156,11 @@ class Model {
             throw new InvalidArgumentException("no workers bid from stock, no bids moved");
         }
 
-
-        $stockWorkers = $this->village()->takeWorkersFromStock($workerColor, $numWorkersFromStock);
+        $stockWorkers = [];
+        array_push($stockWorkers, ... $this->village()->takeWorkersFromStock(WorkerColor::BLUE, $numBlue));
+        array_push($stockWorkers, ... $this->village()->takeWorkersFromStock(WorkerColor::RED, $numRed));
+        array_push($stockWorkers, ... $this->village()->takeWorkersFromStock(WorkerColor::YELLOW, $numYellow));
+        array_push($stockWorkers, ... $this->village()->takeWorkersFromStock(WorkerColor::GREEN, $numGreen));
         if (count($stockWorkers) < $numWorkersFromStock) {
             throw new InvalidArgumentException("Insufficent workers from hand");
         }
@@ -188,7 +201,11 @@ class Model {
         // be tolerant of including target tile; it will get combined.
         $moved_bid_ids = array_filter($moved_bid_ids, fn ($id) => $id != $market_tile_id);
 
-        $assembled = $this->assembleValidatedWorkerGroup($moved_bid_ids, $numWorkersFromStock, $workerColor);
+        $numBlue = $workerColor == WorkerColor::BLUE ? $numWorkersFromStock : 0;
+        $numRed = $workerColor == WorkerColor::RED ? $numWorkersFromStock : 0;
+        $numYellow = $workerColor == WorkerColor::YELLOW ? $numWorkersFromStock : 0;
+        $numGreen = $workerColor == WorkerColor::GREEN ? $numWorkersFromStock : 0;
+        $assembled = $this->assembleValidatedWorkerGroup($moved_bid_ids, $numBlue, $numRed, $numYellow, $numGreen);
 
         $newBid = $assembled["group"];
         $lot->bid($this->activePlayerId, $newBid);
@@ -289,11 +306,15 @@ class Model {
     public function activate(
         int $tile_id,
         array $moved_bid_ids,
-        int $numWorkersFromStock,
-        WorkerColor $workerColor,
+        int $numBlue,
+        int $numRed,
+        int $numYellow,
+        int $numGreen,
         ?int $skill_pmt_id = null,
         ?int $worker_pmt_id = null,
         ?ResourceType $requested_reward_type = null): ActivationResult {
+
+        $hasBoat4b = $this->village()->hasTileType(TileType::BOAT4B);
 
         /** @var MarketLot|VillageTile|null */
         $t = array_find($this->market()->lots(), fn (MarketLot $mt) => $mt->tile_id == $tile_id);
@@ -311,19 +332,19 @@ class Model {
             throw new InvalidArgumentException("tile {$t->tile_id} {$t->type->value} is not activatable");
         }
 
+        $activationInfo = $this->assembleValidatedWorkerGroup($moved_bid_ids, $numBlue, $numRed, $numYellow, $numGreen);
+        $activatingWorkerGroup = $activationInfo["group"];
+
         $currentColor = $t->currentColor();
-        if ($currentColor !== null && $workerColor != $currentColor) {
-            // if (!$hasBoat4a || $currentColor == WorkerColor::GREEN) {
-                throw new InvalidArgumentException("bids must match bid color");
-            // }
+        if ($currentColor !== null && $activatingWorkerGroup->color() != $currentColor) {
+            if (!$hasBoat4b) {
+                throw new InvalidArgumentException("activations must match tile color {$currentColor->value} != {$activatingWorkerGroup->color()->value}");
+            }
         }
 
         $payment = $this->computeActivationCost($t, $skill_pmt_id, $worker_pmt_id);
         $this->allData()->applyActivationPayment($this->activePlayerId, $payment);
 
-        // TODO: need to handle boat4b
-        $activationInfo = $this->assembleValidatedWorkerGroup($moved_bid_ids, $numWorkersFromStock, $workerColor);
-        $activatingWorkerGroup = $activationInfo["group"];
         $t->productionActivations()->add($activatingWorkerGroup);
 
         $result = $this->allData()->takeActivationRewards($rewardType, $requested_reward_type);
