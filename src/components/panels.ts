@@ -1,5 +1,7 @@
 import { KFGameDatas, KFPlayer, SkillType, WorkerColor } from "../kfdata";
 import { Html } from "../libs/html";
+import { TooltipManager } from "../libs/tooltips";
+import { ACTIVE_PLAYERS_CHANGED } from "../states/base";
 import { TranslationComponent } from "./translation";
 
 const WORKER_COLORS: WorkerColor[] = ['red', 'yellow', 'blue', 'green'];
@@ -9,12 +11,15 @@ const SKILLS: SkillType[] = ['anvil', 'pickaxe', 'saw'];
  * BGA's player panels, as in the mockup. BGA's own parts stay where BGA puts them; this adds, with
  * the CSS: the player's color for the avatar's ring, the active player's mark (kf_active: a bar down
  * the panel's edge and a "Your turn" or "Playing" chip), the start player's meeple after their name
- * (with a tooltip), and in your own panel your workers, tools, outbid groups and winter tiles, which
- * the server sends to you only.
+ * (with a tooltip), and in your own panel your workers and tools, and a button with your winter tiles'
+ * count that shows them large in a dialog. The server sends these to you only.
  */
 export class PanelsComponent {
 
-    public constructor(private bga: Bga<KFPlayer, KFGameDatas>, private translations: TranslationComponent) {
+    private winterDialog: PopinDialog | undefined;
+
+    public constructor(private bga: Bga<KFPlayer, KFGameDatas>, private translations: TranslationComponent,
+        private tooltips: TooltipManager) {
     }
 
     public setup(): void {
@@ -23,56 +28,102 @@ export class PanelsComponent {
         // The players' ids are the keys; the player objects don't always carry them.
         Object.entries(gamedatas.players).forEach(([key, player]) => {
             const id = Number(key);
-            document.getElementById(`overall_player_board_${id}`)?.style.setProperty('--kf-player-color', `#${player.color}`);
+            this.panel(id).style.setProperty('--kf-player-color', `#${player.color}`);
             this.bga.playerPanels.getElement(id).append(this.chips(id == me));
-            document.getElementById(`overall_player_board_${id}`)?.classList.toggle('kf_start_player', id == gamedatas.startPlayerId);
-            if (id == gamedatas.startPlayerId) {
-                // The start player's meeple, right after their name: no visible label (once known, it isn't
-                // needed), hover or tap shows one. BGA places the online status and flag itself, absolutely,
-                // so following the name is what keeps it clear of them.
-                document.querySelector(`#player_name_${id} > a`)?.after(
-                    Html.span({ id: `kf_start_${id}`, classes: 'kf_starter', attrs: { role: 'img', 'aria-label': _('Start player') } }));
-                this.bga.gameui.addTooltip(`kf_start_${id}`, _('Start player'), '');
-            }
         });
+        this.setStartPlayer(gamedatas.startPlayerId);
         this.markActive();
+        // BaseState reports every change of active players
+        document.addEventListener(ACTIVE_PLAYERS_CHANGED, () => this.markActive());
         this.updatePrivateRow();
     }
 
     /**
-     * Marks the panels of the players who must act now (kf_active: the bar and the turn chip).
-     * Call on every change of active player; BGA's own hourglass markers aren't reliable for this.
+     * Moves the start player's meeple to this player's panel, right after their name: no visible label
+     * (once known, it isn't needed), hover or tap shows one. BGA places the online status and flag
+     * itself, absolutely, so following the name is what keeps it clear of them.
      */
-    public markActive(): void {
+    public setStartPlayer(startPlayerId: number): void {
         Object.keys(this.bga.gameui.gamedatas.players).map(Number).forEach(id => {
-            document.getElementById(`overall_player_board_${id}`)?.classList.toggle('kf_active', this.bga.players.isPlayerActive(id));
+            this.panel(id).classList.toggle('kf_start_player', id == startPlayerId);
+            document.getElementById(`kf_start_${id}`)?.remove();
         });
+        const meeple = Html.span({ id: `kf_start_${startPlayerId}`, classes: 'kf_starter', attrs: { role: 'img', 'aria-label': _('Start player') } });
+        document.querySelector(`#player_name_${startPlayerId} > a`)?.after(meeple);
+        if (meeple.isConnected) {
+            this.tooltips.add(meeple, Html.span({ text: _('Start player') }));
+        }
     }
 
     /**
-     * Redraws your workers, tools, outbid groups and winter tiles. Call whenever they may have
-     * changed: after any bid (yours takes workers from your stock, anyone's can outbid you).
+     * Marks the panels of the players who must act now (kf_active: the bar and the turn chip).
+     * BGA's own hourglass markers aren't reliable for this.
+     */
+    public markActive(): void {
+        Object.keys(this.bga.gameui.gamedatas.players).map(Number).forEach(id => {
+            this.panel(id).classList.toggle('kf_active', this.bga.players.isPlayerActive(id));
+        });
+    }
+
+    /** The whole of BGA's panel for this player (getElement gives the game's own area inside it). */
+    private panel(id: number): HTMLElement {
+        return this.bga.playerPanels.getElement(id).closest<HTMLElement>('.player-board')!;
+    }
+
+    /**
+     * Redraws your workers, tools and winter tiles. Call whenever they may have changed, e.g. after
+     * your bids, which take workers from your stock.
      */
     public updatePrivateRow(): void {
         const me = this.bga.players.getCurrentPlayerId();
         const village = this.bga.gameui.gamedatas.villages[me];
         if (!village?.workers) { return; }   // spectators
-        const host = this.bga.playerPanels.getElement(me);
-        let row = host.querySelector<HTMLElement>('.kf_private');
+        const panelEl = this.bga.playerPanels.getElement(me);
+        let row = panelEl.querySelector<HTMLElement>('.kf_private');
         if (!row) {
             row = Html.div({ classes: 'kf_private', attrs: { role: 'group', 'aria-label': _('Your workers, tools and winter tiles') } });
-            host.append(row);
+            panelEl.append(row);
         }
+        const winter = village.winter_tiles ?? [];
         row.replaceChildren(
             ...WORKER_COLORS.map(c => this.counted('kf_worker', { 'data-kf-color': c }, village.workers!.filter(w => w.color == c).length, workerLabel(c))),
             ...SKILLS.map(s => this.counted('kf_icon_skill', { 'data-kf-kind': s }, (village.skills ?? []).filter(k => k.type == s).length, skillLabel(s))),
-            this.outbidGroups(me),
-            Html.div({ classes: 'kf_private_winter', attrs: { role: 'group', 'aria-label': _('Your winter tiles') } },
-                ...(village.winter_tiles ?? []).map(t => {
-                    const name = this.translations.tileName(t.tiletype);
-                    return Html.div({ classes: 'kf_tile', title: name, attrs: { 'data-kf-tile': t.tiletype, role: 'img', 'aria-label': name } });
-                })),
+            ...(winter.length > 0 ? [this.winterButton(winter.length)] : []),
         );
+    }
+
+    /** Your winter tiles' count; too small to read in the panel, so the button shows them in a dialog. */
+    private winterButton(n: number): HTMLElement {
+        const button = Html.button({
+                classes: 'kf_winter_button',
+                attrs: { 'aria-haspopup': 'dialog', 'aria-label': _('Your winter tiles: ${n}').replace('${n}', String(n)) },
+            },
+            Html.span({ classes: 'kf_winter_icon', attrs: { 'aria-hidden': 'true' } }),
+            Html.span({ text: String(n) }));
+        button.addEventListener('click', () => this.showWinterTiles());
+        return button;
+    }
+
+    /** Your winter tiles, large and with their names. */
+    private showWinterTiles(): void {
+        const me = this.bga.players.getCurrentPlayerId();
+        const tiles = this.bga.gameui.gamedatas.villages[me]?.winter_tiles ?? [];
+        // Under the title, what they are first, then the tiles
+        const content = Html.div({ classes: 'kf_winter_dialog' },
+            Html.p({ classes: 'kf_winter_note', text: _('Only you can see them.') }),
+            Html.div({ classes: 'kf_winter_tiles' },
+                ...tiles.map(t => {
+                    const name = this.translations.tileName(t.tiletype);
+                    return Html.div({ classes: 'kf_winter_tile' },
+                        Html.div({ classes: 'kf_tile', attrs: { 'data-kf-tile': t.tiletype, role: 'img', 'aria-label': name } }),
+                        Html.span({ text: name }));
+                })));
+        this.winterDialog?.destroy();
+        this.winterDialog = new ebg.popindialog();
+        this.winterDialog.create('kf_winter_dialog');
+        this.winterDialog.setTitle(_('Your winter tiles'));
+        this.winterDialog.setContent(content.outerHTML);
+        this.winterDialog.show();
     }
 
     /** "Your turn"/"Playing" (the CSS shows it on the active player's panel only, and not on phones). */
@@ -86,24 +137,6 @@ export class PanelsComponent {
         return Html.span({ classes: 'kf_counted' },
             Html.span({ classes: cls, attrs: { ...attrs, role: 'img', 'aria-label': label } }),
             Html.span({ classes: 'kf_count', text: String(n) }));
-    }
-
-    /** Your bids that someone has outbid: each a group of one color that can move as a whole. */
-    private outbidGroups(me: number): HTMLElement {
-        const box = Html.div({ classes: 'kf_private_outbid' });
-        this.bga.gameui.gamedatas.market.forEach(lot => {
-            const mine = lot.bids.find(b => b.player_id == me && b.workers.length > 0);
-            const top = Math.max(0, ...lot.bids.map(b => b.workers.length));
-            if (!mine || mine.workers.length >= top) { return; }
-            const color = mine.workers[0]!.color;
-            const text = _('Outbid on ${tile}').replace('${tile}', this.translations.tileName(lot.tiletype));
-            const group = this.counted('kf_worker', { 'data-kf-color': color }, mine.workers.length, workerLabel(color));
-            group.classList.add('kf_outbid_group');
-            group.setAttribute('aria-label', `${workerLabel(color)}: ${mine.workers.length}, ${text}`);
-            group.append(Html.span({ classes: 'kf_outbid_where', text }));
-            box.append(group);
-        });
-        return box;
     }
 }
 

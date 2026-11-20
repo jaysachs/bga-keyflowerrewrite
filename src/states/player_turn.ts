@@ -84,9 +84,8 @@ export class PlayerTurnState extends BaseState {
         if (village?.workers) {
             const ids = new Set(args.bid.map(w => w.id));
             village.workers = village.workers.filter(w => !ids.has(w.id));
+            this.panels.updatePrivateRow();   // your workers' counts
         }
-        // Your stock may have changed, and any bid can outbid one of yours.
-        this.panels.updatePrivateRow();
     }
 
     /** An outbid bid moved to another tile. For the log only: bidMade, which follows, moves it. */

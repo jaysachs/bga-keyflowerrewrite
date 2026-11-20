@@ -16,6 +16,7 @@ import { VillageComponent } from "./components/village";
 import { KFGameDatas, KFPlayer } from "./kfdata";
 import { BaseGame } from "./libs/basegame";
 import { Html } from "./libs/html";
+import { activePlayersChanged } from "./states/base";
 import { PlayerTurnState } from "./states/player_turn";
 import { SeasonSetupState } from "./states/season_setup";
 import { IDS, View } from "./view";
@@ -35,7 +36,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
         this.marketComponent = new MarketComponent(bga, this.translationComponent, this.moreAnimations);
         this.dockComponent = new DockComponent(bga);
         this.villageComponent = new VillageComponent(bga);
-        this.panelsComponent = new PanelsComponent(bga, this.translationComponent);
+        this.panelsComponent = new PanelsComponent(bga, this.translationComponent, this.tooltipManager);
     }
 
     override async setup(gamedatas: KFGameDatas) {
@@ -57,9 +58,12 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
         this.panelsComponent.setup();
     }
 
-    /** BGA calls this whenever the active player changes. */
+    /**
+     * BGA calls this when a turn starts (before the state's onEnteringState), so the active player may
+     * have changed. Changes within a state come to BaseState.onPlayerActivationChange instead.
+     */
     onUpdateActionButtons(stateName: string, args: any): void {
-        this.panelsComponent.markActive();
+        activePlayersChanged();
     }
 
     private registerStates(): void {
