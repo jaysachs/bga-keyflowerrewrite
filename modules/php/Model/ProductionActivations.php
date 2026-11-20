@@ -62,6 +62,9 @@ class ProductionActivations {
     }
 
     public function currentColor(): ?WorkerColor {
+        if (isset($this->activations[0])) {
+            return $this->activations[0]->color();
+        }
         return null;
     }
 }

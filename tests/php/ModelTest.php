@@ -78,6 +78,15 @@ class TestStore implements PersistentStore {
 
 final class ModelTest extends TestCase {
 
+    private function assertThrows(Closure $c, string $msg = "should have thrown exception"): void {
+        try {
+            $c();
+            $this->assertTrue(false, $msg);
+        } catch (InvalidArgumentException $e) {
+            $this->assertTrue(true, $msg);
+        }
+    }
+
     public function testNextSeason(): void {
         $pids = [self::PID1, self::PID2];
         $ps = new TestStore(AllGameData::newGameDataFor($pids));
@@ -297,13 +306,13 @@ final class ModelTest extends TestCase {
         // also verify store was NOT called
     }
 
-    private function assertThrows(Closure $c, string $msg = "should have thrown exception"): void {
-        try {
-            $c();
-            $this->assertTrue(false, $msg);
-        } catch (InvalidArgumentException $e) {
-            $this->assertTrue(true, $msg);
-        }
+    public function testBidMustMatchActivationColor(): void {
+        $model = $this->initialModel();
+        $lot1 = $this->makeLot(TileType::ALEHOUSE);
+        $lot1->productionActivations()->add(new WorkerGroup([$this->makeWorker(WorkerColor::YELLOW)]));
+        $model->allData()->market->addLot($lot1);
+
+        $this->assertThrows(fn () => $model->bid($lot1->tile_id, [], 1, WorkerColor::BLUE), "color mismatch should fail");
     }
 
     public function testBid_overbiddingSucceeds(): void {
