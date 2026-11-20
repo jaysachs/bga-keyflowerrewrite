@@ -328,10 +328,28 @@ class Model {
 
         $result = $this->allData()->takeActivationRewards($rewardType, $requested_reward_type);
 
-        // TODO: rewards need to be placed:
-        //    workers, skills in player's village "house"
-        //    resources on activated tile if in player's village
-        //    resources on player's home tile if in market or other village
+        // TODO: want $destTile as part of ActivationResult; move takeActivationRewards back onto Model?
+        // TODO: consider that AllGameData is not that different from Model ... except that it doesnt' persist.
+        //       that's an interesting avenue to explore.
+        $destTile = null;
+        if ($result->resources) {
+            if ($t instanceof VillageTile) {
+                $destTile = $t;
+            } else {
+                $destTile = $this->village()->homeTile();
+            }
+            foreach ($result->resources as $resource) {
+                $destTile->addResource($resource);
+            }
+        } else if ($result->skills) {
+            foreach ($result->skills as $skill) {
+                $this->village()->addSkill($skill);
+            }
+        } else if ($result->workers) {
+            foreach ($result->workers as $worker) {
+                $this->village()->addWorker($worker);
+            }
+        }
 
         $this->ps->updateActivation(
             $this->activePlayerId,
@@ -339,8 +357,8 @@ class Model {
             count($t->productionActivations()->activations()) - 1,
             $activatingWorkerGroup,
             $result,
-            $payment);
-        // $this->ps->updateRewards($rewards);
+            $payment,
+            $destTile);
         $this->ps->clearPasses();
 
         return new ActivationResult($t, $result, $activatingWorkerGroup, $activationInfo["movedBids"]);

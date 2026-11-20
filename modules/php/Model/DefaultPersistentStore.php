@@ -241,6 +241,30 @@ class DefaultPersistentStore implements PersistentStore {
         return $result;
     }
 
+    private function stringVal(?string $s): string {
+        return $s === null ? "NULL" : "'{$s}'";
+    }
+
+    private function intVal(?int $i): string {
+        return $i === null ? "NULL" : "{$i}";
+    }
+
+    /** @param list<int> $ids */
+    private function sqlUpdateLocation(
+        array $ids,
+        LocType $loc_type,
+        ?int $loc_id = null,
+        ?int $loc_pos = null,
+        ?int $pid = null): string {
+        return
+            "UPDATE pieces
+                SET loc_type='{$loc_type->value}',
+                    loc_id={$this->intVal($loc_id)},
+                    player_id={$this->intVal($pid)},
+                    loc_pos={$this->intVal($loc_pos)}
+              WHERE id IN ( " . implode(",", $ids) . " )";
+    }
+
     private function vals(
         int $id,
         PieceType $piece_type,
@@ -249,16 +273,14 @@ class DefaultPersistentStore implements PersistentStore {
         ?int $loc_id = null,
         ?int $loc_pos = null,
         ?int $pid = null): string {
-        $snull = fn (?string $s) => $s === null ? "NULL" : "'{$s}'";
-        $inull = fn (?int $i) => $i === null ? "NULL" : "{$i}";
         return '('  . implode(',', [
             $id,
-            $snull($piece_type->value),
-            $snull($subtype),
-            $snull($loc_type->value),
-            $inull($loc_id),
-            $inull($loc_pos),
-            $inull($pid)
+            $this->stringVal($piece_type->value),
+            $this->stringVal($subtype),
+            $this->stringVal($loc_type->value),
+            $this->intVal($loc_id),
+            $this->intVal($loc_pos),
+            $this->intVal($pid)
         ]) . ')';
     }
 
@@ -368,89 +390,53 @@ class DefaultPersistentStore implements PersistentStore {
         }
     }
 
-    // TODO: this also needs to update anything paid as cost
-    public function updateActivation(int $player_id, int $tile_id, int $activationPos, WorkerGroup $group, ProductionResult $productionResult, ActivationPayment $payment): void {
-        $ids = array_map(fn ($w) => $w->id, $group->workers());
-        $this->db->execute(
-            "UPDATE pieces
-             SET loc_type='" . LocType::TILE->value . "',
-                 loc_id={$tile_id},
-                 player_id={$player_id},
-                 loc_pos={$activationPos}
-             WHERE id IN ( " . implode(",", $ids) . " )"
+    public function updateActivation(
+        int $player_id,
+        int $tile_id,
+        int $activationPos,
+        WorkerGroup $group,
+        ProductionResult $productionResult,
+        ActivationPayment $payment,
+        ?VillageTile $destTile): void {
+        $this->db->execute($this->sqlUpdateLocation(
+            array_map(fn ($w) => $w->id, $group->workers()),
+            LocType::TILE, $tile_id, $activationPos, $player_id)
         );
         if ($payment->worker) {
-            // FIXME: need to get right loc_pos in bag
-            $this->db->execute(
-                "UPDATE pieces
-                 SET loc_type='" . LocType::BAG->value . "',
-                    loc_id=NULL,
-                    player_id=NULL,
-                    loc_pos=FIXME
-                WHERE id = {$payment->worker->id}"
-            );
+            $this->db->execute($this->sqlUpdateLocation([$payment->worker->id], LocType::BAG));
         }
         if ($payment->skill) {
-            // FIXME: need to get right loc_pos in skillpile
-            $this->db->execute(
-                "UPDATE pieces
-                 SET loc_type='" . LocType::SKILLPILE->value . "',
-                    loc_id=NULL,
-                    player_id=NULL,
-                    loc_pos=FIXME
-                WHERE id = {$payment->skill->id}"
-            );
+            $this->db->execute($this->sqlUpdateLocation([$payment->skill->id], LocType::SKILLPILE));
         }
         if ($productionResult->workers) {
-            $ids = array_map(fn ($w) => $w->id, $productionResult->workers);
-            $this->db->execute(
-                "UPDATE pieces
-                 SET loc_type='" . LocType::VILLAGE->value . "',
-                    loc_id=NULL,
-                    player_id={$player_id},
-                    loc_pos=NULL
-                WHERE id IN ( " . implode(",", $ids) . " )"
+            $this->db->execute($this->sqlUpdateLocation(
+                array_map(fn ($w) => $w->id, $productionResult->workers),
+                LocType::VILLAGE, null, null, $player_id)
             );
         }
         else if ($productionResult->skills) {
-            $ids = array_map(fn ($w) => $w->id, $productionResult->skills);
-            $this->db->execute(
-                "UPDATE pieces
-                 SET loc_type='" . LocType::VILLAGE->value . "',
-                    loc_id=NULL,
-                    player_id={$player_id},
-                    loc_pos=NULL
-                WHERE id IN ( " . implode(",", $ids) . " )"
+            $this->db->execute($this->sqlUpdateLocation(
+                array_map(fn ($w) => $w->id, $productionResult->skills),
+                LocType::VILLAGE, null, null, $player_id)
             );
         }
         else if ($productionResult->resources) {
-            $ids = array_map(fn ($w) => $w->id, $productionResult->resources);
-            $this->db->execute(
-                "UPDATE pieces
-                 SET loc_type='" . LocType::TILE->value . "',
-                     loc_id={$tile_id},
-                     player_id=NULL,
-                     loc_pos=NULL
-                 WHERE id IN ( " . implode(",", $ids) . " )"
+            if ($destTile === null) {
+                throw new InvalidArgumentException("must specify destTile for resource production awards");
+            }
+            $this->db->execute($this->sqlUpdateLocation(
+                array_map(fn ($w) => $w->id, $productionResult->resources),
+                LocType::TILE, $destTile->tile_id, null, $player_id)
             );
         } else {
-            // do nothing for upgrades? or store a global counter of upgrade moves remaining?
+            // FIXME: do nothing for upgrades? or store a global counter of upgrade moves remaining?
         }
     }
 
     public function updateBidWorkerLocations(int $player_id, MarketLot $bidTile, WorkerGroup $newBid): void {
-        $ids = array_map(fn ($w) => $w->id, $newBid->workers());
-        $case = "CASE id "
-            . implode(" ", array_map(fn ($i, $p) => "WHEN {$i} THEN {$p}", $ids, array_keys($ids)))
-            . " END";
-
-        $this->db->execute(
-            "UPDATE pieces
-             SET loc_type='" . LocType::MARKET->value . "',
-                 loc_id={$bidTile->tile_id},
-                 player_id={$player_id},
-                 loc_pos={$case}
-             WHERE id IN ( " . implode(",", $ids) . " )"
+        $this->db->execute($this->sqlUpdateLocation(
+            array_map(fn ($w) => $w->id, $newBid->workers()),
+            LocType::MARKET, $bidTile->tile_id, null, $player_id)
         );
     }
 

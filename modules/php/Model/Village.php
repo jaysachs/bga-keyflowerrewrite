@@ -134,6 +134,15 @@ class Village {
         return null;
     }
 
+    public function homeTile(): VillageTile {
+        foreach ($this->tiles as $vtile) {
+            if ($vtile->type->isHome()) {
+                return $vtile;
+            }
+        }
+        throw new InvalidArgumentException("no home tile on village for {$this->playerId}");
+    }
+
     public function hasTileType(TileType $tileType): bool {
         foreach ($this->tiles as $vtile) {
             if ($vtile->type == $tileType) {

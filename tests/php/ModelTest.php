@@ -46,7 +46,14 @@ class TestStore implements PersistentStore {
     {
     }
 
-    public function updateActivation(int $player_id, int $tile_id, int $activationPos, WorkerGroup $group, ProductionResult $productionResult, ActivationPayment $payment): void
+    public function updateActivation(
+        int $player_id,
+        int $tile_id,
+        int $activationPos,
+        WorkerGroup $group,
+        ProductionResult $productionResult,
+        ActivationPayment $payment,
+        ?VillageTile $destTile): void
     {
 
     }
