@@ -249,7 +249,7 @@ class DefaultPersistentStore implements PersistentStore {
         return $i === null ? "NULL" : "{$i}";
     }
 
-    /** @param list<int> $ids */
+    /** @param array<int> $ids */
     private function sqlUpdateLocation(
         array $ids,
         LocType $loc_type,
