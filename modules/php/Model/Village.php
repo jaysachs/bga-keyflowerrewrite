@@ -125,6 +125,15 @@ class Village {
         return $this->hasStartPlayer;
     }
 
+    public function tileById(int $tile_id): ?VillageTile {
+        foreach ($this->tiles as $vtile) {
+            if ($vtile->tile_id == $tile_id) {
+                return $vtile;
+            }
+        }
+        return null;
+    }
+
     public function hasTileType(TileType $tileType): bool {
         foreach ($this->tiles as $vtile) {
             if ($vtile->type == $tileType) {
