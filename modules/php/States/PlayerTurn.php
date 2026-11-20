@@ -103,7 +103,7 @@ class PlayerTurn extends AbstractState {
 
         $model = $this->createModel($active_player_id);
         $requested_resource = $resource_type_reward ? ResourceType::from($resource_type_reward): null;
-        $activationResult = $model->activate($tile_id, $moved_bid_ids, $num_blue, $num_red, $num_yellow, $num_green, $skill_pmt_id, $worker_pmt_id, $requested_resource);
+        $activationResult = $model->activate($tile_id, $moved_bid_ids, $num_blue ?? 0, $num_red ?? 0, $num_yellow ?? 0, $num_green ?? 0, $skill_pmt_id, $worker_pmt_id, $requested_resource);
 
         $this->notifyMovedBids($active_player_id, $activationResult->movedBids);
 
