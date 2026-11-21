@@ -301,6 +301,7 @@ html {
 .kf_lot .kf_bids {
     flex-direction: column;
     align-self: stretch;
+    align-items: center;   /* each row as wide as its avatar and workers, so an outbid frame fits around them */
     gap: 2px;
     font-size: 12px;
 }
@@ -881,9 +882,18 @@ html {
     font-size: calc(12px / var(--bga-framework-parts-zoom, 1));
 }
 
-/* BGA's own phone CSS draws the online status at 16px: 11px, about its size on desktop */
+/* The online status beside the flag (BGA's own phone CSS draws it at 16px, and puts the phone icon 2px
+   higher than the dot, both above the flag's middle): about the flag's size, centered on its 15px. The
+   phone icon is a narrow glyph, so it's a little larger */
 .mobile_version #overall-content .player_board_inner .player-name > .player_status {
-    font-size: 11px;
+    top: 2px;
+    height: 15px;
+    font-size: 13px;
+    line-height: 15px;
+}
+
+.mobile_version #overall-content .player_board_inner .player-name > .player_status.fa-mobile {
+    font-size: 17px;
 }
 
 /* The winter tiles' button at the same size on every phone, as the counts */
