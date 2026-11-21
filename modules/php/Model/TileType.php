@@ -397,7 +397,7 @@ enum TileType: string
             TileType::STORE_U => ActivationReward::WORKER_GREEN_2,
             TileType::TAVERN_U => ActivationReward::WORKER_ANY_3,
 
-            default => throw new InvalidArgumentException("tile type {$this->value} cannot be activated"), //ActivationCost::NONE,
+            default => ActivationReward::NONE,
         };
     }
 
@@ -465,7 +465,7 @@ enum TileType: string
             TileType::WORKSHOP_U => ActivationCost::NONE,
             TileType::FARRIER_U => ActivationCost::NONE,
 
-            default => throw new InvalidArgumentException("tile type {$this->value} cannot be activated"), //ActivationCost::NONE,
+            default => ActivationCost::NONE,
         };
     }
 

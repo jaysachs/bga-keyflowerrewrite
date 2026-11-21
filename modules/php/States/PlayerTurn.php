@@ -31,9 +31,15 @@ use Bga\GameFramework\Actions\Types\IntArrayParam;
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\keyflowerrewrite\Game;
+use Bga\Games\keyflowerrewrite\Model\ActivationResult;
+use Bga\Games\keyflowerrewrite\Model\ActivationReward;
 use Bga\Games\keyflowerrewrite\Model\MarketLot;
 use Bga\Games\keyflowerrewrite\Model\Marshaller;
+use Bga\Games\keyflowerrewrite\Model\MovedBid;
+use Bga\Games\keyflowerrewrite\Model\ProductionActivations;
+use Bga\Games\keyflowerrewrite\Model\ResourceType;
 use Bga\Games\keyflowerrewrite\Model\TileType;
+use Bga\Games\keyflowerrewrite\Model\VillageTile;
 use Bga\Games\keyflowerrewrite\Model\WorkerColor;
 
 class PlayerTurn extends AbstractState {
@@ -48,6 +54,28 @@ class PlayerTurn extends AbstractState {
             updateGameProgression: true);
     }
 
+    /**
+     * @param VillageTile|MarketLot $tile
+     * @return array<string,mixed>
+     */
+    private function activateableInfo( mixed $tile, bool $hasBoat4b): ?array {
+        $bc = $tile->currentColor();
+        $a = $tile->productionActivations();
+        if ($tile->type->activationReward() == ActivationReward::NONE || !$a->isActivatable()) {
+            return null;
+        }
+        $cost = $tile->type->activationCost();
+        // FIXME: filter out if player can't afford the cost?
+        return [
+            "must_match" => !$hasBoat4b,
+            "tile_id" => $tile->tile_id,
+            "color" => $bc === null ? null : $bc->value,
+            "min" => $a->minRequiredToActivate(),
+            "max" => $a->maxAllowededToActivate(),
+            "cost" => $cost->value,
+        ];
+    }
+
     /** @return mixed[] */
     public function getArgs(int $active_player_id): array {
         /*
@@ -59,11 +87,28 @@ class PlayerTurn extends AbstractState {
         */
         $model = $this->createModel($active_player_id);
         $hasBoat4a = $model->village()->hasTileType(TileType::BOAT4A);
+        $hasBoat4b = $model->village()->hasTileType(TileType::BOAT4B);
 
+        /** @var array<array<string,mixed>> */
+        $activationInfo = [];
+        foreach ($model->market()->lots() as $tile) {
+            $ai = $this->activateableInfo($tile, $hasBoat4b);
+            if ($ai) {
+                $activationInfo[] = $ai;
+            }
+        }
+        foreach ($model->allData()->villages as $pid => $village) {
+            foreach ($village->tiles() as $tile) {
+                $ai = $this->activateableInfo($tile, $hasBoat4b);
+                if ($ai) {
+                    $activationInfo[] = $ai;
+                }
+            }
+        }
         return [
             "bidding_info" => array_map(
                 function (MarketLot $lot) use (&$active_player_id, $hasBoat4a): array {
-                    $bc = $lot->biddingColor();
+                    $bc = $lot->currentColor();
                     $bid = $lot->bidBy($active_player_id);
                     return [
                         "must_match" => !$hasBoat4a  || $bc === WorkerColor::GREEN,
@@ -79,7 +124,8 @@ class PlayerTurn extends AbstractState {
                         ]
                     ];
                 },
-                $model->market()->lots())
+                $model->market()->lots()),
+            "activation_info" => $activationInfo,
         ];
     }
 
@@ -87,32 +133,50 @@ class PlayerTurn extends AbstractState {
      * @param list<int> $moved_bid_ids the tiles to move bids from
      */
     #[PossibleAction]
-    public function actActivate(int $active_player_id, int $tile_id,array $moved_bid_ids, int $workersFromStock, WorkerColor $workerColor): void {
-        /*
-         verify:
-            1. tile_id is a tile in some village
-            2. the tile has an activation reward
-            3. moved_bid_ids refer to active player's bids
-            4. moved_bid_ids are currently losing
-            5. moved_bid_ids are unique
-            6. all moved_bid groups have the same type
-            7. worker_type is same as all moved_bid groups
-            8. if there are already activations or bids on this tile, worker type should match
-                unless player has boat4b
-        */
+    public function actActivate(
+        int $active_player_id,
+        int $tile_id,
+        #[IntArrayParam()] array $moved_bid_ids,
+        ?int $num_blue,
+        ?int $num_red,
+        ?int $num_yellow,
+        ?int $num_green,
+        ?int $skill_pmt_id,
+        ?int $worker_pmt_id,
+        ?string $resource_type_reward): mixed {
+
+        $model = $this->createModel($active_player_id);
+        $requested_resource = $resource_type_reward ? ResourceType::from($resource_type_reward): null;
+        $activationResult = $model->activate($tile_id, $moved_bid_ids, $num_blue ?? 0, $num_red ?? 0, $num_yellow ?? 0, $num_green ?? 0, $skill_pmt_id, $worker_pmt_id, $requested_resource);
+
+        $this->notifyMovedBids($active_player_id, $activationResult->movedBids);
+
+        $this->notify->all(
+            'tileActivated',
+            '${player_name} activated tile ${tiletype}', [
+                'tile_id' => $tile_id,
+                'tiletype' => $activationResult->tile->type->value,
+                'player_id' => $active_player_id,
+                'workers' => Marshaller::workers($activationResult->activatingWorkerGroup->workers()),
+                'produced' => [
+                    'workers' => Marshaller::workers($activationResult->prodResult->workers),
+                    'resources' => Marshaller::resources($activationResult->prodResult->resources),
+                    'skills' => Marshaller::skills($activationResult->prodResult->skills),
+                    'upgrades' => $activationResult->prodResult->upgrades,
+                    'dest_tile_id' => $activationResult->destTile?->tile_id
+                ]
+            ]);
+        if ($activationResult->prodResult->upgrades > 0) {
+            // FIXME: transition to upgrade state
+            return null;
+        } else {
+            return NextPlayer::class;
+        }
     }
 
-    /**
-     * @param list<int> $moved_bid_ids the tiles to move bids from
-     */
-    #[PossibleAction]
-    public function actBid(int $active_player_id, int $market_tile_id, #[IntArrayParam()] array $moved_bid_ids, int $numWorkersFromStock, string $color): mixed {
-        $model = $this->createModel($active_player_id);
-        $workerColor = WorkerColor::from($color);
-        $bidResult = $model->bid($market_tile_id, $moved_bid_ids, $numWorkersFromStock, $workerColor);
-        $bid = $bidResult->bid;
-
-        foreach ($bidResult->movedBids as $mb) {
+    /** @param list<MovedBid> $movedBids */
+    private function notifyMovedBids(int $active_player_id, array $movedBids): void {
+        foreach ($movedBids as $mb) {
             $this->game->notify->all(
                 'bidMoved',
                 '${player_name} moved bid of ${num} ${color} from ${tiletype}',
@@ -125,6 +189,19 @@ class PlayerTurn extends AbstractState {
                 ]
             );
         }
+    }
+
+    /**
+     * @param list<int> $moved_bid_ids the tiles to move bids from
+     */
+    #[PossibleAction]
+    public function actBid(int $active_player_id, int $market_tile_id, #[IntArrayParam()] array $moved_bid_ids, int $numWorkersFromStock, string $color): mixed {
+        $model = $this->createModel($active_player_id);
+        $workerColor = WorkerColor::from($color);
+        $bidResult = $model->bid($market_tile_id, $moved_bid_ids, $numWorkersFromStock, $workerColor);
+        $bid = $bidResult->bid;
+
+        $this->notifyMovedBids($active_player_id, $bidResult->movedBids);
         $this->game->notify->all(
             'bidMade',
             '${player_name} bid ${num} ${color} on ${tiletype}',

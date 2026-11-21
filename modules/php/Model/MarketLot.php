@@ -36,7 +36,8 @@ class MarketLot {
     public function __construct(
         public readonly int $tile_id,
         public TileType $type,
-        private array $bids = []) {
+        private array $bids = [],
+        private ProductionActivations $productionActivations = new ProductionActivations()) {
         // validate we have no bids, or a single high bid.
         $this->highBid();
     }
@@ -71,7 +72,7 @@ class MarketLot {
         return null;
     }
 
-    public function biddingColor(): ?WorkerColor {
+    public function currentColor(): ?WorkerColor {
         // TODO: take into account any activations.
         // color of lowest bid is the bid color
         $lowest = null;
@@ -80,7 +81,7 @@ class MarketLot {
                 $lowest = $bid;
             }
         }
-        return $lowest === null ? null : $lowest->color();
+        return $lowest === null ? $this->productionActivations->currentColor() : $lowest->color();
     }
 
     /** Returns true if the player has a non-empty bid that is not the high bid */
@@ -112,4 +113,6 @@ class MarketLot {
         // return $winner;
         return $winner === null ? new WorkerGroup([]) : $winner;
     }
+
+    public function productionActivations(): ProductionActivations { return $this->productionActivations; }
 }

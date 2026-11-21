@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS `pieces` (
   -- resource: 'stone', 'wood', 'iron', 'gold'
   piece_subtype varchar(20),
 
-  loc_type varchar(12) NOT NULL,
+  loc_type varchar(9) NOT NULL,
   loc_id: int,
   loc_pos: int,
   player_id int,
@@ -49,14 +49,7 @@ CREATE TABLE IF NOT EXISTS `pieces` (
   -- only for village tiles and standard boats; can we encode this somewhere else?
   upgraded: tinyint,
 
-  PRIMARY KEY(`piece_type`, `id`),
-
-  -- TODO: consider this constraint ... may have to have non-null
-  -- loc_id / loc_pos / player_id, using 0 to mean "unset"
-  -- It will also require specifying "positions" or a "loc_id" for
-  -- locations like "box", and means that skills in the skill pile
-  --   and resources in the resource stocks also need "positions" or "loc_id"s.
-  -- UNIQUE(`loc_type`, `loc_id`, `loc_pos`, `player_id`),
+  PRIMARY KEY(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 ```
 
@@ -64,47 +57,43 @@ CREATE TABLE IF NOT EXISTS `pieces` (
 
 | `piece_type` | possible `piece_subtype`s |
 | ------------ | ------------------------- |
-| `worker` | `blue`, `red`, `yellow`, `green` |
-| `resource` | `iron`, `stone`, `wood`, `gold` |
-| `tile`   | `boat1a`, `home1`, `goldmine`, `keythedral`, `startplayer1` |
-| `skill`  | `pickaxe`, `anvil`, `saw` |
-| `startplayer` | none |
+| `worker`     | `blue`, `red`, `yellow`, `green` |
+| `resource`   | `iron`, `stone`, `wood`, `gold` |
+| `tile`       | `boat1a`, `home1`, `goldmine`, `keythedral`, `turnorder1`, ... |
+| `skill`      | `pickaxe`, `anvil`, `saw` |
+| `start`      | - |
 
-| `piece_type` | `loc_type` | what | meaning of `loc_id` | meaning of `loc_pos` | requires `player_id`|
-| -------- | ------ | ------- | ------- | ------ | ----- |
-| `startplayer` | `village` | startplayer token | - | - | Y |
-|  `tile`  | `village` | tile placed in a village | encoded rowcol | tile orientation | Y |
-|  `tile`  | `market` | tile in market | - | position in market | |
-|  `tile`  | `dock`   | boat tile at dock | - | position in dock | |
-|  `tile`  | `start`  | tile in start player tiles stock | - | position in pile | |
-|  `tile`  | `spring` | tile in spring stock | - | position in pile | |
-|  `tile`  | `summer` | tile in summer stock | - | position in pile | |
-|  `tile`  | `fall` | tile in fall stock | - | position in pile | |
-|  `tile`  | `winter` | tile in winter stock or player house | - | position | *: if specified, Y (the selecting player) |
-|  `tile`  | `won` | won tile not yet placed in village  | - | position | Y |
-|  `tile`  | `box` | out of play | - | "position"? | |
-|  `worker`  | `market` | worker in bid | `tile_id` in market | position in the bidgroup | Y |
-|  `worker`  | `tile` | worker in an activation | `tile_id` in some village or market | position (1-6) in the activation spots | |
-| `worker` | `village` | (hidden) worker in a player's house | - | position | Y |
-| `worker` | `bag` | worker in the bag | - | position | |
-| `worker` | `greens` | green worker stock | - | position | |
-| `worker` | `boat` | new works on boat | boat id | position | |
-| `skill` | `village` | (hidden) skill in player's house | - | position | Y |
-| `skill` | `skillpile` | skill in skill stock | - | position | |
-| `skill` | `boat` | new skills on boat | boat id | position | |
-| `resource` | `stock` | iron resource in stock | - | position | |
-| `resource` | `stock` | wood resource in stock | - | position | |
-| `resource` | `stock` | stone resource in stock | - | position | |
-| `resource` | `stock` | gold resource in stock | - | position | |
-| `resource` | `tile` | resource on a tile | tile id | position | |
-| `skill` | `scoring` | end-game scoring assignment  | tile id | position | |
-| `worker` | `scoring` | end-game scoring assignment | tile_id | position | |
+| `piece_type` | `loc_type`  | what    | `loc_id` | `loc_pos` | `player_id`? |
+| ------------ | ------------| ------- | ------- | ------ | ----- |
+| `start`      | `village`   | startplayer token | - | - | Y |
+| `tile`       | `village`   | tile placed in a village | encoded rowcol | tile orientation | Y |
+| `tile`       | `market`    | tile in market | - | position in market | |
+| `tile`       | `dock`      | boat tile at dock | - | position in dock | |
+| `tile`       | `turnorder` | tile in turn order tiles stock | - | - | |
+| `tile`       | `spring`    | tile in spring stock | - | - | |
+| `tile`       | `summer`    | tile in summer stock | - | - | |
+| `tile`       | `fall`      | tile in fall stock | - | - | |
+| `tile`       | `winter`    | tile in winter stock or player house | - | - | *: if specified, Y (the selecting player) |
+| `tile`       | `won`       | won tile not yet placed in village  | - | position | Y |
+| `tile`       | `box`       | out of play | - | - | |
+| `worker`     | `market`    | worker in bid | `tile_id` in market | - | Y |
+| `worker`     | `tile`      | worker in an activation | `tile_id` in some village or market | activation number (sequence) | |
+| `worker`     | `village`   | (hidden) worker in a player's house | - | - | Y |
+| `worker`     | `bag`       | worker in the bag | - | - | |
+| `worker`     | `greens`    | green worker in stock | - | - | |
+| `worker`     | `boat`      | workers on boat | boat id | position | |
+| `skill`      | `village`   | (hidden) skill in player's house | - | - | Y |
+| `skill`      | `skillpile` | skill in skill stock | - | position | |
+| `skill`      | `boat`      | new skills on boat | boat id | position | |
+| `resource`   | `stock`     | resource in stock | - | - | |
+| `resource`   | `tile`      | resource on a tile | tile id | - | |
+| `skill`      | `scoring`   | end-game scoring assignment  | tile id | position | |
+| `worker`     | `scoring`   | end-game scoring assignment | tile_id | position | |
 
 Questions:
 1. should we have a separate "scoring" location for resources/skills/workers assigned at the end of the game?
-2. ~~should we have a separate "wontiles" location for tiles won but not yet placed?~~ **YES**
-3. should we require player_id for things for which it can be inferred? e.g. skills on a tile at end of game ... the skills belong to the tile's owner.
-4. ~~should we have a separate "winter tiles in hand" location? or can we depend on the existence/absence of player_id along with the "winter" location?~~  **NO**, we'll use `player_id` non-zero for this.
-5. Can we eliminate `upgraded`? It's only for tiles and boats. We can't use e.g. negation of id, because that breaks the piece identity. We could, though, use the `piece_subtype` (append a trailing "_u"?)
-6. Is unset (for e.g. `player_id`) NULL or 0? Relates on whether we want to include a `UNIQUE` constraint or not.
-7. Should we not use upgraded ... just change the TileType on an existing tile? And have a "canBeUpgraded()" function on TileType (or a `flipsTo(): ?TileType` that returns null if not flippable, and works both for standard boats and non-boat seasonal tiles?
+2. should we require player_id for things for which it can be inferred? e.g. skills on a tile at end of game ... the skills belong to the tile's owner.
+3. how best to represent initial dealt winter tiles? as a separate loc_type, or just re-use `winter` but decide off of `player_id`?
+4. Is unset (for e.g. `player_id`) NULL or 0?
+5. Can we eliminate `won` and just use `village` with a NULL `loc_id` ?
+6. Can we use tile_id for ordering in dock, market? Could we even use id for ordering for workers/skills on boats?

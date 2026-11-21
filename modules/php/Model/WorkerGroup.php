@@ -32,9 +32,14 @@ use InvalidArgumentException;
 // FIXME: Consider calling this BidGroup, and then can correctly validate single-color.
 // Compare that to an ActivationGroup, which is allowed to have multiple colors.
 class WorkerGroup {
-    /** @param list<Worker> $workers */
-    public function __construct(private array $workers)
+
+    /** @var array<int,Worker> */
+    private array $workers;
+
+    /** @param array<int,Worker> $workers */
+    public function __construct(array $workers)
     {
+        $this->workers = [];
         $color = null;
         // FIXME: if boat4b in play, need to by pass this check if making
         //   a group for activation
@@ -42,8 +47,9 @@ class WorkerGroup {
             if ($color === null) {
                 $color = $worker->color;
             } else if ($worker->color != $color) {
-                throw new InvalidArgumentException("worker groups must be of a single color, got {$color->value} and {$worker->color->value}");
+                // throw new InvalidArgumentException("worker groups must be of a single color, got {$color->value} and {$worker->color->value}");
             }
+            $this->workers[$worker->id] = $worker;
         }
     }
 
@@ -64,7 +70,7 @@ class WorkerGroup {
         return $color;
     }
 
-    /** @return list<Worker> */
+    /** @return array<int,Worker> */
     public function workers(): array {
         return $this->workers;
     }
