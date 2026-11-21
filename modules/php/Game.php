@@ -92,11 +92,12 @@ class Game extends \Bga\GameFramework\Table
         $sql = "DELETE FROM player WHERE 1 ";
         self::DbQuery($sql);
 
-        // Set the colors of the players with HTML color code
-        // The default below is red/green/blue/orange/brown
-        // The number of colors defined here must correspond to the maximum number of players allowed for the gams
-        //                        red,   green, blue, brown, orange, black
-        $default_colors = ["ff0000", "00d27f", "00aedb", "ffa500", "a200ff", "000000"];
+        // Player colors, one per player (up to 6). Keyflower's box has none: its colors are the workers'
+        // (red, yellow, blue, green) and the purple start player meeple, so these keep away from them,
+        // and every player's name reads at 4.5:1 or more on white (BGA's guidelines; WCAG AA for text).
+        // Six families, some lighter and more vivid, others darker, so they differ in lightness too.
+        //                 teal,     pink,     orange-brown, navy,  olive green, deep wine
+        $default_colors = ["037a82", "c0157a", "ab5703", "35467f", "5f7a00", "6a1830"];
         $colors = $default_colors;
         Arrays::shuffle($colors);
         // Create players

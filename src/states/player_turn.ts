@@ -1,5 +1,6 @@
 import { AnimationManager } from "../bgalibs/bga-animations";
 import { MarketComponent, workerIcons } from "../components/market";
+import { PanelsComponent } from "../components/panels";
 import { TranslationComponent } from "../components/translation";
 import { KFGameDatas, KFPlayer, MarketLot, Worker, WorkerColor } from "../kfdata";
 import { Html } from "../libs/html";
@@ -47,7 +48,7 @@ export class PlayerTurnState extends BaseState {
     private readonly onTile = (mt: MarketLot) => this.startPick(mt.id);
 
     constructor(bga: Bga<KFPlayer, KFGameDatas>, animationManager: AnimationManager, private market: MarketComponent,
-        private translations: TranslationComponent) {
+        private translations: TranslationComponent, private panels: PanelsComponent) {
         super(bga, animationManager);
     }
 
@@ -83,6 +84,7 @@ export class PlayerTurnState extends BaseState {
         if (village?.workers) {
             const ids = new Set(args.bid.map(w => w.id));
             village.workers = village.workers.filter(w => !ids.has(w.id));
+            this.panels.updatePrivateRow();   // your workers' counts
         }
     }
 

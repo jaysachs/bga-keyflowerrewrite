@@ -10,11 +10,13 @@
 
 import { DockComponent } from "./components/dock";
 import { MarketComponent } from "./components/market";
+import { PanelsComponent } from "./components/panels";
 import { TranslationComponent } from "./components/translation";
 import { VillageComponent } from "./components/village";
 import { KFGameDatas, KFPlayer } from "./kfdata";
 import { BaseGame } from "./libs/basegame";
 import { Html } from "./libs/html";
+import { activePlayersChanged } from "./states/base";
 import { PlayerTurnState } from "./states/player_turn";
 import { SeasonSetupState } from "./states/season_setup";
 import { IDS, View } from "./view";
@@ -25,6 +27,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
     private marketComponent: MarketComponent;
     private dockComponent: DockComponent;
     private villageComponent: VillageComponent;
+    private panelsComponent: PanelsComponent;
 
     constructor(bga: Bga<KFPlayer, KFGameDatas>) {
         super(bga);
@@ -33,6 +36,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
         this.marketComponent = new MarketComponent(bga, this.translationComponent, this.moreAnimations);
         this.dockComponent = new DockComponent(bga);
         this.villageComponent = new VillageComponent(bga);
+        this.panelsComponent = new PanelsComponent(bga, this.translationComponent, this.tooltipManager);
     }
 
     override async setup(gamedatas: KFGameDatas) {
@@ -51,10 +55,19 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
             this.dockComponent.setup(),
             this.villageComponent.setup());
         this.bga.gameArea.getElement().appendChild(mainElem);
+        this.panelsComponent.setup();
+    }
+
+    /**
+     * BGA calls this when a turn starts (before the state's onEnteringState), so the active player may
+     * have changed. Changes within a state come to BaseState.onPlayerActivationChange instead.
+     */
+    onUpdateActionButtons(stateName: string, args: any): void {
+        activePlayersChanged();
     }
 
     private registerStates(): void {
-        this.bga.states.register('PlayerTurn', new PlayerTurnState(this.bga, this.animationManager, this.marketComponent, this.translationComponent));
+        this.bga.states.register('PlayerTurn', new PlayerTurnState(this.bga, this.animationManager, this.marketComponent, this.translationComponent, this.panelsComponent));
         this.bga.states.register('SeasonSetup', new SeasonSetupState(this.bga, this.animationManager));
     }
 
