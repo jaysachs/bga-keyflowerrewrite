@@ -16,15 +16,11 @@ export class TranslationComponent {
 
     public tileDescription(tiletype: TileType): TileDescription {
         const desc = this.translations.tile_descriptions[tiletype];
-        if (!desc) {
-            return { summary: '', upgrade_requirements: null, points: null, scoring_note: null };
-        }
-        const tr = (s?: string) => s == null ? null : _(s);
         return {
-            summary: _(desc.summary),
-            upgrade_requirements: tr(desc.upgrade_requirements),
-            points: tr(desc.points),
-            scoring_note: tr(desc.scoring_note)
+            summary: this.translated(desc?.summary ?? tiletype),
+            upgrade_requirements: this.translated(desc?.upgrade_requirements),
+            points: this.translated(desc?.points),
+            scoring_note: this.translated(desc?.scoring_note)
         }
     }
 
@@ -54,11 +50,10 @@ export class TranslationComponent {
     }
 
     private name(names: Record<string, string>, item: string): string {
-        const name = names[item];
-        return this.nullSafe(name, item);
+        return this.translated(names[item], item);
     }
 
-    private nullSafe(s: string | undefined, backup: string): string {
-        return s ? _(s) : backup;
+    private translated(s: string | undefined, fallback: string = ""): string {
+        return s ? _(s) : fallback;
     }
 }
