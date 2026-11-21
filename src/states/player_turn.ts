@@ -1,5 +1,6 @@
 import { AnimationManager } from "../bgalibs/bga-animations";
 import { MarketComponent, workerIcons } from "../components/market";
+import { PanelsComponent } from "../components/panels";
 import { TranslationComponent } from "../components/translation";
 import { KFGameDatas, KFPlayer, MarketLot, Worker, WorkerColor } from "../kfdata";
 import { Html } from "../libs/html";
@@ -47,7 +48,7 @@ export class PlayerTurnState extends BaseState {
     private readonly onTile = (mt: MarketLot) => this.startPick(mt.id);
 
     constructor(bga: Bga<KFPlayer, KFGameDatas>, animationManager: AnimationManager, private market: MarketComponent,
-        private translations: TranslationComponent) {
+        private translations: TranslationComponent, private panels: PanelsComponent) {
         super(bga, animationManager);
     }
 
@@ -58,25 +59,51 @@ export class PlayerTurnState extends BaseState {
         this.showChoices();
     }
 
-    /** Workers added to a bid; moved outbid workers come with them. */
-    async notif_bidMade(args: { player_id: number, marketlot_id: number, bid: Worker[] }) {
+    /**
+     * Workers added to a bid; moved outbid workers come with them. `moved_from` lists the tiles the
+     * moved groups leave: they're taken off there here, so everything happens in this one notification.
+     */
+    async notif_bidMade(args: { player_id: number, marketlot_id: number, bid: Worker[], moved_from: number[] }) {
         // Your bid is now on the tile: stop showing it as pending, or it's counted twice
         // until the turn moves on.
         if (args.player_id == this.bga.players.getCurrentPlayerId()) {
             this.market.setPending(null);
         }
+        // The bid flies to its tile from where a moved group was drawn, or, with workers from
+        // stock only, from the player's panel. Read before the moved groups leave their tiles.
+        const from = args.moved_from.map(id => this.market.bidRect(id, args.player_id)).find(r => r)
+            ?? this.panelOrigin(args.player_id, `.kf_worker[data-kf-color="${args.bid[0]?.color}"]`);
+        args.moved_from.forEach(id => this.market.removeBid(id, args.player_id));
         this.market.addToBid(args.marketlot_id, args.player_id, args.bid);
+        // Without any visible origin (no panel shown) the bid just appears.
+        if (from) {
+            await this.market.flyBid(args.marketlot_id, args.player_id, from);
+        }
         // Your stock is only sent to you: take out the workers that are now on the tile.
         const village = this.bga.gameui.gamedatas.villages[args.player_id];
         if (village?.workers) {
             const ids = new Set(args.bid.map(w => w.id));
             village.workers = village.workers.filter(w => !ids.has(w.id));
+            this.panels.updatePrivateRow();   // your workers' counts
         }
     }
 
-    /** An outbid bid moved off a tile. */
+    /** An outbid bid moved to another tile. For the log only: bidMade, which follows, moves it. */
     async notif_bidMoved(args: { player_id: number, tile_id: number }) {
-        this.market.removeBid(args.tile_id, args.player_id);
+    }
+
+    /**
+     * Where something a player gives comes from in their panel: for you, the item in your private
+     * row (`item`, a selector: a worker of a color now; later also tools or resources, e.g. paying
+     * for an activation); for other players, whose stock is private, their avatar.
+     */
+    private panelOrigin(playerId: number, item: string): DOMRect | undefined {
+        const candidates = [
+            document.querySelector(`#overall_player_board_${playerId} .kf_private ${item}`),
+            document.getElementById(`avatarwrap_${playerId}`),
+            document.getElementById(`overall_player_board_${playerId}`),
+        ];
+        return candidates.map(c => c?.getBoundingClientRect()).find(r => r && r.width > 0);
     }
 
     override onLeavingState(args: any, isCurrentPlayerActive: boolean): void {

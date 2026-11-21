@@ -30,7 +30,7 @@ $(TS_STUBS): bga-framework.d.ts misc/bga-fw.patch
 
 $(STUBS): $(WORK) _ide_helper.php Makefile
 	mkdir -p $(WORK)/module/table
-	perl -p -e 's/type_arg=null,/type_arg,/;' -e 's/  exit/\/\/ exit/;' -e 's/APP_GAMEMODULE_PATH = ""/APP_GAMEMODULE_PATH = "work\/"/;' -e 's/{}\(\)\;/{}\;/;' _ide_helper.php > $(STUBS)
+	perl -p -e 's/type_arg=null,/type_arg,/;' -e 's/  exit/\/\/ exit/;' -e 's/APP_GAMEMODULE_PATH = ""/APP_GAMEMODULE_PATH = "work\/"/;' -e 's/{}\(\)\;/{}\;/;' -e 's/function clienttranslate/function clienttranslate(string \x{24}text): string { return \x{24}text; }\n    function xclienttranslate/;' _ide_helper.php > $(STUBS)
 
 test: build
 	phpunit --bootstrap tests/autoload.php tests/php --testdox

@@ -85,4 +85,11 @@ final class TileTypeTest extends TestCase
             $this->assertTrue($i == 1, "{$tt->value} is $i");
         }
     }
+
+    public function testTranslations(): void {
+        foreach (TileType::cases() as $tt) {
+            $n = $tt->translatedName();
+            $this->assertTrue($n != null && strcmp($n, "") !== 0, "Tile {$tt->value} does not have a translated name '{$n}'");
+        }
+    }
 }

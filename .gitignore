@@ -9,8 +9,10 @@ modules/php/Stats.php
 work
 node_modules
 .vscode
-# Need to exclude images since they cannot be OSS-licensed.
-img
+# Need to exclude images since they cannot be OSS-licensed. img/drawings/ is the exception: our own
+# drawings (meeples, coin), not the publisher's art.
+img/*
+!img/drawings/
 modules/js/Game.js
 backup/
 local/backup/

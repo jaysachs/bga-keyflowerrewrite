@@ -1,6 +1,7 @@
 import { KFGameDatas, KFPlayer, MarketLot, Worker, WorkerColor } from "../kfdata";
 import { BaseComponent } from "../libs/basecomponent";
 import { Html } from "../libs/html";
+import { MoreAnimations } from "../libs/more-animations";
 import { TranslationComponent } from "./translation";
 
 /** One bid as shown on a tile. */
@@ -40,7 +41,8 @@ export class MarketComponent extends BaseComponent<MarketLot> {
     private selected: number | null = null;
     private pending: PendingBid | null = null;
 
-    public constructor(private bga: Bga<KFPlayer, KFGameDatas>, private translations: TranslationComponent) {
+    public constructor(private bga: Bga<KFPlayer, KFGameDatas>, private translations: TranslationComponent,
+        private animations: MoreAnimations) {
         super();
     }
 
@@ -74,12 +76,38 @@ export class MarketComponent extends BaseComponent<MarketLot> {
         this.redraw(tileId);
     }
 
-    /** Takes a player's bid off a tile (bidMoved). */
+    /** Takes a player's bid off a tile (a bid moved to another tile). */
     public removeBid(tileId: number, playerId: number): void {
         const mt = this.lot(tileId, 'removeBid');
         if (!mt) { return; }
         mt.bids = mt.bids.filter(b => b.player_id != playerId);
         this.redraw(tileId);
+    }
+
+    /**
+     * The element showing a player's bid on a tile. Each bid is drawn twice, along the tile's edge and
+     * as a row under the tile, and the CSS shows one of them depending on the layout's width; this
+     * returns the one that's shown (the other has no size).
+     */
+    private shownBid(tileId: number, playerId: number): HTMLElement | undefined {
+        return Array.from(document.querySelectorAll<HTMLElement>(`#kf_lot_${tileId} [data-kf-player="${playerId}"]`))
+            .find(e => e.getBoundingClientRect().width > 0);
+    }
+
+    /** Where a player's bid on a tile is drawn now. */
+    public bidRect(tileId: number, playerId: number): DOMRect | undefined {
+        return this.shownBid(tileId, playerId)?.getBoundingClientRect();
+    }
+
+    /**
+     * Animates a player's bid on a tile from where its workers came from (`from`: where a moved bid
+     * was, or the player's panel). Resolves when done, at once when animations are off.
+     */
+    public async flyBid(tileId: number, playerId: number, from: DOMRect): Promise<void> {
+        const el = this.shownBid(tileId, playerId);
+        if (el) {
+            await this.animations.animateMove(el, from);
+        }
     }
 
     /** The tiles that can be clicked; an empty list makes the market read-only. */

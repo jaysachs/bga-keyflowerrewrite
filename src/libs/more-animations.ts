@@ -1,4 +1,5 @@
 import { BgaAnimations } from "../bgalibs/bga-animations";
+import { center } from "./utils";
 
 export type AnimationList = (() => Promise<any>)[];
 
@@ -9,6 +10,35 @@ export class MoreAnimations {
     private animationManager: AnimationManager;
     constructor(animationManager: AnimationManager) {
         this.animationManager = animationManager;
+    }
+
+    /** Animations are off in replays and fast mode (BGA), and for players who ask for reduced motion. */
+    animationsActive(): boolean {
+        return this.animationManager.animationsActive() && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+
+    /**
+     * Moves an element, already in its new place (`to`, by default where it's drawn now), in from
+     * `from`, center to center: it starts slightly larger, as if lifted, and settles. Longer moves
+     * take longer, up to 0.9s. Uses the `translate` property, which applies on top of any
+     * `transform` the element has (e.g. a rotation).
+     */
+    async animateMove(el: HTMLElement, from: DOMRect, to: DOMRect = el.getBoundingClientRect()): Promise<void> {
+        if (!this.animationsActive()) {
+            return;
+        }
+        const start = center(from), end = center(to);
+        const dx = start.x - end.x, dy = start.y - end.y;
+        const move = el.animate([
+            { translate: `${dx}px ${dy}px`, scale: '1.15', zIndex: 10 },
+            { translate: '0 0', scale: '1', zIndex: 10 },
+        ], { duration: Math.min(900, 400 + Math.hypot(dx, dy) * 0.6), easing: 'cubic-bezier(.2,.7,.3,1)' });
+        await move.finished.catch((e: unknown) => {
+            // Cancelled, e.g. the element was redrawn during the move: it's already in its place.
+            if (!(e instanceof DOMException && e.name === 'AbortError')) {
+                throw e;
+            }
+        });
     }
 
     async wait(millis: number): Promise<any> {
