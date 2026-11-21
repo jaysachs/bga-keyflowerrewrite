@@ -866,6 +866,20 @@ html {
     background-color: #fff;
 }
 
+/* No rounded corners where a panel meets the screen's edge: on desktop the panels end at its right edge;
+   on phones they sit two per row, the left column at the left edge and the right column at the right */
+.desktop_version #overall-content .player-board[id^="overall_player_board_"] {
+    border-radius: 8px 0 0 8px;
+}
+
+.mobile_version #overall-content .player-board[id^="overall_player_board_"]:nth-child(odd of [id^="overall_player_board_"]) {
+    border-radius: 0 8px 8px 0;
+}
+
+.mobile_version #overall-content .player-board[id^="overall_player_board_"]:nth-child(even of [id^="overall_player_board_"]) {
+    border-radius: 8px 0 0 8px;
+}
+
 /*
  * Phones: BGA shrinks the player panels to fit two per row (zoom, from --bga-framework-parts-zoom:
  * 0.73 at 360px wide), which left names and counts at about 11px. Their text is scaled back up so
