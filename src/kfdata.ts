@@ -86,7 +86,7 @@ export interface KFGameDatas extends Gamedatas<KFPlayer> {
     greenCount: number;
     translations: {
         tiles:  Record<TileType,string>;
-        tile_descriptions:  Record<TileType,string>;
+        tile_descriptions:  Record<TileType,TileDescription>;
         resources: Record<ResourceType,string>;
         skills: Record<SkillType,string>;
         colors: Record<WorkerColor,string>;
