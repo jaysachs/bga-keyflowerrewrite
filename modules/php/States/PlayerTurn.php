@@ -31,6 +31,8 @@ use Bga\GameFramework\Actions\Types\IntArrayParam;
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\keyflowerrewrite\Game;
+use Bga\Games\keyflowerrewrite\Model\ActivationResult;
+use Bga\Games\keyflowerrewrite\Model\ActivationReward;
 use Bga\Games\keyflowerrewrite\Model\MarketLot;
 use Bga\Games\keyflowerrewrite\Model\Marshaller;
 use Bga\Games\keyflowerrewrite\Model\MovedBid;
@@ -60,15 +62,18 @@ class PlayerTurn extends AbstractState {
     private function activateableInfo(array $data, mixed $tile, bool $hasBoat4b): ?array {
         $bc = $tile->currentColor();
         $a = $tile->productionActivations();
-        if (!$a->isActivatable()) {
+        if ($tile->type->activationReward() == ActivationReward::NONE || !$a->isActivatable()) {
             return null;
         }
+        $cost = $tile->type->activationCost();
+        // FIXME: filter out if player can't afford the cost?
         return [
             "must_match" => !$hasBoat4b,
             "tile_id" => $tile->tile_id,
             "color" => $bc === null ? null : $bc->value,
             "min" => $a->minRequiredToActivate(),
-            "max" => $a->maxAllowededToActivate()
+            "max" => $a->maxAllowededToActivate(),
+            "cost" => $cost->value,
         ];
     }
 
