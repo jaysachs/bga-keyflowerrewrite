@@ -1,4 +1,4 @@
-import { KFGameDatas, KFPlayer, ResourceType, Season, SkillType, TileType, WorkerColor } from "../kfdata";
+import { KFGameDatas, KFPlayer, ResourceType, Season, SkillType, TileDescription, TileType, WorkerColor } from "../kfdata";
 
 /**
  * Names in the player's language, from the server's tables (`gamedatas.translations`). It has no
@@ -12,6 +12,11 @@ export class TranslationComponent {
 
     public constructor(private bga: Bga<KFPlayer, KFGameDatas>) {
         this.translations = bga.gameui.gamedatas.translations;
+    }
+
+    public tileDescription(tiletype: TileType): TileDescription {
+        return this.translations.tile_descriptions[tiletype]
+            ?? { summary: '', upgrade_requirements: null, points: null, scoring_note: null };
     }
 
     /** A tile's name, e.g. "Keystone quarry". */
