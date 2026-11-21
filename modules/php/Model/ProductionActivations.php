@@ -78,6 +78,6 @@ class ProductionActivations {
     }
 
     public function maxAllowededToActivate(): int {
-        return self::MAX_WORKERS - $this->lastActivationSize();
+        return self::MAX_WORKERS - $this->totalWorkers();
     }
 }
