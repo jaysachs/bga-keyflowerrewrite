@@ -866,6 +866,35 @@ html {
     background-color: #fff;
 }
 
+/* The log as one continuous list, like the panels: BGA puts each entry in its own grey box with a gap,
+   which on our background looked fragmented. Only spacing and backgrounds change; BGA's markup stays */
+#logs {
+    background: #fff;
+    border-radius: 8px 0 0 8px;
+    overflow: hidden;
+}
+
+#logs > .log {
+    margin-top: 0;
+    border-top: 1px solid rgb(0 0 0 / 0.08);
+}
+
+#logs > .log:first-child {
+    border-top: 0;
+}
+
+#logs > .log > .roundedbox {
+    background: transparent;
+    padding: 7px 10px;
+    line-height: 1.35;
+}
+
+#logs > .log > .timestamp {
+    margin: -4px 0 0;
+    padding: 0 10px 6px;
+    text-align: right;
+}
+
 /* No rounded corners where a panel meets the screen's edge: on desktop the panels end at its right edge;
    on phones they sit two per row, the left column at the left edge and the right column at the right */
 .desktop_version #overall-content .player-board[id^="overall_player_board_"] {
