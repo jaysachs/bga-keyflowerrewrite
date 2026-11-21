@@ -15,8 +15,17 @@ export class TranslationComponent {
     }
 
     public tileDescription(tiletype: TileType): TileDescription {
-        return this.translations.tile_descriptions[tiletype]
-            ?? { summary: '', upgrade_requirements: null, points: null, scoring_note: null };
+        const desc = this.translations.tile_descriptions[tiletype];
+        if (!desc) {
+            return { summary: '', upgrade_requirements: null, points: null, scoring_note: null };
+        }
+        const tr = (s?: string) => s == null ? null : _(s);
+        return {
+            summary: _(desc.summary),
+            upgrade_requirements: tr(desc.upgrade_requirements),
+            points: tr(desc.points),
+            scoring_note: tr(desc.scoring_note)
+        }
     }
 
     /** A tile's name, e.g. "Keystone quarry". */
@@ -46,6 +55,10 @@ export class TranslationComponent {
 
     private name(names: Record<string, string>, item: string): string {
         const name = names[item];
-        return name ? _(name) : item;
+        return this.nullSafe(name, item);
+    }
+
+    private nullSafe(s: string | undefined, backup: string): string {
+        return s ? _(s) : backup;
     }
 }
