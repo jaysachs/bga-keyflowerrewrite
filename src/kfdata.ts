@@ -8,6 +8,7 @@ export interface Worker {
     color: WorkerColor;
 }
 export type SkillType = 'pickaxe' | 'saw' | 'anvil';
+export type ResourceType = 'stone' | 'wood' | 'iron' | 'gold';
 export interface Skill {
     id: number;
     type: SkillType;
@@ -72,5 +73,9 @@ export interface KFGameDatas extends Gamedatas<KFPlayer> {
     translations: {
         tiles:  Record<TileType,string>;
         tile_descriptions:  Record<TileType,string>;
+        resources: Record<ResourceType,string>;
+        skills: Record<SkillType,string>;
+        colors: Record<WorkerColor,string>;
+        seasons: Record<Season,string>;
     }
 }

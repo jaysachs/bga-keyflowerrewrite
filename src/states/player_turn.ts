@@ -1,5 +1,6 @@
 import { AnimationManager } from "../bgalibs/bga-animations";
 import { MarketComponent, workerIcons } from "../components/market";
+import { PanelsComponent } from "../components/panels";
 import { TranslationComponent } from "../components/translation";
 import { KFGameDatas, KFPlayer, MarketLot, Worker, WorkerColor } from "../kfdata";
 import { Html } from "../libs/html";
@@ -47,7 +48,7 @@ export class PlayerTurnState extends BaseState {
     private readonly onTile = (mt: MarketLot) => this.startPick(mt.id);
 
     constructor(bga: Bga<KFPlayer, KFGameDatas>, animationManager: AnimationManager, private market: MarketComponent,
-        private translations: TranslationComponent) {
+        private translations: TranslationComponent, private panels: PanelsComponent) {
         super(bga, animationManager);
     }
 
@@ -83,6 +84,7 @@ export class PlayerTurnState extends BaseState {
         if (village?.workers) {
             const ids = new Set(args.bid.map(w => w.id));
             village.workers = village.workers.filter(w => !ids.has(w.id));
+            this.panels.updatePrivateRow();   // your workers' counts
         }
     }
 
@@ -201,7 +203,7 @@ export class PlayerTurnState extends BaseState {
         const title = already && fixedColor ? _('Bid on ${tile}: at least ${n} more ${color}')
             : fixedColor ? _('Bid on ${tile}: at least ${n} ${color}')
             : _('Bid on ${tile}: at least ${n} of one color');
-        this.bga.statusBar.setTitle(title, { tile: name, n: need, color: fixedColor ? colorName(fixedColor) : '' });
+        this.bga.statusBar.setTitle(title, { tile: name, n: need, color: fixedColor ?? '' });   // the color formatter adds the word and its meeple
         // Every tap redraws the picker; keyboard focus returns to the button that had it.
         const focused = (document.activeElement as HTMLElement | null)?.dataset['kfKey'];
         this.bga.statusBar.removeActionButtons();
@@ -209,13 +211,13 @@ export class PlayerTurnState extends BaseState {
         const rows = this.colorsFor(p.tileId).map(color => {
             const stock = this.stockOf(color);
             const on = p.color == color;
-            return Html.div({ classes: 'kf_pick_row', attrs: { role: 'group', 'aria-label': colorName(color) } },
+            return Html.div({ classes: 'kf_pick_row', attrs: { role: 'group', 'aria-label': this.translations.color(color) } },
                 ...Array.from({ length: stock }, (_x, i) => {
                     const pressed = on && i < p.fromStock;
                     // The number says what a tap takes: the third worker takes three.
                     const b = Html.button({
                             classes: ['kf_pick_worker', 'kf_pick_one', pressed ? 'kf_on' : ''],
-                            attrs: { 'aria-pressed': pressed, 'aria-label': `${i + 1} ${colorName(color)}`, 'data-kf-key': `${color}:${i + 1}` },
+                            attrs: { 'aria-pressed': pressed, 'aria-label': `${i + 1} ${this.translations.color(color)}`, 'data-kf-key': `${color}:${i + 1}` },
                         },
                         workerIcons(color, 1),
                         Html.span({ classes: 'kf_pick_num', text: String(i + 1), attrs: { 'aria-hidden': 'true' } }));
@@ -232,7 +234,7 @@ export class PlayerTurnState extends BaseState {
                     const from = this.translations.tileName(this.market.tile(m.tileId)!.tiletype);
                     const b = Html.button({
                             classes: ['kf_pick_worker', 'kf_pick_group', pressed ? 'kf_on' : ''],
-                            attrs: { 'aria-pressed': pressed, 'aria-label': `${m.num} ${colorName(color)}, ${_('outbid on')} ${from}`, 'data-kf-key': `from:${m.tileId}` },
+                            attrs: { 'aria-pressed': pressed, 'aria-label': `${m.num} ${this.translations.color(color)}, ${_('outbid on')} ${from}`, 'data-kf-key': `from:${m.tileId}` },
                         },
                         workerIcons(color, m.num),
                         Html.span({ text: `${_('outbid on')} ${from}` }));
@@ -258,7 +260,7 @@ export class PlayerTurnState extends BaseState {
         // Bid is never disabled: pressed too early, it says what's missing and keeps focus.
         const missing = this.missing(p, need, total);
         const bid = this.bga.statusBar.addActionButton(
-            missing ? _('Bid') : `${_('Bid')} ${total} ${colorName(p.color!)}`,
+            missing ? _('Bid') : `${_('Bid')} ${total} ${this.translations.color(p.color!)}`,
             () => missing ? this.explain(msg, missing) : this.confirm());
         bid.setAttribute('aria-describedby', 'kf_pick_msg');
         // Cancel in red and set apart on the right: BGA's guidelines reserve red for cancel, undo and exit
@@ -274,11 +276,11 @@ export class PlayerTurnState extends BaseState {
     private missing(p: Pick, need: number, total: number): string | null {
         if (p.color && total >= need) { return null; }
         if (p.color && total > 0) {
-            return fill(_('Choose ${n} more ${color}'), { n: need - total, color: colorName(p.color) });
+            return fill(_('Choose ${n} more ${color}'), { n: need - total, color: this.translations.color(p.color) });
         }
         const color = p.color ?? this.info(p.tileId)?.current_bid?.color ?? this.info(p.tileId)?.color ?? null;
         return color
-            ? fill(_('Choose at least ${n} ${color}'), { n: need, color: colorName(color) })
+            ? fill(_('Choose at least ${n} ${color}'), { n: need, color: this.translations.color(color) })
             : need == 1 ? _('Choose a worker')
             : fill(_('Choose at least ${n} workers of one color'), { n: need });
     }
@@ -304,8 +306,4 @@ export class PlayerTurnState extends BaseState {
 /** Fills ${name} placeholders in a translated string. */
 function fill(text: string, args: Record<string, string | number>): string {
     return text.replace(/\$\{(\w+)\}/g, (m, k: string) => k in args ? String(args[k]) : m);
-}
-
-function colorName(c: WorkerColor): string {
-    return { red: _('red'), yellow: _('yellow'), blue: _('blue'), green: _('green') }[c] ?? c;
 }

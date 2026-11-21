@@ -27,15 +27,19 @@ html {
 }
 
 /*
- * Workers: the mockup's meeples (Daniel's own drawings, not the publisher's art), as SVG inside
- * the CSS, so no image files are added. Each has a darker shape under it that works as an
- * outline, so the meeples stay visible when faded (outbid bids) and on any background.
+ * Workers: the mockup's meeples (Daniel's own drawings, not the publisher's art), as SVG files in
+ * img/drawings/. Each has a darker shape under it that works as an outline, so the meeples stay
+ * visible when faded (outbid bids) and on any background.
  */
 :root {
-    --kf-meeple-red: url("data:image/svg+xml,%3Csvg width='55' height='60' viewBox='0 0 55 60' fill='none' xmlns='http://www.w3.org/2000/svg'%3E %3Cpath d='M27.4995 6.98368C33.5924 6.98368 35.8588 13.4501 35.8589 17.5403C41.4834 18.6448 52.3302 23.8967 52.3306 27.8763C52.3306 31.8559 44.9357 33.7674 40.9985 33.2151C43.5416 40.6441 44.7322 44.1107 47.1899 50.8694C48.5455 54.5971 48.232 57.084 45.9077 57.0843H34.4028C33.1245 57.0843 31.6993 56.2787 30.5679 54.0159L27.4995 47.8802L24.4321 54.0159C23.3008 56.2785 21.8754 57.0841 20.5972 57.0843H9.09229C6.7677 57.0843 6.45447 54.5973 7.81006 50.8694C10.2677 44.1108 11.4575 40.644 14.0005 33.2151C10.0632 33.7673 2.66943 31.8558 2.66943 27.8763C2.66976 23.8967 13.5155 18.6449 19.1401 17.5403C19.1402 13.4502 21.4068 6.98382 27.4995 6.98368Z' fill='%23480002'/%3E %3Cpath d='M27.4995 2.91573C33.5924 2.91573 35.8588 9.38219 35.8589 13.4724C41.4834 14.5768 52.3302 19.8287 52.3306 23.8083C52.3306 27.7879 44.9357 29.6994 40.9985 29.1472C43.5416 36.5761 44.7322 40.0427 47.1899 46.8015C48.5455 50.5292 48.232 53.0161 45.9077 53.0163H34.4028C33.1245 53.0163 31.6993 52.2108 30.5679 49.948L27.4995 43.8122L24.4321 49.948C23.3008 52.2106 21.8754 53.0162 20.5972 53.0163H9.09229C6.7677 53.0163 6.45447 50.5294 7.81006 46.8015C10.2677 40.0429 11.4575 36.5761 14.0005 29.1472C10.0632 29.6993 2.66943 27.7879 2.66943 23.8083C2.66976 19.8288 13.5155 14.577 19.1401 13.4724C19.1402 9.38224 21.4068 2.91587 27.4995 2.91573Z' fill='%23D7060F' stroke-width='2' stroke='%23480002'/%3E %3C/svg%3E");
-    --kf-meeple-yellow: url("data:image/svg+xml,%3Csvg width='55' height='60' viewBox='0 0 55 60' fill='none' xmlns='http://www.w3.org/2000/svg'%3E %3Cpath d='M27.4995 6.98368C33.5924 6.98368 35.8588 13.4501 35.8589 17.5403C41.4834 18.6448 52.3302 23.8967 52.3306 27.8763C52.3306 31.8559 44.9357 33.7674 40.9985 33.2151C43.5416 40.6441 44.7322 44.1107 47.1899 50.8694C48.5455 54.5971 48.232 57.084 45.9077 57.0843H34.4028C33.1245 57.0843 31.6993 56.2787 30.5679 54.0159L27.4995 47.8802L24.4321 54.0159C23.3008 56.2785 21.8754 57.0841 20.5972 57.0843H9.09229C6.7677 57.0843 6.45447 54.5973 7.81006 50.8694C10.2677 44.1108 11.4575 40.644 14.0005 33.2151C10.0632 33.7673 2.66943 31.8558 2.66943 27.8763C2.66976 23.8967 13.5155 18.6449 19.1401 17.5403C19.1402 13.4502 21.4068 6.98382 27.4995 6.98368Z' fill='%234F4300'/%3E %3Cpath d='M27.4995 2.91573C33.5924 2.91573 35.8588 9.38219 35.8589 13.4724C41.4834 14.5768 52.3302 19.8287 52.3306 23.8083C52.3306 27.7879 44.9357 29.6994 40.9985 29.1472C43.5416 36.5761 44.7322 40.0427 47.1899 46.8015C48.5455 50.5292 48.232 53.0161 45.9077 53.0163H34.4028C33.1245 53.0163 31.6993 52.2108 30.5679 49.948L27.4995 43.8122L24.4321 49.948C23.3008 52.2106 21.8754 53.0162 20.5972 53.0163H9.09229C6.7677 53.0163 6.45447 50.5294 7.81006 46.8015C10.2677 40.0429 11.4575 36.5761 14.0005 29.1472C10.0632 29.6993 2.66943 27.7879 2.66943 23.8083C2.66976 19.8288 13.5155 14.577 19.1401 13.4724C19.1402 9.38224 21.4068 2.91587 27.4995 2.91573Z' fill='%23FFDE08' stroke-width='2' stroke='%234F4300'/%3E %3C/svg%3E");
-    --kf-meeple-blue: url("data:image/svg+xml,%3Csvg width='55' height='60' viewBox='0 0 55 60' fill='none' xmlns='http://www.w3.org/2000/svg'%3E %3Cpath d='M27.4995 6.98368C33.5924 6.98368 35.8588 13.4501 35.8589 17.5403C41.4834 18.6448 52.3302 23.8967 52.3306 27.8763C52.3306 31.8559 44.9357 33.7674 40.9985 33.2151C43.5416 40.6441 44.7322 44.1107 47.1899 50.8694C48.5455 54.5971 48.232 57.084 45.9077 57.0843H34.4028C33.1245 57.0843 31.6993 56.2787 30.5679 54.0159L27.4995 47.8802L24.4321 54.0159C23.3008 56.2785 21.8754 57.0841 20.5972 57.0843H9.09229C6.7677 57.0843 6.45447 54.5973 7.81006 50.8694C10.2677 44.1108 11.4575 40.644 14.0005 33.2151C10.0632 33.7673 2.66943 31.8558 2.66943 27.8763C2.66976 23.8967 13.5155 18.6449 19.1401 17.5403C19.1402 13.4502 21.4068 6.98382 27.4995 6.98368Z' fill='%231E1E50'/%3E %3Cpath d='M27.4995 2.91573C33.5924 2.91573 35.8588 9.38219 35.8589 13.4724C41.4834 14.5768 52.3302 19.8287 52.3306 23.8083C52.3306 27.7879 44.9357 29.6994 40.9985 29.1472C43.5416 36.5761 44.7322 40.0427 47.1899 46.8015C48.5455 50.5292 48.232 53.0161 45.9077 53.0163H34.4028C33.1245 53.0163 31.6993 52.2108 30.5679 49.948L27.4995 43.8122L24.4321 49.948C23.3008 52.2106 21.8754 53.0162 20.5972 53.0163H9.09229C6.7677 53.0163 6.45447 50.5294 7.81006 46.8015C10.2677 40.0429 11.4575 36.5761 14.0005 29.1472C10.0632 29.6993 2.66943 27.7879 2.66943 23.8083C2.66976 19.8288 13.5155 14.577 19.1401 13.4724C19.1402 9.38224 21.4068 2.91587 27.4995 2.91573Z' fill='%234D4DFF' stroke-width='2' stroke='%231E1E50'/%3E %3C/svg%3E");
-    --kf-meeple-green: url("data:image/svg+xml,%3Csvg width='55' height='60' viewBox='0 0 55 60' fill='none' xmlns='http://www.w3.org/2000/svg'%3E %3Cpath d='M27.4995 6.98368C33.5924 6.98368 35.8588 13.4501 35.8589 17.5403C41.4834 18.6448 52.3302 23.8967 52.3306 27.8763C52.3306 31.8559 44.9357 33.7674 40.9985 33.2151C43.5416 40.6441 44.7322 44.1107 47.1899 50.8694C48.5455 54.5971 48.232 57.084 45.9077 57.0843H34.4028C33.1245 57.0843 31.6993 56.2787 30.5679 54.0159L27.4995 47.8802L24.4321 54.0159C23.3008 56.2785 21.8754 57.0841 20.5972 57.0843H9.09229C6.7677 57.0843 6.45447 54.5973 7.81006 50.8694C10.2677 44.1108 11.4575 40.644 14.0005 33.2151C10.0632 33.7673 2.66943 31.8558 2.66943 27.8763C2.66976 23.8967 13.5155 18.6449 19.1401 17.5403C19.1402 13.4502 21.4068 6.98382 27.4995 6.98368Z' fill='%23043A06'/%3E %3Cpath d='M27.4995 2.91573C33.5924 2.91573 35.8588 9.38219 35.8589 13.4724C41.4834 14.5768 52.3302 19.8287 52.3306 23.8083C52.3306 27.7879 44.9357 29.6994 40.9985 29.1472C43.5416 36.5761 44.7322 40.0427 47.1899 46.8015C48.5455 50.5292 48.232 53.0161 45.9077 53.0163H34.4028C33.1245 53.0163 31.6993 52.2108 30.5679 49.948L27.4995 43.8122L24.4321 49.948C23.3008 52.2106 21.8754 53.0162 20.5972 53.0163H9.09229C6.7677 53.0163 6.45447 50.5294 7.81006 46.8015C10.2677 40.0429 11.4575 36.5761 14.0005 29.1472C10.0632 29.6993 2.66943 27.7879 2.66943 23.8083C2.66976 19.8288 13.5155 14.577 19.1401 13.4724C19.1402 9.38224 21.4068 2.91587 27.4995 2.91573Z' fill='%2350BE33' stroke-width='2' stroke='%23043A06'/%3E %3C/svg%3E");
+    --kf-meeple-red: url("img/drawings/meeple-red.svg");
+    --kf-meeple-yellow: url("img/drawings/meeple-yellow.svg");
+    --kf-meeple-blue: url("img/drawings/meeple-blue.svg");
+    --kf-meeple-green: url("img/drawings/meeple-green.svg");
+    /* The start player meeple (Daniel's drawing): purple, with a raised arm */
+    --kf-meeple-purple: url("img/drawings/start-player.svg");
+    /* Victory points as the tiles show them: a gold coin (Daniel's drawing), in place of BGA's star */
+    --kf-victory-points: url("img/drawings/victory-points.svg");
 }
 
 #kf_main {
@@ -45,6 +49,51 @@ html {
     /* Flat-topped hexes in doubled coordinates: a column is 3/4 of a tile wide, a row half a tile high */
     --kf-col-step: 0.75;
     --kf-row-step: 0.5;
+}
+
+/*
+ * Phones: BGA shrinks its status bar and player panels to fit the screen (zoom, from
+ * --bga-framework-parts-zoom: 0.73 at 360px wide), which left the status bar's text at about 13px.
+ * Its content is shown at full size again: it spans the screen, so the text just wraps. The bid
+ * picker's buttons in it get their full size back too, so they're easy to tap.
+ */
+.mobile_version #pagemaintitle_wrap {
+    zoom: calc(1 / var(--bga-framework-parts-zoom, 1));
+}
+
+.mobile_version #pagemaintitletext {
+    font-size: 15px;
+    line-height: 1.35;
+}
+
+/* BGA gives the status bar's content a 42px minimum height; a one-line status is shorter, and sat at its
+   top. Centered instead */
+.mobile_version #maintitlebar_content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* BGA's line height around it (32px) spread a wrapped status line apart. Balanced lines, so the last
+   word doesn't end up alone beside the buttons */
+.mobile_version #maintitlebar_content > div:has(> #pagemaintitletext) {
+    line-height: 20px;
+    text-wrap: balance;
+}
+
+/* Once the status bar sticks to the top, BGA sets its width without its padding, so it was a few pixels
+   wider than the screen and its text was cut off on the right */
+.mobile_version #page-title {
+    box-sizing: border-box;
+}
+
+/* Phones and narrow windows: tiles shrink so three fit across the market, with their bids in rows
+   under them (below). BGA's minimum width is 360px: tiles are then about 104px. */
+@media (max-width: 499px) {
+    #kf_main {
+        --kf-tile-w: min(128px, calc((100vw - 48px) / 3));
+        --kf-tile-h: calc(var(--kf-tile-w) * 0.875);
+    }
 }
 
 /* Villages: yours first, then the others in turn order */
@@ -57,13 +106,23 @@ html {
 }
 
 .kf_village {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
     background: rgba(255, 255, 255, 0.6);
     border-left: 4px solid var(--kf-player-color);
     border-radius: 8px;
     padding: 8px 12px 12px;
 }
 
+/* Each village is as wide as its tiles, so small villages share a row, also on phones. One wider than
+   the screen stops at the screen's width (max-width above) and scrolls sideways; its name stays in place */
+.kf_village_scroll {
+    overflow-x: auto;
+}
+
 .kf_village_name {
+    color: var(--kf-player-color);   /* player names in their color, as BGA's guidelines ask (C.3) */
     font-weight: bold;
     margin-bottom: 8px;
 }
@@ -99,7 +158,8 @@ html {
 /*
  * Market: each tile with the bids on it. Bids sit along the tile's edges, as on the table: each
  * player always has the same edge, yours at the bottom (data-kf-edge, 0 top, clockwise to 5 upper
- * left). Where two tiles with their edges don't fit side by side, bids are rows under the tile.
+ * left). Where three tiles with their edges don't fit side by side (phones, narrow windows), bids are
+ * rows under the tile.
  */
 
 #kf_market {
@@ -210,12 +270,14 @@ html {
     margin-left: 2px;
 }
 
-/* Rows under the tile: only where the edges don't fit */
+/* Rows under the tile: only where the edges don't fit. With bids along the edges, a tile takes 184px
+   (128px and 28px each side), so three need 552px; with bids under it, 140px. Below 552px, bids go
+   under the tiles, which keeps three tiles across (and on phones, the tiles shrink to fit, above) */
 .kf_bids {
     display: none;
 }
 
-@container (max-width: 367px) {
+@container (max-width: 551px) {
     .kf_lot_box {
         width: var(--kf-tile-w);
         height: var(--kf-tile-h);
@@ -239,30 +301,30 @@ html {
 .kf_lot .kf_bids {
     flex-direction: column;
     align-self: stretch;
+    align-items: center;   /* each row as wide as its avatar and workers, so an outbid frame fits around them */
     gap: 2px;
     font-size: 12px;
 }
 
+/* A row under the tile, as along the edges: avatar, then workers; outbid in a grey frame */
 .kf_bid {
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 1px 6px 1px 4px;
-    border-left: 4px solid var(--kf-player-color);
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.75);
-}
-
-.kf_bid_player {
-    font-weight: bold;
-    max-width: 60px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    justify-content: center;
+    gap: 1px;
+    padding: 1px 4px;
+    border-radius: 10px;
 }
 
 .kf_bid.kf_outbid {
-    border-left-color: #a8a8a8;   /* the row says "outbid" in words */
+    outline: 1.5px solid #9a9a9a;
+    outline-offset: 1px;
+}
+
+.kf_bid.kf_outbid .kf_avatar {
+    border-color: #a8a8a8;
+    filter: grayscale(1);
+    opacity: 0.6;
 }
 
 .kf_bid.kf_moving {
@@ -272,10 +334,6 @@ html {
 .kf_pending {
     outline: 2px dashed #1a73e8;
     outline-offset: -1px;
-}
-
-.kf_tag {
-    font-style: italic;
 }
 
 .kf_chip {
@@ -302,6 +360,28 @@ html {
 .kf_worker[data-kf-color="blue"] { --kf-meeple: var(--kf-meeple-blue); }
 .kf_worker[data-kf-color="green"] { --kf-meeple: var(--kf-meeple-green); }
 
+/* A season in the log and the status bar: its icon (Daniel's drawings), then its name, sized to the text */
+.kf_season_icon {
+    display: inline-block;
+    width: 1.3em;
+    height: 1.3em;
+    margin-right: 0.2em;
+    vertical-align: -0.3em;
+    background: center / contain no-repeat;
+}
+.kf_season_icon[data-kf-season="spring"] { background-image: url("img/drawings/season-spring.svg"); }
+.kf_season_icon[data-kf-season="summer"] { background-image: url("img/drawings/season-summer.svg"); }
+.kf_season_icon[data-kf-season="fall"] { background-image: url("img/drawings/season-autumn.svg"); }
+.kf_season_icon[data-kf-season="winter"] { background-image: url("img/drawings/winter.svg"); }
+
+/* A worker color in the log and the status bar: the word, then its meeple, sized to the text */
+.kf_color .kf_worker {
+    width: 1.25em;
+    height: 1.25em;
+    margin-left: 0.15em;
+    vertical-align: -0.3em;
+}
+
 .kf_count {
     font-weight: bold;
     margin-left: 2px;
@@ -320,6 +400,16 @@ html {
     justify-content: center;
     gap: 8px;
     margin: 6px 0;
+}
+
+/* Phones: one color per line, so a color's workers never share a line with another color's */
+@media (max-width: 499px) {
+    .kf_pick {
+        flex-direction: column;
+        align-items: flex-start;   /* rows start together, so each count sits under the same count */
+        width: fit-content;
+        margin-inline: auto;
+    }
 }
 
 .kf_pick_row {
@@ -528,3 +618,432 @@ html {
 [data-kf-tile="turnorder46"] { background-position: -1200% -300%; }
 [data-kf-tile="turnorder56a"] { background-position: -1400% -300%; }
 [data-kf-tile="turnorder56b"] { background-position: -1500% -300%; }
+
+/*
+ * Player panels: BGA's own parts stay where BGA puts them in every game (name, online status, flag,
+ * score, rank, clock); the game only adds to them: the avatar's ring in the player's color, a bar on
+ * the active panel, the score's coin, and its own content under them (chips, your workers and tools).
+ * --kf-player-color is set on each panel by PanelsComponent. Names keep BGA's player color.
+ */
+#overall-content .player-board[id^="overall_player_board_"] {
+    padding: 8px 10px 8px 14px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+}
+
+/* Avatar in a ring of the player's color. On a player's turn BGA swaps it for its hourglass, as in
+   every BGA game: the hourglass gets the same ring. */
+#overall-content .player_board_inner > [id^="avatarwrap_"],
+#overall-content .player_board_inner > [id^="avatar_active_wrap_"] {
+    margin-top: 4px;   /* centered on the two lines beside it (name; score and rank) */
+}
+
+#overall-content .player_board_inner > [id^="avatarwrap_"] > .avatar,
+#overall-content .player_board_inner > [id^="avatar_active_wrap_"] > .avatar {
+    width: 32px;
+    height: 32px;
+    box-sizing: border-box;
+    border: 3px solid var(--kf-player-color, #6a6a6a);
+    border-radius: 50%;
+    background: #fff;
+}
+
+/* The players who must act now: a dark bar down the panel's left edge (kf_active, set by
+   PanelsComponent). Drawn inside the panel, so nothing is cut at the window's edge. */
+#overall-content .player-board.kf_active {
+    box-shadow: inset 4px 0 0 #1f2328;
+}
+
+/* The score's icon: BGA's star (Font Awesome) shows the coin instead, as the tiles show points */
+#overall-content .player_board_inner .player_score [id^="icon_point_"] {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
+    background: var(--kf-victory-points) center / contain no-repeat;
+}
+
+#overall-content .player_board_inner .player_score [id^="icon_point_"]::before {
+    content: none;
+}
+
+/* Chips under the name (PanelsComponent), as in the mockup */
+#overall-content .kf_chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 6px;
+    font-size: 12px;
+}
+
+#overall-content .kf_pchip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin-top: 6px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: #eef0f3;
+    color: #1f2328;
+}
+
+/* The name's line stops before BGA's online status and flag, which BGA pins to the corner: a long
+   name is cut with an ellipsis instead of running under them (and keeps the start meeple in view) */
+#overall-content .player_board_inner .player-name {
+    padding-right: 52px;
+    white-space: nowrap;
+}
+
+#overall-content .player_board_inner .player-name > a:first-child {
+    display: inline-block;
+    max-width: calc(100% - 46px);   /* the line includes BGA's avatar (46px with its gap) */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+}
+
+.mobile_version #overall-content .player_board_inner .player-name {
+    padding-right: calc(48px / var(--bga-framework-parts-zoom, 1));
+}
+
+/* The start player's name leaves room for the meeple after it */
+#overall-content .player-board.kf_start_player .player_board_inner .player-name > a:first-child {
+    max-width: calc(100% - 46px - 24px);
+}
+
+.mobile_version #overall-content .player-board.kf_start_player .player_board_inner .player-name > a:first-child {
+    max-width: calc(100% - 46px - 24px / var(--bga-framework-parts-zoom, 1));
+}
+
+/* The start player: the purple meeple right after their name (PanelsComponent), so it takes no line
+   and covers nothing, neither the avatar (players recognize each other by it) nor BGA's icons */
+#overall-content .player-name > .kf_starter {
+    display: inline-block;
+    width: 18px;
+    height: 19px;
+    margin: -2px 0 -2px 4px;   /* taller than the text: doesn't make the name's line taller */
+    vertical-align: -3px;
+    filter: none;
+}
+
+/* "Your turn" / "Playing": only on the active player's panel */
+#overall-content .kf_chip_turn {
+    display: none;
+    background: #1f2328;
+    color: #fff;
+    font-weight: bold;
+}
+
+#overall-content .player-board.kf_active .kf_chip_turn {
+    display: inline-flex;
+}
+
+/* The start player's meeple */
+#overall-content .kf_starter {
+    flex: none;
+    width: 16px;
+    height: 17px;
+    background: var(--kf-meeple-purple) center / contain no-repeat;
+}
+
+/* Your workers, tools and winter tiles (PanelsComponent), as in the mockup: workers on one row, tools on
+   the next, each with its count beside it, then the winter tiles' button in the tools row's last cell */
+#overall-content .kf_private {
+    display: grid;
+    grid-template-columns: repeat(4, max-content);
+    gap: 6px 14px;
+    align-items: center;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid rgb(0 0 0 / 0.1);
+}
+
+#overall-content .kf_counted .kf_count {
+    margin-left: 0;
+}
+
+#overall-content .kf_counted {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #1f2328;
+}
+
+/* 24px icons: workers are the market's .kf_worker (17px) scaled up; tools come from the game's
+   sprite, drawn at 32px */
+#overall-content .kf_private .kf_worker {
+    flex: none;
+    zoom: 1.41;
+}
+
+#overall-content .kf_icon_skill {
+    display: inline-block;
+    flex: none;
+    background-image: url('img/tiles-symbols.png');
+}
+
+#overall-content .kf_icon_skill { width: 32px; height: 32px; zoom: 0.75; }
+#overall-content .kf_icon_skill[data-kf-kind="anvil"] { background-position: -402px -15px; }
+#overall-content .kf_icon_skill[data-kf-kind="pickaxe"] { background-position: -468px -15px; }
+#overall-content .kf_icon_skill[data-kf-kind="saw"] { background-position: -402px -66px; }
+
+/* Your winter tiles: a button with their count and the winter icon (Daniel's drawing). Tiles small
+   enough for the panel would be too small to read, so the button shows them in a dialog */
+#overall-content .kf_winter_button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 32px;
+    padding: 0 10px;
+    border: 1px solid #d0d7de;
+    border-radius: 999px;
+    background: #fff;
+    color: #1f2328;
+    font: inherit;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#overall-content .kf_winter_button:hover {
+    background: #f3f4f6;
+}
+
+#overall-content .kf_winter_icon {
+    width: 18px;
+    height: 18px;
+    background: url("img/drawings/winter.svg") center / contain no-repeat;
+}
+
+/* The dialog: under the title, a line saying only you see them, then the tiles at their size on the
+   board, three across (smaller on phones), with their names */
+.kf_winter_tiles {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px 12px;
+    --kf-tile-w: min(128px, calc((100vw - 96px) / 3));
+    --kf-tile-h: calc(var(--kf-tile-w) * 0.875);
+}
+
+.kf_winter_tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: var(--kf-tile-w);
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.kf_winter_note {
+    margin: 0 0 16px;
+    font-size: 14px;
+    color: #57606a;
+}
+
+/* BGA's standard dialog, with 24px around its content (BGA's is about 12px, with the close button
+   tucked into the corner). The close button is BGA's 37px circle, in a box 43px tall: 24px from the top
+   and right, on the title's line (as tall as the circle) */
+#popin_kf_winter_dialog {
+    padding: 24px;
+}
+
+#popin_kf_winter_dialog .standard_popin_title {
+    margin: 0 0 4px;
+    padding-right: 52px;
+    line-height: 37px;
+}
+
+#popin_kf_winter_dialog .standard_popin_closeicon {
+    top: 21px;
+    right: 24px;
+}
+
+/* Phones: 12px on every side, and the tiles a little larger with the room it gives */
+.mobile_version #popin_kf_winter_dialog {
+    padding: 12px;
+}
+
+.mobile_version #popin_kf_winter_dialog .standard_popin_closeicon {
+    top: 9px;
+    right: 12px;
+}
+
+.mobile_version .kf_winter_tiles {
+    --kf-tile-w: min(128px, calc((100vw - 72px) / 3));
+}
+
+/* Desktop: 8px between the panels, as in the mockup. BGA puts 8px under each panel and its grid adds
+   6px more between them (14px in all) */
+.desktop_version #overall-content #player_boards {
+    row-gap: 0;
+}
+
+/* Player panels in white, like the status bar and the villages, so the colors stand out */
+#overall-content .player-board {
+    background-color: #fff;
+}
+
+/* The log as one continuous list, like the panels: BGA puts each entry in its own grey box with a gap,
+   which on our background looked fragmented. Only spacing and backgrounds change; BGA's markup stays */
+#logs {
+    background: #fff;
+    border-radius: 8px 0 0 8px;
+    overflow: hidden;
+}
+
+#logs > .log {
+    margin-top: 0;
+    border-top: 1px solid rgb(0 0 0 / 0.08);
+}
+
+#logs > .log:first-child {
+    border-top: 0;
+}
+
+#logs > .log > .roundedbox {
+    background: transparent;
+    padding: 7px 10px;
+    line-height: 1.35;
+}
+
+#logs > .log > .timestamp {
+    margin: -4px 0 0;
+    padding: 0 10px 6px;
+    text-align: right;
+}
+
+/* No rounded corners where a panel meets the screen's edge: on desktop the panels end at its right edge;
+   on phones they sit two per row, the left column at the left edge and the right column at the right */
+.desktop_version #overall-content .player-board[id^="overall_player_board_"] {
+    border-radius: 8px 0 0 8px;
+}
+
+.mobile_version #overall-content .player-board[id^="overall_player_board_"]:nth-child(odd of [id^="overall_player_board_"]) {
+    border-radius: 0 8px 8px 0;
+}
+
+.mobile_version #overall-content .player-board[id^="overall_player_board_"]:nth-child(even of [id^="overall_player_board_"]) {
+    border-radius: 8px 0 0 8px;
+}
+
+/*
+ * Phones: BGA shrinks the player panels to fit two per row (zoom, from --bga-framework-parts-zoom:
+ * 0.73 at 360px wide), which left names and counts at about 11px. Their text is scaled back up so
+ * it reads at about 14px (chips 12px); the layout stays BGA's.
+ */
+.mobile_version #overall-content .player_board_inner .player-name > a,
+.mobile_version #overall-content .player_board_inner .player_score_value,
+.mobile_version #overall-content .kf_counted {
+    font-size: calc(14px / var(--bga-framework-parts-zoom, 1));
+    line-height: 1.3;
+}
+
+.mobile_version #overall-content .kf_chips {
+    font-size: calc(12px / var(--bga-framework-parts-zoom, 1));
+}
+
+/* The online status beside the flag (BGA's own phone CSS draws it at 16px, and puts the phone icon 2px
+   higher than the dot, both above the flag's middle): about the flag's size, centered on its 15px. The
+   phone icon is a narrow glyph, so it's a little larger */
+.mobile_version #overall-content .player_board_inner .player-name > .player_status {
+    top: 2px;
+    height: 15px;
+    font-size: 13px;
+    line-height: 15px;
+}
+
+.mobile_version #overall-content .player_board_inner .player-name > .player_status.fa-mobile {
+    font-size: 17px;
+}
+
+/* The winter tiles' button at the same size on every phone, as the counts */
+.mobile_version #overall-content .kf_winter_button {
+    min-height: calc(32px / var(--bga-framework-parts-zoom, 1));
+    padding: 0 calc(10px / var(--bga-framework-parts-zoom, 1));
+    gap: calc(4px / var(--bga-framework-parts-zoom, 1));
+    font-size: calc(14px / var(--bga-framework-parts-zoom, 1));
+}
+
+.mobile_version #overall-content .kf_winter_icon {
+    width: calc(16px / var(--bga-framework-parts-zoom, 1));
+    height: calc(16px / var(--bga-framework-parts-zoom, 1));
+}
+
+/* The start player's meeple at its normal size too */
+.mobile_version #overall-content .player-name > .kf_starter {
+    width: calc(18px / var(--bga-framework-parts-zoom, 1));
+    height: calc(19px / var(--bga-framework-parts-zoom, 1));
+    margin: -2px 0 -2px calc(4px / var(--bga-framework-parts-zoom, 1));
+}
+
+/* BGA's small icons (online status, flag, premium ribbon) at their normal size: undo BGA's shrinking on them */
+.mobile_version #overall-content .player_board_inner .player-name > .player_status,
+.mobile_version #overall-content .player_board_inner .player-name > .bga-flag,
+.mobile_version #overall-content .player_board_inner .emblempremium {
+    zoom: calc(1 / var(--bga-framework-parts-zoom, 1));
+}
+
+/* Your workers and tools, and the coin, at a fixed size: BGA's shrinking depends on the phone's width
+   (0.73 at 360px, 0.88 at 430px), so without this they changed size from phone to phone while the
+   text beside them didn't */
+.mobile_version #overall-content .kf_private .kf_worker {
+    zoom: calc(1.18 / var(--bga-framework-parts-zoom, 1));   /* 17px x 1.18: 20px */
+}
+
+.mobile_version #overall-content .kf_icon_skill {
+    zoom: calc(0.625 / var(--bga-framework-parts-zoom, 1));   /* 32px x 0.625: 20px */
+}
+
+.mobile_version #overall-content .kf_counted {
+    gap: calc(3px / var(--bga-framework-parts-zoom, 1));
+}
+
+.mobile_version #overall-content .kf_private {
+    column-gap: calc(10px / var(--bga-framework-parts-zoom, 1));
+}
+
+.mobile_version #overall-content .player_board_inner .player_score [id^="icon_point_"] {
+    width: calc(16px / var(--bga-framework-parts-zoom, 1));
+    height: calc(16px / var(--bga-framework-parts-zoom, 1));
+}
+
+/* Never below iOS's smallest text style (Caption 2, 11pt): the clock at 12, messages at 13 */
+.mobile_version #overall-content .player_board_inner [id^="timeToThink_"],
+.mobile_version #overall-content .player_board_inner .player_elo_wrap {
+    font-size: calc(12px / var(--bga-framework-parts-zoom, 1));
+}
+
+.mobile_version #overall-content .player_table_status {
+    font-size: calc(13px / var(--bga-framework-parts-zoom, 1));
+    line-height: 1.35;
+}
+
+/*
+ * Phones: BGA's guidelines want a 4-player game's panels in a quarter of the screen at most. Panels
+ * are two per row, so each row is as tall as its tallest panel. Less padding; "Your turn" is left to
+ * the hourglass, the bar and the status bar.
+ */
+.mobile_version #overall-content .player-board[id^="overall_player_board_"] {
+    padding-top: 6px;
+    padding-bottom: 6px;
+    margin-bottom: 0;   /* BGA's own gap between the rows is enough (about 4px) */
+}
+
+/* Your workers and tools: no separator line and less space above them */
+.mobile_version #overall-content .kf_private {
+    margin-top: 2px;
+    padding-top: 0;
+    border-top: 0;
+    row-gap: 2px;
+}
+
+.mobile_version #overall-content .player-board.kf_active .kf_chip_turn {
+    display: none;
+}
+
+.mobile_version 
