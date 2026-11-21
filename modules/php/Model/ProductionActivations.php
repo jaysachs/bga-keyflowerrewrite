@@ -30,6 +30,7 @@ namespace Bga\Games\keyflowerrewrite\Model;
 use InvalidArgumentException;
 
 class ProductionActivations {
+    private const MAX_WORKERS = 6;
     /** @param array<int,WorkerGroup>  $activations */
     public function __construct(private array $activations = []) { }
 
@@ -55,7 +56,7 @@ class ProductionActivations {
         if ($mr && $mr->size() >= $wg->size()) {
             throw new InvalidArgumentException("activation must be larger than most recent ({$mr->size()})");
         }
-        if ($wg->size() + $this->totalWorkers() > 6) {
+        if ($wg->size() + $this->totalWorkers() > self::MAX_WORKERS) {
             throw new InvalidArgumentException("cannot be more than 6 activating workers on a tile");
         }
         $this->activations[] = $wg;
@@ -66,5 +67,17 @@ class ProductionActivations {
             return $this->activations[0]->color();
         }
         return null;
+    }
+
+    public function isActivatable(): bool {
+        return $this->maxAllowededToActivate() >= $this->minRequiredToActivate();
+    }
+
+    public function minRequiredToActivate(): int {
+        return ($this->mostRecent()?->size() ?? 0) + 1;
+    }
+
+    public function maxAllowededToActivate(): int {
+        return self::MAX_WORKERS - $this->lastActivationSize();
     }
 }

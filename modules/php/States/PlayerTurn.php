@@ -34,8 +34,10 @@ use Bga\Games\keyflowerrewrite\Game;
 use Bga\Games\keyflowerrewrite\Model\MarketLot;
 use Bga\Games\keyflowerrewrite\Model\Marshaller;
 use Bga\Games\keyflowerrewrite\Model\MovedBid;
+use Bga\Games\keyflowerrewrite\Model\ProductionActivations;
 use Bga\Games\keyflowerrewrite\Model\ResourceType;
 use Bga\Games\keyflowerrewrite\Model\TileType;
+use Bga\Games\keyflowerrewrite\Model\VillageTile;
 use Bga\Games\keyflowerrewrite\Model\WorkerColor;
 
 class PlayerTurn extends AbstractState {
@@ -50,6 +52,26 @@ class PlayerTurn extends AbstractState {
             updateGameProgression: true);
     }
 
+    /**
+     * @param array<mixed> $data
+     * @param VillageTile|MarketLot $tile
+     * @return array<string,mixed>
+     */
+    private function activateableInfo(array $data, mixed $tile, bool $hasBoat4b): ?array {
+        $bc = $tile->currentColor();
+        $a = $tile->productionActivations();
+        if (!$a->isActivatable()) {
+            return null;
+        }
+        return [
+            "must_match" => !$hasBoat4b,
+            "tile_id" => $tile->tile_id,
+            "color" => $bc === null ? null : $bc->value,
+            "min" => $a->minRequiredToActivate(),
+            "max" => $a->maxAllowededToActivate()
+        ];
+    }
+
     /** @return mixed[] */
     public function getArgs(int $active_player_id): array {
         /*
@@ -61,7 +83,24 @@ class PlayerTurn extends AbstractState {
         */
         $model = $this->createModel($active_player_id);
         $hasBoat4a = $model->village()->hasTileType(TileType::BOAT4A);
+        $hasBoat4b = $model->village()->hasTileType(TileType::BOAT4B);
 
+        /** @var array<array<string,mixed>> */
+        $activationInfo = [];
+        foreach ($model->market()->lots() as $tile) {
+            $ai = $this->activateableInfo($activationInfo, $tile, $hasBoat4b);
+            if ($ai) {
+                $activationInfo[] = $ai;
+            }
+        }
+        foreach ($model->allData()->villages as $pid => $village) {
+            foreach ($village->tiles() as $tile) {
+                $ai = $this->activateableInfo($activationInfo, $tile, $hasBoat4b);
+                if ($ai) {
+                    $activationInfo[] = $ai;
+                }
+            }
+        }
         return [
             "bidding_info" => array_map(
                 function (MarketLot $lot) use (&$active_player_id, $hasBoat4a): array {
@@ -81,7 +120,8 @@ class PlayerTurn extends AbstractState {
                         ]
                     ];
                 },
-                $model->market()->lots())
+                $model->market()->lots()),
+            "activation_info" => $activationInfo,
         ];
     }
 
