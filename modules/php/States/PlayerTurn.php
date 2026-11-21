@@ -55,11 +55,10 @@ class PlayerTurn extends AbstractState {
     }
 
     /**
-     * @param array<mixed> $data
      * @param VillageTile|MarketLot $tile
      * @return array<string,mixed>
      */
-    private function activateableInfo(array $data, mixed $tile, bool $hasBoat4b): ?array {
+    private function activateableInfo( mixed $tile, bool $hasBoat4b): ?array {
         $bc = $tile->currentColor();
         $a = $tile->productionActivations();
         if ($tile->type->activationReward() == ActivationReward::NONE || !$a->isActivatable()) {
@@ -93,14 +92,14 @@ class PlayerTurn extends AbstractState {
         /** @var array<array<string,mixed>> */
         $activationInfo = [];
         foreach ($model->market()->lots() as $tile) {
-            $ai = $this->activateableInfo($activationInfo, $tile, $hasBoat4b);
+            $ai = $this->activateableInfo($tile, $hasBoat4b);
             if ($ai) {
                 $activationInfo[] = $ai;
             }
         }
         foreach ($model->allData()->villages as $pid => $village) {
             foreach ($village->tiles() as $tile) {
-                $ai = $this->activateableInfo($activationInfo, $tile, $hasBoat4b);
+                $ai = $this->activateableInfo($tile, $hasBoat4b);
                 if ($ai) {
                     $activationInfo[] = $ai;
                 }
