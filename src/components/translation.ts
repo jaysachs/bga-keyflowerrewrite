@@ -8,36 +8,38 @@ import { KFGameDatas, KFPlayer, ResourceType, Season, SkillType, TileType, Worke
  */
 export class TranslationComponent {
 
+    private readonly translations: typeof this.bga.gameui.gamedatas.translations;
+
     public constructor(private bga: Bga<KFPlayer, KFGameDatas>) {
+        this.translations = bga.gameui.gamedatas.translations;
     }
 
     /** A tile's name, e.g. "Keystone quarry". */
     public tileName(tiletype: TileType): string {
-        return this.name('tiles', tiletype);
+        return this.name(this.translations.tiles, tiletype);
     }
 
     /** A worker color, e.g. "blue". */
     public color(color: WorkerColor): string {
-        return this.name('colors', color);
+        return this.name(this.translations.colors, color);
     }
 
     /** A season, e.g. "Autumn" (the server's "fall"). */
     public season(season: Season): string {
-        return this.name('seasons', season);
+        return this.name(this.translations.seasons, season);
     }
 
     /** A resource, e.g. "stone". */
     public resource(resource: ResourceType): string {
-        return this.name('resources', resource);
+        return this.name(this.translations.resources, resource);
     }
 
     /** A tool (skill tile), e.g. "pickaxe". */
     public skill(skill: SkillType): string {
-        return this.name('skills', skill);
+        return this.name(this.translations.skills, skill);
     }
 
-    private name(table: keyof KFGameDatas['translations'], item: string): string {
-        const names: Record<string, string> = this.bga.gameui.gamedatas.translations[table]!;
+    private name(names: Record<string, string>, item: string): string {
         const name = names[item];
         return name ? _(name) : item;
     }
