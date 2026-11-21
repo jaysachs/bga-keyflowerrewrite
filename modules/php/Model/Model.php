@@ -296,6 +296,10 @@ class Model {
                     throw new InvalidArgumentException("yellow worker required for activation, {$worker->color->value} provided");
                 }
                 break;
+            default:
+                if ($worker || $skill) {
+                    throw new InvalidArgumentException("no skill or worker required for activation but one provided");
+                }
         }
         return new ActivationPayment($worker, $skill);
     }
