@@ -32,9 +32,9 @@ export class PanelsComponent {
             this.bga.playerPanels.getElement(id).append(this.chips(id == me));
         });
         this.setStartPlayer(gamedatas.startPlayerId);
-        this.markActive();
+        this.markActivePlayers();
         // BaseState reports every change of active players
-        document.addEventListener(ACTIVE_PLAYERS_CHANGED, () => this.markActive());
+        document.addEventListener(ACTIVE_PLAYERS_CHANGED, () => this.markActivePlayers());
         this.updatePrivateRow();
     }
 
@@ -59,7 +59,7 @@ export class PanelsComponent {
      * Marks the panels of the players who must act now (kf_active: the bar and the turn chip).
      * BGA's own hourglass markers aren't reliable for this.
      */
-    public markActive(): void {
+    public markActivePlayers(): void {
         Object.keys(this.bga.gameui.gamedatas.players).map(Number).forEach(id => {
             this.panel(id).classList.toggle('kf_active', this.bga.players.isPlayerActive(id));
         });
