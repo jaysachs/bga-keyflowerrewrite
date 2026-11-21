@@ -13,13 +13,15 @@ import { MarketComponent } from "./components/market";
 import { PanelsComponent } from "./components/panels";
 import { TranslationComponent } from "./components/translation";
 import { VillageComponent } from "./components/village";
-import { KFGameDatas, KFPlayer } from "./kfdata";
+import { KFGameDatas, KFPlayer, WorkerColor } from "./kfdata";
 import { BaseGame } from "./libs/basegame";
 import { Html } from "./libs/html";
 import { activePlayersChanged } from "./states/base";
 import { PlayerTurnState } from "./states/player_turn";
 import { SeasonSetupState } from "./states/season_setup";
 import { IDS, View } from "./view";
+
+const WORKER_COLORS: WorkerColor[] = ['red', 'yellow', 'blue', 'green'];
 
 export class Game extends BaseGame<KFPlayer, KFGameDatas> {
 
@@ -33,6 +35,11 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
         super(bga);
 
         this.translationComponent = new TranslationComponent(bga);
+        // In the log and the status bar: worker colors as the word, then the meeple; tiles by their
+        // translated names (the server sends the tile type). These replace the arguments with HTML, so
+        // notification handlers shouldn't read `color` or `tiletype`; they use ids.
+        this.textFormatter.registerFormatter('color', args => this.colorWithWorker(args.color));
+        this.textFormatter.registerFormatter('tiletype', args => Html.span({ text: this.translationComponent.tileName(args.tiletype) }));
         this.marketComponent = new MarketComponent(bga, this.translationComponent, this.moreAnimations);
         this.dockComponent = new DockComponent(bga);
         this.villageComponent = new VillageComponent(bga, this.translationComponent);
@@ -64,6 +71,20 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
      */
     onUpdateActionButtons(stateName: string, args: any): void {
         activePlayersChanged();
+    }
+
+    /**
+     * A worker color as its word (translated) and its meeple. The word stays, for screen readers and
+     * colorblind players; the meeple is hidden from screen readers. Anything else is left as it is.
+     */
+    private colorWithWorker(value: unknown): HTMLElement {
+        if (typeof value != 'string' || !WORKER_COLORS.includes(value as WorkerColor)) {
+            return Html.span({ text: String(value ?? '') });
+        }
+        const color = value as WorkerColor;
+        return Html.span({ classes: 'kf_color' },
+            document.createTextNode(this.translationComponent.color(color)),
+            Html.span({ classes: 'kf_worker', attrs: { 'data-kf-color': color, 'aria-hidden': 'true' } }));
     }
 
     private registerStates(): void {

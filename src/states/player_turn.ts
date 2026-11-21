@@ -203,7 +203,7 @@ export class PlayerTurnState extends BaseState {
         const title = already && fixedColor ? _('Bid on ${tile}: at least ${n} more ${color}')
             : fixedColor ? _('Bid on ${tile}: at least ${n} ${color}')
             : _('Bid on ${tile}: at least ${n} of one color');
-        this.bga.statusBar.setTitle(title, { tile: name, n: need, color: fixedColor ? this.translations.color(fixedColor) : '' });
+        this.bga.statusBar.setTitle(title, { tile: name, n: need, color: fixedColor ?? '' });   // the color formatter adds the word and its meeple
         // Every tap redraws the picker; keyboard focus returns to the button that had it.
         const focused = (document.activeElement as HTMLElement | null)?.dataset['kfKey'];
         this.bga.statusBar.removeActionButtons();
