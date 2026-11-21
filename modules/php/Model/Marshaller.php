@@ -46,7 +46,7 @@ class Marshaller {
      * @return array<mixed>
      */
     public static function workers(?array $ws): array {
-        return array_map(fn (Worker $w) => self::worker($w), $ws ?? []);
+        return array_map(fn (Worker $w) => self::worker($w), array_values($ws ?? []));
     }
 
     /** @return array<mixed> */
