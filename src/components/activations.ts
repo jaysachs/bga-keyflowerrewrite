@@ -1,4 +1,4 @@
-import { Activations, Worker, workerList } from "../kfdata";
+import { Activations, Worker } from "../kfdata";
 import { Html } from "../libs/html";
 
 /**
@@ -10,14 +10,14 @@ import { Html } from "../libs/html";
 export function activationRows(activations: Activations | undefined, classes: string[] = []): HTMLElement | undefined {
     if (!activations?.length) { return undefined; }
     return Html.div({ classes: ['kf_uses', ...classes], attrs: { 'aria-hidden': true } },
-        ...activations.map(workerList).map(use => Html.div({ classes: 'kf_use', style: `--n: ${use.length}` },
+        ...activations.map(use => Html.div({ classes: 'kf_use', style: `--n: ${use.length}` },
             ...sorted(use).map(w => Html.span({ classes: 'kf_worker', attrs: { 'data-kf-color': w.color } })))));
 }
 
 /** "used 1 red, then 2 red", for a tile's label; empty when unused. */
 export function activationSummary(activations: Activations | undefined): string {
     if (!activations?.length) { return ''; }
-    return _('used') + ' ' + activations.map(workerList).map(use => {
+    return _('used') + ' ' + activations.map(use => {
         const byColor = new Map<string, number>();
         use.forEach(w => byColor.set(w.color, (byColor.get(w.color) ?? 0) + 1));
         return Array.from(byColor, ([c, n]) => `${n} ${c}`).join(' + ');

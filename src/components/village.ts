@@ -3,7 +3,7 @@ import { BaseComponent } from "../libs/basecomponent";
 import { Html } from "../libs/html";
 import { MoreAnimations } from "../libs/more-animations";
 import { RowCol } from "../rowcol";
-import { activationRows } from "./activations";
+import { activationRows, activationSummary } from "./activations";
 import { TranslationComponent } from "./translation";
 
 /**
@@ -14,9 +14,55 @@ import { TranslationComponent } from "./translation";
  */
 export class VillageComponent extends BaseComponent<any> {
 
+    private selectable = new Set<number>();
+    private selected: number | null = null;
+
     public constructor(private bga: Bga<KFPlayer, KFGameDatas>, private translations: TranslationComponent,
         private animations: MoreAnimations) {
         super();
+    }
+
+    /** The village tiles that can be chosen (to use them); an empty list makes the villages read-only. */
+    public setSelectable(tileIds: number[]): void {
+        this.selectable = new Set(tileIds);
+        this.refreshMarks();
+    }
+
+    public setSelected(tileId: number | null): void {
+        this.selected = tileId;
+        this.refreshMarks();
+    }
+
+    /**
+     * Tiles that can be chosen act as buttons, and get an outline in a layer of its own over them (the
+     * tile itself is clipped to its hex, which would cut a glow off), like the market's tiles.
+     */
+    private refreshMarks(): void {
+        document.querySelectorAll('.kf_village_map .kf_tile_mark').forEach(m => m.remove());
+        Object.values(this.bga.gameui.gamedatas.villages).flatMap(v => v.tiles).forEach(t => {
+            const el = document.getElementById(`kf_tile_${t.tile_id}`);
+            if (!el) { return; }
+            const can = this.selectable.has(t.tile_id), chosen = this.selected == t.tile_id;
+            el.classList.toggle('kf_selectable', can);
+            // Every tile is a button: a choosable one is chosen, the others show their rules (keyflower.ts)
+            el.setAttribute('role', 'button');
+            el.tabIndex = 0;
+            el.setAttribute('aria-label', [this.translations.tileName(t.tiletype), activationSummary(t.activations)].filter(x => x).join('. '));
+            if (can) {
+                el.setAttribute('aria-pressed', String(chosen));
+                el.removeAttribute('aria-haspopup');
+            } else {
+                el.removeAttribute('aria-pressed');
+                el.setAttribute('aria-haspopup', 'dialog');
+            }
+            if (can || chosen) {
+                el.after(Html.div({
+                    classes: ['kf_tile_mark', chosen ? 'kf_selected' : ''],
+                    attrs: { 'aria-hidden': 'true' },
+                    style: [`--kf-row: ${el.style.getPropertyValue('--kf-row')}`, `--kf-col: ${el.style.getPropertyValue('--kf-col')}`],
+                }));
+            }
+        });
     }
 
     public setup(): HTMLElement {
@@ -101,7 +147,7 @@ export class VillageComponent extends BaseComponent<any> {
 
     /** row and col are counted from the village's top-left; data-kf-rowcol keeps the real position. */
     private tileDiv(tile: VillageTile, row: number, col: number): HTMLElement {
-        const div = Html.div({
+        const el = Html.div({
             id: `kf_tile_${tile.tile_id}`,
             classes: 'kf_tile',
             attrs: {
@@ -112,9 +158,13 @@ export class VillageComponent extends BaseComponent<any> {
             style: [`--kf-row: ${row}`, `--kf-col: ${col}`],
             title: this.translations.tileName(tile.tiletype),
         });
-        // A tap (or Enter or Space) shows the tile's rules (keyflower.ts)
-        Object.entries({ role: 'button', tabindex: '0', 'aria-haspopup': 'dialog', 'aria-label': this.translations.tileName(tile.tiletype) })
-            .forEach(([k, v]) => div.setAttribute(k, v));
-        return div;
+        // A button from the start: until it can be chosen, a tap shows its rules (keyflower.ts)
+        Object.entries({ role: 'button', tabindex: '0', 'aria-haspopup': 'dialog',
+            'aria-label': [this.translations.tileName(tile.tiletype), activationSummary(tile.activations)].filter(x => x).join('. ') })
+            .forEach(([k, v]) => el.setAttribute(k, v));
+        const choose = () => { if (this.selectable.has(tile.tile_id)) { this.dispatch(tile); } };
+        el.addEventListener('click', choose);
+        el.addEventListener('keydown', e => { if (e.key == 'Enter' || e.key == ' ') { e.preventDefault(); choose(); } });
+        return el;
     }
 }

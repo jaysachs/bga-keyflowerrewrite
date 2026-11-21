@@ -12,7 +12,7 @@ export abstract class BaseComponent<T> {
 
     public removeHandler(h: Handler<T>): void {
         const i = this.handlers.indexOf(h);
-        if (i > 0) {
+        if (i >= 0) {
             this.handlers.splice(i, 1);
         }
     }    

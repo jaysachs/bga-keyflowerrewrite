@@ -510,6 +510,31 @@ html {
     pointer-events: none;
 }
 
+/* A village tile you can choose (to use it): an outline over it, following its hex (the tile itself is
+   clipped to the hex, so a glow on it would be cut off), as the market's tiles have */
+.kf_village_map .kf_tile.kf_selectable {
+    cursor: pointer;
+}
+
+.kf_village_map .kf_tile.kf_selectable:focus-visible {
+    outline: none;
+}
+
+.kf_village_map .kf_tile_mark {
+    position: absolute;
+    left: calc(var(--kf-col) * var(--kf-col-step) * var(--kf-tile-w));
+    top: calc(var(--kf-row) * var(--kf-row-step) * var(--kf-tile-h));
+    width: var(--kf-tile-w);
+    height: var(--kf-tile-h);
+    pointer-events: none;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='25,1 75,1 99,50 75,99 25,99 1,50' fill='none' stroke='%231a73e8' stroke-width='2.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+    filter: drop-shadow(0 0 1px #fff);
+}
+
+.kf_village_map .kf_tile_mark.kf_selected {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='25,1 75,1 99,50 75,99 25,99 1,50' fill='none' stroke='%231a73e8' stroke-width='4.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+}
+
 /* In a village the rows are a layer of their own over the tile, so they don't turn with it */
 .kf_village_map .kf_uses {
     left: calc(var(--kf-col) * var(--kf-col-step) * var(--kf-tile-w) + var(--kf-tile-w) * 0.2);
@@ -579,22 +604,183 @@ html {
 
 /* Choosing a bid in the status bar: a row per color; tap the third worker to take three */
 
-.kf_pick {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-    margin: 6px 0;
+/*
+ * Choosing a bid or a use, laid out as in the mockup's status bar. Stacked on phones: the title, the rule
+ * line, the Bid/Use switch, the workers, then the buttons at the right. From 700px of status bar, three
+ * columns (below). BGA's status bar stays BGA's: its own boxes are only set to
+ * `display: contents` while choosing, so the picker's parts can join its grid.
+ */
+/* The layout follows the status bar's own width, not the window's: BGA's column on the right takes a
+   varying share of the window (the bar is 780px in a 1027px window) */
+#page-title.kf_picking {
+    container: kf-statusbar / inline-size;
 }
 
-/* Phones: one color per line, so a color's workers never share a line with another color's */
-@media (max-width: 499px) {
-    .kf_pick {
-        flex-direction: column;
-        align-items: flex-start;   /* rows start together, so each count sits under the same count */
-        width: fit-content;
-        margin-inline: auto;
+#page-title.kf_picking #maintitlebar_content > div:has(> #pagemaintitletext) {
+    display: grid !important;   /* BGA sets inline-block on it inline */
+    box-sizing: border-box;      /* and width: 100%, which padding would push past the bar's edge */
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 6px 8px;
+    padding: 4px 8px;   /* 12px from the bar's edges on phones, with BGA's 4px there */
+    text-align: left;
+}
+
+/* Tablets and wider: 20px from the bar's edges */
+@container kf-statusbar (min-width: 500px) {
+    #page-title.kf_picking #maintitlebar_content > div:has(> #pagemaintitletext) {
+        padding: 6px 15px 8px;
     }
+}
+
+#page-title.kf_picking #generalactions,
+#page-title.kf_picking .kf_pick {
+    display: contents;
+}
+
+#page-title.kf_picking #gotonexttable_wrap,
+#page-title.kf_picking #undoredo_wrap {
+    display: none;
+}
+
+#page-title.kf_picking #active_player_statusbar { grid-column: 1; grid-row: 1; }
+#page-title.kf_picking #pagemaintitletext { grid-column: 2; grid-row: 1; }
+#page-title.kf_picking .kf_pick_rule { grid-column: 2; grid-row: 2; }
+#page-title.kf_picking .kf_pick_modes { grid-column: 2; grid-row: 3; justify-self: start; }
+#page-title.kf_picking .kf_pick_workers { grid-column: 2; grid-row: 4; }
+#page-title.kf_picking .kf_pick_actions { grid-column: 2; grid-row: 5; justify-self: end; margin-top: 10px; }   /* 16px under the workers, with the rows' 6px */
+
+/* From 700px of status bar: what this is in a column of a set width (270px, so nothing moves from one
+   tile to the next), the workers beside it (each color on one line, the colors wrapping as whole rows),
+   and the buttons stacked in a column of their own at the right, the same width, 16px apart. Their
+   column has a set width too: the labels change as you choose ("Bid 2 yellow"), and an auto width would
+   take room from the workers, so their rows jumped between lines. The right margin keeps the buttons off
+   the bar's edge */
+@container kf-statusbar (min-width: 700px) {
+    #page-title.kf_picking #maintitlebar_content > div:has(> #pagemaintitletext) {
+        grid-template-columns: auto 270px minmax(0, 1fr) 150px;
+        grid-template-rows: auto auto 1fr;
+        align-items: start;
+        gap: 4px 20px;
+    }
+    #page-title.kf_picking .kf_pick_workers {
+        grid-column: 3;
+        grid-row: 1 / 4;
+        align-self: stretch;
+        padding-left: 20px;
+        border-left: 1px solid rgb(0 0 0 / 0.12);
+    }
+    #page-title.kf_picking .kf_pick_actions {
+        grid-column: 4;
+        grid-row: 1 / 4;
+        margin-top: 0;
+        align-self: stretch;
+        justify-self: stretch;
+        grid-auto-flow: row;
+        grid-auto-columns: auto;
+        align-content: center;
+    }
+    #page-title.kf_picking .kf_pick_actions > .bgabutton {
+        width: 100%;
+        box-sizing: border-box;
+        white-space: normal;
+    }
+}
+
+.kf_pick_rule {
+    margin: 0;
+    font-size: 13px;
+    font-weight: normal;
+    line-height: 1.35;
+    color: #57606a;
+}
+
+.kf_pick_rule .kf_worker {
+    width: 1.25em;
+    height: 1.25em;
+    margin-left: 0.15em;
+    vertical-align: -0.3em;
+}
+
+.kf_pick_rule.kf_pick_error {
+    font-weight: bold;
+    color: #b3261e;
+}
+
+/* Bid or Use, and Cancel: the same width, 16px apart (side by side; stacked in a wide status bar) */
+.kf_pick_actions {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 16px;
+}
+
+/* The column gap sets Cancel apart here, so not its own margin too; and not BGA's phone margins (8px
+   above and below), which made Bid shorter than Cancel */
+#generalactions .kf_pick_actions > .bgabutton {
+    margin: 0;
+}
+
+.kf_pick_workers > .kf_pick_label {
+    margin: 0 0 4px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #57606a;
+}
+
+/* Each color's workers side by side; on phones one color per line, starting together, so each count
+   sits under the same count */
+.kf_pick_rows {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+}
+
+@media (max-width: 499px) {
+    .kf_pick_rows {
+        flex-direction: column;
+        gap: 6px;
+    }
+}
+
+/* Using a market tile you could also bid on: a switch between the two, under the rule line */
+.kf_pick_modes {
+    display: flex;
+    width: fit-content;
+}
+
+.kf_pick_modes button {
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid #1f2328;
+    background: #fff;
+    color: #1f2328;
+    font: inherit;
+    font-weight: bold;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.kf_pick_modes button:first-child { border-radius: 8px 0 0 8px; }
+.kf_pick_modes button:last-child { border-radius: 0 8px 8px 0; border-left: 0; }
+
+.kf_pick_modes button[aria-checked="true"] {
+    background: #1f2328;
+    color: #fff;
+}
+
+/* A choice a use needs: what to pay with (any worker or tool), or which resource to take */
+.kf_pick_choice {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 6px;
+}
+
+.kf_pick_choice > .kf_pick_label {
+    margin-right: 4px;
+    font-weight: bold;
 }
 
 .kf_pick_row {
@@ -668,16 +854,7 @@ html {
     }
 }
 
-.kf_pick_msg {
-    flex-basis: 100%;
-    margin: 0;
-    font-size: 14px;
-    color: #b3261e;
-}
 
-.kf_pick_msg:empty {
-    display: none;
-}
 
 /*
  * Tile art: any element with data-kf-tile="<tile type>" shows that tile's face; upgraded faces

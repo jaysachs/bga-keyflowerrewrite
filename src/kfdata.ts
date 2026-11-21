@@ -18,7 +18,7 @@ export interface Skill {
     type: SkillType;
 }
 
-// sequence x workers, e.g. [ /* first activation */ 0 => [ workers ... ], /* second */ 1 => [ ... ] ]
+/** A tile's uses this season, in the order they were made: the workers placed in each. */
 export type Activations = Worker[][];
 
 export interface VillageTile {
