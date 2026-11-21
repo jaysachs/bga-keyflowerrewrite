@@ -35,10 +35,10 @@ enum ResourceType: string {
 
     public function translatedName(): string {
         return match ($this) {
-            ResourceType::STONE => "stone",
-            ResourceType::WOOD => "wood",
-            ResourceType::IRON => "iron",
-            ResourceType::GOLD => "gold",
+            ResourceType::STONE => clienttranslate("stone"),
+            ResourceType::WOOD => clienttranslate("wood"),
+            ResourceType::IRON => clienttranslate("iron"),
+            ResourceType::GOLD => clienttranslate("gold"),
         };
     }
 }

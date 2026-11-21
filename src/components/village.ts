@@ -2,6 +2,7 @@ import { KFGameDatas, KFPlayer, Village, VillageTile } from "../kfdata";
 import { BaseComponent } from "../libs/basecomponent";
 import { Html } from "../libs/html";
 import { RowCol } from "../rowcol";
+import { TranslationComponent } from "./translation";
 
 /**
  * All players' villages, yours first, then the others in turn order.
@@ -11,7 +12,7 @@ import { RowCol } from "../rowcol";
  */
 export class VillageComponent extends BaseComponent<any> {
 
-    public constructor(private bga: Bga<KFPlayer, KFGameDatas>) {
+    public constructor(private bga: Bga<KFPlayer, KFGameDatas>, private translations: TranslationComponent) {
         super();
     }
 
@@ -65,7 +66,7 @@ export class VillageComponent extends BaseComponent<any> {
                 'data-kf-orientation': String(tile.orientation),
             },
             style: [`--kf-row: ${row}`, `--kf-col: ${col}`],
-            title: tile.tiletype,
+            title: this.translations.tileName(tile.tiletype),
         });
     }
 }

@@ -35,9 +35,9 @@ enum SkillType: string {
 
    public function translatedName(): string {
         return match ($this) {
-            SkillType::ANVIL => "anvil",
-            SkillType::PICKAXE => "pickaxe",
-            SkillType::SAW => "saw",
+            SkillType::ANVIL => clienttranslate("anvil"),
+            SkillType::PICKAXE => clienttranslate("pickaxe"),
+            SkillType::SAW => clienttranslate("saw"),
         };
     }
 }
