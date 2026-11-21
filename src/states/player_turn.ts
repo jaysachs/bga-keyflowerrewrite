@@ -3,7 +3,8 @@ import { MarketComponent, workerIcons } from "../components/market";
 import { PanelsComponent } from "../components/panels";
 import { TranslationComponent } from "../components/translation";
 import { TileRulesComponent } from "../components/tilerules";
-import { KFGameDatas, KFPlayer, MarketLot, Worker, WorkerColor } from "../kfdata";
+import { VillageComponent } from "../components/village";
+import { KFGameDatas, KFPlayer, MarketLot, Worker, WorkerColor, Resource, Skill, Workers, workerList } from "../kfdata";
 import { Html } from "../libs/html";
 import { BaseState } from "./base";
 
@@ -49,7 +50,7 @@ export class PlayerTurnState extends BaseState {
     private readonly onTile = (mt: MarketLot) => this.startPick(mt.id);
 
     constructor(bga: Bga<KFPlayer, KFGameDatas>, animationManager: AnimationManager, private market: MarketComponent,
-        private translations: TranslationComponent, private panels: PanelsComponent, private tileRules: TileRulesComponent) {
+        private villages: VillageComponent, private translations: TranslationComponent, private panels: PanelsComponent, private tileRules: TileRulesComponent) {
         super(bga, animationManager);
     }
 
@@ -89,7 +90,38 @@ export class PlayerTurnState extends BaseState {
         }
     }
 
-    /** An outbid bid moved to another tile. For the log only: bidMade, which follows, moves it. */
+    /**
+     * A tile used (in the market or a village): its workers become a new row on the tile, flying from
+     * where they were (an outbid bid they leave, or the player's panel). Your stock loses them and gains
+     * the workers and tools produced; resources go to a tile, which needs the destination tile (to come).
+     */
+    async notif_tileActivated(args: {
+        tile_id: number, player_id: number, workers: Workers,
+        produced: { workers: Workers, resources: Resource[] | Record<string, Resource>, skills: Skill[] | Record<string, Skill>, upgrades: number },
+    }) {
+        const workers = workerList(args.workers);
+        const produced = { workers: workerList(args.produced?.workers), skills: Object.values(args.produced?.skills ?? {}) };
+        const ids = new Set(workers.map(w => w.id));
+        const fromBid = this.bga.gameui.gamedatas.market
+            .find(mt => mt.bids.some(b => b.player_id == args.player_id && b.workers.some(w => ids.has(w.id))));
+        const from = (fromBid && this.market.bidRect(fromBid.id, args.player_id))
+            ?? this.panelOrigin(args.player_id, `.kf_worker[data-kf-color="${workers[0]?.color}"]`);
+        this.market.takeFromBids(args.player_id, workers);
+        const inMarket = !!this.market.tile(args.tile_id);
+        if (inMarket) { this.market.addUse(args.tile_id, workers); } else { this.villages.addUse(args.tile_id, workers); }
+        if (from) {
+            await (inMarket ? this.market.flyUse(args.tile_id, from) : this.villages.flyUse(args.tile_id, from));
+        }
+        // Your stock is only sent to you.
+        const village = this.bga.gameui.gamedatas.villages[args.player_id];
+        if (village?.workers) {
+            village.workers = [...village.workers.filter(w => !ids.has(w.id)), ...produced.workers];
+            village.skills = [...(village.skills ?? []), ...produced.skills];
+            this.panels.updatePrivateRow();
+        }
+    }
+
+    /** An outbid bid moved to another tile. For the log only: bidMade or tileActivated, which follows, moves it. */
     async notif_bidMoved(args: { player_id: number, tile_id: number }) {
     }
 

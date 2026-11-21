@@ -1,6 +1,7 @@
-import { KFGameDatas, KFPlayer, Village, VillageTile } from "../kfdata";
+import { KFGameDatas, KFPlayer, Village, VillageTile, Worker } from "../kfdata";
 import { BaseComponent } from "../libs/basecomponent";
 import { Html } from "../libs/html";
+import { MoreAnimations } from "../libs/more-animations";
 import { RowCol } from "../rowcol";
 import { activationRows } from "./activations";
 import { TranslationComponent } from "./translation";
@@ -13,7 +14,8 @@ import { TranslationComponent } from "./translation";
  */
 export class VillageComponent extends BaseComponent<any> {
 
-    public constructor(private bga: Bga<KFPlayer, KFGameDatas>, private translations: TranslationComponent) {
+    public constructor(private bga: Bga<KFPlayer, KFGameDatas>, private translations: TranslationComponent,
+        private animations: MoreAnimations) {
         super();
     }
 
@@ -66,8 +68,35 @@ export class VillageComponent extends BaseComponent<any> {
      */
     private tileDivs(tile: VillageTile, row: number, col: number): HTMLElement[] {
         const uses = activationRows(tile.activations);
-        if (uses) { uses.style.cssText = `--kf-row: ${row}; --kf-col: ${col}`; }
+        if (uses) {
+            uses.id = `kf_uses_${tile.tile_id}`;
+            uses.style.cssText = `--kf-row: ${row}; --kf-col: ${col}`;
+        }
         return uses ? [this.tileDiv(tile, row, col), uses] : [this.tileDiv(tile, row, col)];
+    }
+
+    /** The village tile with this id, in anyone's village. */
+    public tile(tileId: number): VillageTile | undefined {
+        return Object.values(this.bga.gameui.gamedatas.villages).flatMap(v => v.tiles).find(t => t.tile_id == tileId);
+    }
+
+    /** Adds a use of a village tile (tileActivated): its workers as a new row over the tile. */
+    public addUse(tileId: number, workers: Worker[]): void {
+        const tile = this.tile(tileId);
+        const tileEl = document.getElementById(`kf_tile_${tileId}`);
+        if (!tile || !tileEl) { console.error(`addUse: no village tile ${tileId}`); return; }
+        (tile.activations ??= []).push([...workers]);
+        const uses = activationRows(tile.activations)!;
+        uses.id = `kf_uses_${tileId}`;
+        uses.style.cssText = `--kf-row: ${tileEl.style.getPropertyValue('--kf-row')}; --kf-col: ${tileEl.style.getPropertyValue('--kf-col')}`;
+        const old = document.getElementById(uses.id);
+        if (old) { old.replaceWith(uses); } else { tileEl.after(uses); }
+    }
+
+    /** Animates the newest use on a village tile from where its workers came from. */
+    public async flyUse(tileId: number, from: DOMRect): Promise<void> {
+        const row = document.querySelector<HTMLElement>(`#kf_uses_${tileId} .kf_use:last-child`);
+        if (row) { await this.animations.animateMove(row, from); }
     }
 
     /** row and col are counted from the village's top-left; data-kf-rowcol keeps the real position. */

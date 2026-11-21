@@ -9,6 +9,10 @@ export interface Worker {
 }
 export type SkillType = 'pickaxe' | 'saw' | 'anvil';
 export type ResourceType = 'stone' | 'wood' | 'iron' | 'gold';
+export interface Resource {
+    id: number;
+    type: ResourceType;
+}
 export interface Skill {
     id: number;
     type: SkillType;

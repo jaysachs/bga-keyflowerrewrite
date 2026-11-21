@@ -78,6 +78,36 @@ export class MarketComponent extends BaseComponent<MarketLot> {
         this.redraw(tileId);
     }
 
+    /** Adds a use of a tile (tileActivated): its workers as a new row over the tile. */
+    public addUse(tileId: number, workers: Worker[]): void {
+        const mt = this.lot(tileId, 'addUse');
+        if (!mt) { return; }
+        (mt.activations ??= []).push([...workers]);
+        this.redraw(tileId);
+    }
+
+    /**
+     * Takes workers out of a player's bids anywhere in the market: an outbid group moved to a use
+     * leaves its tile (tileActivated sends the workers, not where they came from).
+     */
+    public takeFromBids(playerId: number, workers: Worker[]): void {
+        const ids = new Set(workers.map(w => w.id));
+        this.bga.gameui.gamedatas.market.forEach(mt => {
+            const bid = mt.bids.find(b => b.player_id == playerId);
+            if (bid?.workers.some(w => ids.has(w.id))) {
+                bid.workers = bid.workers.filter(w => !ids.has(w.id));
+                if (bid.workers.length == 0) { mt.bids = mt.bids.filter(b => b !== bid); }
+                this.redraw(mt.id);
+            }
+        });
+    }
+
+    /** Animates the newest use on a tile from where its workers came from. */
+    public async flyUse(tileId: number, from: DOMRect): Promise<void> {
+        const row = document.querySelector<HTMLElement>(`#kf_lot_${tileId} .kf_use:last-child`);
+        if (row) { await this.animations.animateMove(row, from); }
+    }
+
     /** Takes a player's bid off a tile (a bid moved to another tile). */
     public removeBid(tileId: number, playerId: number): void {
         const mt = this.lot(tileId, 'removeBid');
