@@ -86,7 +86,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
         }
         const color = value as WorkerColor;
         return Html.span({ classes: 'kf_color' },
-            document.createTextNode(this.translationComponent.color(color)),
+            this.translationComponent.color(color),
             Html.span({ classes: 'kf_worker', attrs: { 'data-kf-color': color, 'aria-hidden': 'true' } }));
     }
 
@@ -98,7 +98,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
         const season = value as Season;
         return Html.span({ classes: 'kf_season' },
             Html.span({ classes: 'kf_season_icon', attrs: { 'data-kf-season': season, 'aria-hidden': 'true' } }),
-            document.createTextNode(this.translationComponent.season(season)));
+            this.translationComponent.season(season));
     }
 
     private registerStates(): void {
