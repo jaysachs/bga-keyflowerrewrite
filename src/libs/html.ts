@@ -7,8 +7,11 @@ export interface AttrMaker {
 
 export type AttrLike = AttrMaker | Record<string, AttrValue>;
 
+/** A child: an element, or text (a string, added as a text node); undefined is skipped. */
+export type Child = Node | string | undefined;
+
 export class Html {
-    private static makeElem(ty: string, args: { id?: string | undefined, text?: string | undefined, title?: string, attrs?: AttrLike, classes?: (string | string[]), style?: (string | string[]) }, ...children: (Node | undefined)[]): HTMLElement {
+    private static makeElem(ty: string, args: { id?: string | undefined, text?: string | undefined, title?: string, attrs?: AttrLike, classes?: (string | string[]), style?: (string | string[]) }, ...children: Child[]): HTMLElement {
         const e = document.createElement(ty);
         if (args.id) { e.id = args.id; }
         if (args.classes) {
@@ -31,19 +34,19 @@ export class Html {
                 : args.attrs as Record<string, AttrValue>;
             Object.entries(r).forEach(([k, v]) => { if (v !== null && v !== undefined) { e.setAttribute(k, String(v)); } });
         }
-        children.forEach(c => c && e.appendChild(c));
+        children.forEach(c => { if (c !== undefined && c !== '') { e.append(c); } });
         return e;
     }
 
-    public static div(args: { id?: string | undefined, text?: string | undefined, title?: string, attrs?: AttrLike, classes?: (string | string[]), style?: (string | string[]) }, ...children: (Node | undefined)[]) {
+    public static div(args: { id?: string | undefined, text?: string | undefined, title?: string, attrs?: AttrLike, classes?: (string | string[]), style?: (string | string[]) }, ...children: Child[]) {
         return this.makeElem('div', args, ...children);
     }
 
-    public static span(args: { id?: string | undefined, text?: string | undefined, title?: string, attrs?: AttrLike, classes?: (string | string[]), style?: (string | string[]) }, ...children: (Node | undefined)[]) {
+    public static span(args: { id?: string | undefined, text?: string | undefined, title?: string, attrs?: AttrLike, classes?: (string | string[]), style?: (string | string[]) }, ...children: Child[]) {
         return this.makeElem('span', args, ...children);
     }
 
-    public static p(args: { id?: string | undefined, text?: string | undefined, title?: string, attrs?: AttrLike, classes?: (string | string[]), style?: (string | string[]) }, ...children: (Node | undefined)[]) {
+    public static p(args: { id?: string | undefined, text?: string | undefined, title?: string, attrs?: AttrLike, classes?: (string | string[]), style?: (string | string[]) }, ...children: Child[]) {
         return this.makeElem('p', args, ...children);
     }
 
@@ -51,7 +54,7 @@ export class Html {
         return this.makeElem('img', args) as HTMLImageElement;
     }
 
-    public static button(args: { id?: string | undefined, text?: string | undefined, title?: string, attrs?: AttrLike, classes?: (string | string[]), style?: (string | string[]) }, ...children: (Node | undefined)[]) {
+    public static button(args: { id?: string | undefined, text?: string | undefined, title?: string, attrs?: AttrLike, classes?: (string | string[]), style?: (string | string[]) }, ...children: Child[]) {
         const b = this.makeElem('button', args, ...children);
         b.setAttribute('type', 'button');
         return b as HTMLButtonElement;
