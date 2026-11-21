@@ -13,7 +13,7 @@ import { MarketComponent } from "./components/market";
 import { PanelsComponent } from "./components/panels";
 import { TranslationComponent } from "./components/translation";
 import { VillageComponent } from "./components/village";
-import { KFGameDatas, KFPlayer, WorkerColor } from "./kfdata";
+import { KFGameDatas, KFPlayer, Season, WorkerColor } from "./kfdata";
 import { BaseGame } from "./libs/basegame";
 import { Html } from "./libs/html";
 import { activePlayersChanged } from "./states/base";
@@ -22,6 +22,7 @@ import { SeasonSetupState } from "./states/season_setup";
 import { IDS, View } from "./view";
 
 const WORKER_COLORS: WorkerColor[] = ['red', 'yellow', 'blue', 'green'];
+const SEASONS: Season[] = ['spring', 'summer', 'fall', 'winter'];
 
 export class Game extends BaseGame<KFPlayer, KFGameDatas> {
 
@@ -36,10 +37,12 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
 
         this.translationComponent = new TranslationComponent(bga);
         // In the log and the status bar: worker colors as the word, then the meeple; tiles by their
-        // translated names (the server sends the tile type). These replace the arguments with HTML, so
-        // notification handlers shouldn't read `color` or `tiletype`; they use ids.
+        // translated names (the server sends the tile type); seasons as their icon, then the name. These
+        // replace the arguments with HTML, so notification handlers shouldn't read `color`, `tiletype` or
+        // `season`; they use ids.
         this.textFormatter.registerFormatter('color', args => this.colorWithWorker(args.color));
         this.textFormatter.registerFormatter('tiletype', args => Html.span({ text: this.translationComponent.tileName(args.tiletype) }));
+        this.textFormatter.registerFormatter('season', args => this.seasonWithIcon(args.season));
         this.marketComponent = new MarketComponent(bga, this.translationComponent, this.moreAnimations);
         this.dockComponent = new DockComponent(bga);
         this.villageComponent = new VillageComponent(bga, this.translationComponent);
@@ -85,6 +88,17 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
         return Html.span({ classes: 'kf_color' },
             document.createTextNode(this.translationComponent.color(color)),
             Html.span({ classes: 'kf_worker', attrs: { 'data-kf-color': color, 'aria-hidden': 'true' } }));
+    }
+
+    /** A season as its icon (Daniel's drawings), then its name (translated); anything else as it is. */
+    private seasonWithIcon(value: unknown): HTMLElement {
+        if (typeof value != 'string' || !SEASONS.includes(value as Season)) {
+            return Html.span({ text: String(value ?? '') });
+        }
+        const season = value as Season;
+        return Html.span({ classes: 'kf_season' },
+            Html.span({ classes: 'kf_season_icon', attrs: { 'data-kf-season': season, 'aria-hidden': 'true' } }),
+            document.createTextNode(this.translationComponent.season(season)));
     }
 
     private registerStates(): void {

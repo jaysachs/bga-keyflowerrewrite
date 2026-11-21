@@ -306,6 +306,20 @@ html {
 .kf_worker[data-kf-color="blue"] { --kf-meeple: var(--kf-meeple-blue); }
 .kf_worker[data-kf-color="green"] { --kf-meeple: var(--kf-meeple-green); }
 
+/* A season in the log and the status bar: its icon (Daniel's drawings), then its name, sized to the text */
+.kf_season_icon {
+    display: inline-block;
+    width: 1.3em;
+    height: 1.3em;
+    margin-right: 0.2em;
+    vertical-align: -0.3em;
+    background: center / contain no-repeat;
+}
+.kf_season_icon[data-kf-season="spring"] { background-image: url("img/drawings/season-spring.svg"); }
+.kf_season_icon[data-kf-season="summer"] { background-image: url("img/drawings/season-summer.svg"); }
+.kf_season_icon[data-kf-season="fall"] { background-image: url("img/drawings/season-autumn.svg"); }
+.kf_season_icon[data-kf-season="winter"] { background-image: url("img/drawings/winter.svg"); }
+
 /* A worker color in the log and the status bar: the word, then its meeple, sized to the text */
 .kf_color .kf_worker {
     width: 1.25em;
