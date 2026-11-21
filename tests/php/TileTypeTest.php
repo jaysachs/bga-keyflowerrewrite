@@ -88,8 +88,10 @@ final class TileTypeTest extends TestCase
 
     public function testTranslations(): void {
         foreach (TileType::cases() as $tt) {
+            $d = $tt->description();
+            $this->assertTrue(strcmp($d->summary,"") !== 0, "Tile {$tt->value} does not have a description summary");
             $n = $tt->translatedName();
-            $this->assertTrue($n != null && strcmp($n, "") !== 0, "Tile {$tt->value} does not have a translated name '{$n}'");
+            $this->assertTrue(strcmp($n, "") !== 0, "Tile {$tt->value} does not have a translated name '{$n}'");
         }
     }
 }
