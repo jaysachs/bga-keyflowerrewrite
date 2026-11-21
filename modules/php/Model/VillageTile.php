@@ -37,6 +37,8 @@ class VillageTile {
         public readonly TileType $type,
         public readonly int $rowcol,
         public readonly int $orientation,
+        // FIXME: this is somewhat redundant; consider removing it.
+        public readonly int $playerId,
         private array $resources = [],
         private ProductionActivations $productionActivations = new ProductionActivations()) { }
 

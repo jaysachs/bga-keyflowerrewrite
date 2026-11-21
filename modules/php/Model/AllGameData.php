@@ -96,7 +96,7 @@ class AllGameData {
             $home = array_shift($homes);
             $result->villages[$playerId] = new Village(
                 $playerId,
-                [new VillageTile(++$lastTileId, $home, RowCol::fromRowCol(0, 0), 1)],
+                [new VillageTile(++$lastTileId, $home, RowCol::fromRowCol(0, 0), 1, $playerId)],
                 $workers,
                 [],
                 $wts,

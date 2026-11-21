@@ -109,7 +109,7 @@ class PlayerTurn extends AbstractState {
 
         $this->notify->all(
             'tileActivated',
-            '${player_name} activated tile {$tiletype}', [
+            '${player_name} activated tile ${tiletype}', [
                 'tile_id' => $tile_id,
                 'tiletype' => $activationResult->tile->type->value,
                 'player_id' => $active_player_id,
@@ -119,6 +119,7 @@ class PlayerTurn extends AbstractState {
                     'resources' => Marshaller::resources($activationResult->prodResult->resources),
                     'skills' => Marshaller::skills($activationResult->prodResult->skills),
                     'upgrades' => $activationResult->prodResult->upgrades,
+                    'dest_tile_id' => $activationResult->destTile?->tile_id
                 ]
             ]);
         if ($activationResult->prodResult->upgrades > 0) {

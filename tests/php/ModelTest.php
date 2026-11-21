@@ -15,6 +15,8 @@ use Bga\Games\keyflowerrewrite\Model\{
     MovedBid,
     PersistentStore,
     ProductionResult,
+    Resource,
+    ResourceType,
     RowCol,
     Season,
     TilesStock,
@@ -137,6 +139,7 @@ final class ModelTest extends TestCase {
     private int $lastWorkerId = 1000;
     private int $lastTileId = 2000;
     private int $lastLotId = 3000;
+    private int $lastResourceId = 4000;
     /** @var list<TileType> */
     private array $homeTiles;
 
@@ -163,6 +166,10 @@ final class ModelTest extends TestCase {
 
     private const PID1 = 101;
     private const PID2 = 102;
+
+    private function makeResource(ResourceType $type): Resource {
+        return new Resource($this->lastResourceId++, $type);
+    }
 
     private function makeWorker(WorkerColor $color): Worker {
         return new Worker($this->lastWorkerId++, $color);
@@ -205,7 +212,7 @@ final class ModelTest extends TestCase {
         }
         /** @var TileType */
         $home = array_shift($this->homeTiles);
-        return new Village($pid, [ new VillageTile($this->lastTileId++, $home, 1, 0) ], $workers, [], [], [], false);
+        return new Village($pid, [ new VillageTile($this->lastTileId++, $home, 1, 0, $pid) ], $workers, [], [], [], false);
     }
 
     public function testActivate_boat4b_works(): void {
@@ -214,7 +221,7 @@ final class ModelTest extends TestCase {
         $worker = $this->makeWorker(WorkerColor::YELLOW);
         $this->model->allData()->workerStock->takeFromBag(200);
         $this->model->AllData()->workerStock->putInBag($worker);
-        $this->model->village()->placeTile(new VillageTile(50, TileType::BOAT4B, RowCol::fromRowCol(1,1), 1));
+        $this->model->village()->placeTile(new VillageTile(50, TileType::BOAT4B, RowCol::fromRowCol(1,1), 1, self::PID1));
 
         $wg = new WorkerGroup([$this->makeWorker(WorkerColor::YELLOW), $this->makeWorker(WorkerColor::RED)]);
         foreach ($wg->workers() as $w) {
@@ -223,7 +230,7 @@ final class ModelTest extends TestCase {
 
         $result = $this->model->activate($lot1->tile_id, [], 0, 1, 1, 0);
 
-        $this->assertEquals(new ActivationResult($lot1, new ProductionResult([$worker], null, null, null), $wg, []), $result);
+        $this->assertEquals(new ActivationResult($lot1, new ProductionResult([$worker], null, null, null), $wg, [], null), $result);
     }
 
     public function testActivate_boat4b_failsIfFirstWorkers(): void {
@@ -231,7 +238,7 @@ final class ModelTest extends TestCase {
         $worker = $this->makeWorker(WorkerColor::YELLOW);
         $this->model->allData()->workerStock->takeFromBag(200);
         $this->model->allData()->workerStock->putInBag($worker);
-        $this->model->village()->placeTile(new VillageTile(50, TileType::BOAT4B, RowCol::fromRowCol(1,1), 1));
+        $this->model->village()->placeTile(new VillageTile(50, TileType::BOAT4B, RowCol::fromRowCol(1,1), 1, self::PID1));
 
         $wg = new WorkerGroup([$this->makeWorker(WorkerColor::YELLOW), $this->makeWorker(WorkerColor::RED)]);
         foreach ($wg->workers() as $w) {
@@ -240,6 +247,45 @@ final class ModelTest extends TestCase {
 
         $this->assertThrows(fn () => $this->model->activate($lot1->tile_id, [], 0, 1, 1, 0));
     }
+
+    public function testActivate_resourcesFromMarketLot(): void {
+        $lot1 = $this->addLot(TileType::KEYWOOD);
+        $resource = $this->makeResource(ResourceType::WOOD);
+        $this->model->allData()->resourceStock->take(ResourceType::WOOD, 100);
+        $this->model->allData()->resourceStock->put($resource);
+        $wg = $this->initializeVillageWorkers(WorkerColor::BLUE, 1);
+
+        $result = $this->model->activate($lot1->tile_id, [], 1, 0, 0, 0);
+
+        $this->assertEquals(new ActivationResult($lot1, new ProductionResult(null, [$resource], null, null), $wg, [], $this->model->village()->homeTile()), $result);
+    }
+
+    public function testActivate_resourcesFromOwnVillage(): void {
+        $tile = new VillageTile(2501, TileType::KEYWOOD, RowCol::fromRowCol(1,1), 1, self::PID1);
+        $this->model->village()->placeTile($tile);
+        $resource = $this->makeResource(ResourceType::WOOD);
+        $this->model->allData()->resourceStock->take(ResourceType::WOOD, 100);
+        $this->model->allData()->resourceStock->put($resource);
+        $wg = $this->initializeVillageWorkers(WorkerColor::BLUE, 1);
+
+        $result = $this->model->activate($tile->tile_id, [], 1, 0, 0, 0);
+
+        $this->assertEquals(new ActivationResult($tile, new ProductionResult(null, [$resource], null, null), $wg, [], $tile), $result);
+    }
+
+    public function testActivate_resourcesFromOtherVillage(): void {
+        $tile = new VillageTile(2501, TileType::KEYWOOD, RowCol::fromRowCol(1,1), 1, self::PID2);
+        $this->model->allData()->villages[self::PID2]->placeTile($tile);
+        $resource = $this->makeResource(ResourceType::WOOD);
+        $this->model->allData()->resourceStock->take(ResourceType::WOOD, 100);
+        $this->model->allData()->resourceStock->put($resource);
+        $wg = $this->initializeVillageWorkers(WorkerColor::BLUE, 1);
+
+        $result = $this->model->activate($tile->tile_id, [], 1, 0, 0, 0);
+
+        $this->assertEquals(new ActivationResult($tile, new ProductionResult(null, [$resource], null, null), $wg, [], $this->model->village()->homeTile()), $result);
+    }
+
 
     public function testActivate_emptyLot(): void {
         $lot1 = $this->addLot(TileType::ALEHOUSE);
@@ -250,7 +296,7 @@ final class ModelTest extends TestCase {
 
         $result = $this->model->activate($lot1->tile_id, [], 1, 0, 0, 0);
 
-        $this->assertEquals(new ActivationResult($lot1, new ProductionResult([$worker], null, null, null), $wg, []), $result);
+        $this->assertEquals(new ActivationResult($lot1, new ProductionResult([$worker], null, null, null), $wg, [], null), $result);
     }
 
     public function testActivate_matchesColor(): void {
@@ -263,7 +309,7 @@ final class ModelTest extends TestCase {
 
         $result = $this->model->activate($lot1->tile_id, [], 1, 0, 0, 0);
 
-        $this->assertEquals(new ActivationResult($lot1, new ProductionResult([$worker], null, null, null), $wg, []), $result);
+        $this->assertEquals(new ActivationResult($lot1, new ProductionResult([$worker], null, null, null), $wg, [], null), $result);
     }
 
     public function testActivate_doesNotMatchBidColor(): void {
@@ -293,7 +339,7 @@ final class ModelTest extends TestCase {
 
         $result = $this->model->activate($lot1->tile_id, [], 1, 0, 0, 0, null, $pmt->id);
 
-        $this->assertEquals(new ActivationResult($lot1, new ProductionResult([$reward], null, null, null), $wg, []), $result);
+        $this->assertEquals(new ActivationResult($lot1, new ProductionResult([$reward], null, null, null), $wg, [], null), $result);
     }
 
     public function testActivate_costNotPaid(): void {
@@ -364,7 +410,7 @@ final class ModelTest extends TestCase {
 
     public function testBid_overbiddingDifferentColorWithBoat4a(): void {
         $lot1 = $this->addLot(TileType::ALEHOUSE, [self::PID2 => $this->makeWorkerGroup(WorkerColor::RED, 2)]);
-        $this->model->village()->placeTile(new VillageTile(50, TileType::BOAT4A, RowCol::fromRowCol(1,1), 1));
+        $this->model->village()->placeTile(new VillageTile(50, TileType::BOAT4A, RowCol::fromRowCol(1,1), 1, self::PID1));
         $wg = $this->initializeVillageWorkers(WorkerColor::BLUE, 3);
 
         $result = $this->model->bid($lot1->tile_id, [], 3, WorkerColor::BLUE);
@@ -374,7 +420,7 @@ final class ModelTest extends TestCase {
 
     public function testBid_overbiddingWithBoat4aNotAllowedForGreen(): void {
         $lot1 = $this->addLot(TileType::ALEHOUSE, [self::PID2 => $this->makeWorkerGroup(WorkerColor::GREEN, 2)]);
-        $this->model->village()->placeTile(new VillageTile(50, TileType::BOAT4A, RowCol::fromRowCol(1,1), 1));
+        $this->model->village()->placeTile(new VillageTile(50, TileType::BOAT4A, RowCol::fromRowCol(1,1), 1, self::PID1));
         $this->initializeVillageWorkers(WorkerColor::BLUE, 3);
 
         $this->assertThrows(fn() => $this->model->bid($lot1->tile_id, [], 3, WorkerColor::BLUE));

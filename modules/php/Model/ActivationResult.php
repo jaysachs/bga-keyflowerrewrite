@@ -36,6 +36,7 @@ class ActivationResult {
         public readonly mixed $tile,
         public readonly ProductionResult $prodResult,
         public readonly WorkerGroup $activatingWorkerGroup,
-        public readonly array $movedBids
+        public readonly array $movedBids,
+        public readonly ?VillageTile $destTile
     ) {}
 }

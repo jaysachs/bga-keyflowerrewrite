@@ -111,7 +111,7 @@ class DefaultPersistentStore implements PersistentStore {
                     $tileTypes[$id] = $type;
                     switch ($loc_type) {
                         case LocType::VILLAGE:
-                            $result->villages[$pid]->placeTile(new VillageTile($id, $type, $loc_id, $loc_pos));
+                            $result->villages[$pid]->placeTile(new VillageTile($id, $type, $loc_id, $loc_pos, $pid));
                             $acts[$id] = [[],[],[]];
                             break;
                         case LocType::MARKET:

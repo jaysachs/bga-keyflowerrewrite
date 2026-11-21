@@ -325,7 +325,9 @@ class Model {
                     break;
                 }
             }
-            throw new InvalidArgumentException("no activatable tile {$tile_id}");
+            if ($t === null) {
+                throw new InvalidArgumentException("no activatable tile {$tile_id}");
+            }
         }
         $rewardType = $t->type->activationReward();
         if ($rewardType == ActivationReward::NONE) {
@@ -353,13 +355,17 @@ class Model {
 
         $result = $this->allData()->takeActivationRewards($rewardType, $requested_reward_type);
 
-        // TODO: want $destTile as part of ActivationResult; move takeActivationRewards back onto Model?
+        // TODO: maybe want $destTile as part of ProductionResult; move takeActivationRewards back onto Model?
         // TODO: consider that AllGameData is not that different from Model ... except that it doesnt' persist.
         //       that's an interesting avenue to explore.
         $destTile = null;
         if ($result->resources) {
             if ($t instanceof VillageTile) {
-                $destTile = $t;
+                if ($t->playerId == $this->activePlayerId) {
+                    $destTile = $t;
+                } else {
+                    $destTile = $this->village()->homeTile();
+                }
             } else {
                 $destTile = $this->village()->homeTile();
             }
@@ -386,7 +392,7 @@ class Model {
             $destTile);
         $this->ps->clearPasses();
 
-        return new ActivationResult($t, $result, $activatingWorkerGroup, $activationInfo["movedBids"]);
+        return new ActivationResult($t, $result, $activatingWorkerGroup, $activationInfo["movedBids"], $destTile);
     }
 
     public function passTurn(): void {
