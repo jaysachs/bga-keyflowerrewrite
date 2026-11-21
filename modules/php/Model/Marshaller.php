@@ -136,14 +136,4 @@ class Marshaller {
             $market->lots()
         );
     }
-
-    /** @return array<string,mixed> */
-    public static function tileDescription(TileDescription $td): array {
-        return [
-            "summary" => $td->summary,
-            "points" => $td->points,
-            "upgrade_requirements" => $td->upgrade_requirements,
-            "scoring_note" => $td->scoring_note,
-        ];
-    }
 }

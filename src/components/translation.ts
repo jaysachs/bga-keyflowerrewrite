@@ -18,9 +18,9 @@ export class TranslationComponent {
         const desc = this.translations.tile_descriptions[tiletype];
         return {
             summary: this.translated(desc?.summary, tiletype),
-            upgrade_requirements: this.translated(desc?.upgrade_requirements),
+            upgrade: this.translated(desc?.upgrade),
             points: this.translated(desc?.points),
-            scoring_note: this.translated(desc?.scoring_note)
+            notes: this.translated(desc?.notes)
         }
     }
 

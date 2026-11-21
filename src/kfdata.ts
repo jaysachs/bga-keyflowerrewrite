@@ -65,13 +65,13 @@ export interface TileDescription {
     summary: string;
 
     // how to upgrade it ("Can be upgraded for 1 pickaxe to produce 1 gold and 1 stone.");
-    upgrade_requirements?: string;
+    upgrade?: string;
 
     //points, when upgraded or at the end of the game ("Grants 3 points when upgraded.");
     points?: string;
 
-    // a scoring note ("Workers scored here cannot be scored on another tile.").
-    scoring_note?: string;
+    // notes ("Workers scored here cannot be scored on another tile.").
+    notes?: string;
 }
 
 export interface KFGameDatas extends Gamedatas<KFPlayer> {
