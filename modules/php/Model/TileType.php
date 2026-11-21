@@ -847,23 +847,28 @@ enum TileType: string
         };
     }
 
-    public function description(): string
+    public function description(): TileDescription
     {
         return match ($this) {
-            TileType::HOME1 =>
-            clienttranslate("Allows transporting resources over 1 tile, then upgrading 1 tile.<hr/>Can be upgraded for #1 stone and 1 wood# to allow transporting resources over 2 tiles, then upgrading 1 tile.<hr/>Grants $5$ when upgraded."),
-            TileType::HOME2 =>
-            clienttranslate("Allows transporting resources over 1 tile, then upgrading 1 tile.<hr/>Can be upgraded for #1 iron and 1 stone# to allow transporting resources over 2 tiles, then upgrading 1 tile.<hr/>Grants $5$ when upgraded."),
-            TileType::HOME3 =>
-            clienttranslate("Allows transporting resources over 1 tile, then upgrading 1 tile.<hr/>Can be upgraded for #1 wood and 1 iron# to allow transporting resources over 2 tiles, then upgrading 1 tile.<hr/>Grants $5$ when upgraded."),
-            TileType::HOME4 =>
-            clienttranslate("Allows transporting resources over 1 tile, then upgrading 1 tile.<hr/>Can be upgraded for #1 wood and 1 stone# to allow transporting resources over 2 tiles, then upgrading 1 tile.<hr/>Grants $5$ when upgraded."),
-            TileType::HOME5 =>
-            clienttranslate("Allows transporting resources over 1 tile, then upgrading 1 tile.<hr/>Can be upgraded for #1 stone and 1 iron# to allow transporting resources over 2 tiles, then upgrading 1 tile.<hr/>Grants $5$ when upgraded."),
+            TileType::HOME1,
+            TileType::HOME2,
+            TileType::HOME3,
+            TileType::HOME4,
+            TileType::HOME5,
             TileType::HOME6 =>
-            clienttranslate("Allows transporting resources over 1 tile, then upgrading 1 tile.<hr/>Can be upgraded for #1 iron and 1 wood# to allow transporting resources over 2 tiles, then upgrading 1 tile.<hr/>Grants $5$ when upgraded."),
+                new TileDescription(
+                    clienttranslate("Allows transporting resources over 1 tile, then upgrading 1 tile."),
+                    clienttranslate("Can be upgraded for #1 stone and 1 wood# to allow transporting resources over 2 tiles, then upgrading 1 tile."),
+                    null,
+                    clienttranslate("Grants $5$ when upgraded.")
+                ),
             TileType::KEYFLOWER =>
-            clienttranslate("In spring and summer, brings 7 workers and 1 tool, in autumn, 3 workers and 2 tools.<hr/>If acquired at the end of the game, grants $1$ for each 1 transport capacity."),
+                new TileDescription(
+                    clienttranslate("In spring and summer, brings 7 workers and 1 tool, in autumn, 3 workers and 2 tools."),
+                    null,
+                    null,
+                    clienttranslate("If acquired at the end of the game, grants $1$ for each 1 transport capacity.")),
+/*
             TileType::SEABASTION  =>
             clienttranslate("In spring, summer and autumn, brings 6 workers and 2 tools.<hr/>If acquired at the end of the game, grants $1$ for each tile which is connected by roads as part of a loop which connects back to the starting point without using the same road twice."),
             TileType::SEABREESE =>
@@ -1080,6 +1085,8 @@ enum TileType: string
             clienttranslate("Allows transporting resources over 6 tiles, then upgrading 2 tiles.<hr/>Grants $5$."),
             TileType::WELL_U =>
             clienttranslate("<hr/>Grants $7$.")
+            */
+            default => new TileDescription("TBD")
         };
     }
 }

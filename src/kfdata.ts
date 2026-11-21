@@ -60,6 +60,20 @@ export interface Village {
     won_tiles: StockTile[] | undefined;
 }
 
+export interface TileDescription {
+    // what the tile does ("Produces 2 stone.");
+    summary: string;
+
+    // how to upgrade it ("Can be upgraded for 1 pickaxe to produce 1 gold and 1 stone.");
+    upgrade_requirements: string | undefined;
+
+    //points, when upgraded or at the end of the game ("Grants 3 points when upgraded.");
+    points: string | undefined;
+
+    // a scoring note ("Workers scored here cannot be scored on another tile.").
+    scoring_note: string | undefined;
+}
+
 export interface KFGameDatas extends Gamedatas<KFPlayer> {
     season: Season;
     startPlayerId: number;

@@ -117,7 +117,7 @@ class Marshaller {
     }
 
     /**
-     * @return array<mixed>
+     * @return array<array<string,mixed>>
      */
     public static function market(Market $market): array {
         return array_map(
@@ -135,5 +135,15 @@ class Marshaller {
             ],
             $market->lots()
         );
+    }
+
+    /** @return array<string,mixed> */
+    public static function tileDescription(TileDescription $td): array {
+        return [
+            "summary" => $td->summary,
+            "points" => $td->points,
+            "upgrade_requirements" => $td->upgrade_requirements,
+            "scoring_note" => $td->scoring_note,
+        ];
     }
 }

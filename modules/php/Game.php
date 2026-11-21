@@ -174,7 +174,7 @@ class Game extends \Bga\GameFramework\Table
             'translations' => [
                 'tile_descriptions' => array_combine(
                     array_map(fn ($t) => $t->value, TileType::cases()),
-                    array_map(fn ($t) => $t->description(), TileType::cases())
+                    array_map(fn ($t) => Marshaller::tileDescription($t->description()), TileType::cases())
                 ),
                 'tiles' => array_combine(
                     array_map(fn ($t) => $t->value, TileType::cases()),
