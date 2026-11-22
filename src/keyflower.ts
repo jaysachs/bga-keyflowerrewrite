@@ -60,6 +60,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
             onEnd: () => this.logManager.processLogs()
         });
 
+        this.translationComponent.setup();
         const mainElem = this.makeHtml(
             this.marketComponent.setup(),
             this.dockComponent.setup(),
