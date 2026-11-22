@@ -28,13 +28,15 @@ declare(strict_types=1);
 namespace Bga\Games\keyflowerrewrite\Model;
 
 use InvalidArgumentException;
+use Override;
 
-class ProductionActivations {
+class ProductionActivations implements Marshalable {
     private const MAX_WORKERS = 6;
-    /** @param array<int,WorkerGroup>  $activations */
+
+    /** @param list<WorkerGroup>  $activations */
     public function __construct(private array $activations = []) { }
 
-    /** @return array<int,WorkerGroup> */
+    /** @return list<WorkerGroup> */
     public function activations(): array { return $this->activations; }
 
     public function totalWorkers(): int {
@@ -79,5 +81,10 @@ class ProductionActivations {
 
     public function maxAllowededToActivate(): int {
         return self::MAX_WORKERS - $this->totalWorkers();
+    }
+
+    #[Override]
+    public function marshal(): mixed {
+        return array_map(fn ($a) => $a->marshal(), $this->activations());
     }
 }

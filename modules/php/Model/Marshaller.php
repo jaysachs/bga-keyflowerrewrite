@@ -68,7 +68,7 @@ class Marshaller {
                     'tiletype' => $vt->type->value,
                     'rowcol' => $vt->rowcol,
                     'orientation' => $vt->orientation,
-                    'activations' => self::activations($vt->productionActivations()),
+                    'activations' => $vt->productionActivations()->marshal()
                 ],
                 $village->tiles()
             ),
@@ -105,15 +105,6 @@ class Marshaller {
         );
     }
 
-    /** @return array<mixed> */
-    public static function activations(ProductionActivations $productionActivations): array {
-        $result = [];
-        foreach ($productionActivations->activations() as $pos => $act) {
-            $result[$pos] = self::workers(array_values($act->workers()));
-        }
-        return $result;
-    }
-
     /**
      * @return array<array<string,mixed>>
      */
@@ -122,7 +113,7 @@ class Marshaller {
             fn ($mt) => [
                 'id' => $mt->tile_id,
                 'tiletype' => $mt->type->value,
-                'activations' => self::activations($mt->productionActivations()),
+                'activations' => $mt->productionActivations()->marshal(),
                 'bids' => array_map(fn ($b, $pid) => [
                         'player_id' => $pid,
                         'workers' => $b->marshal(),
