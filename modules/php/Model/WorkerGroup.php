@@ -28,10 +28,11 @@ declare(strict_types=1);
 namespace Bga\Games\keyflowerrewrite\Model;
 
 use InvalidArgumentException;
+use Override;
 
 // FIXME: Consider calling this BidGroup, and then can correctly validate single-color.
 // Compare that to an ActivationGroup, which is allowed to have multiple colors.
-class WorkerGroup {
+class WorkerGroup implements Marshalable {
 
     /** @var array<int,Worker> */
     private array $workers;
@@ -85,5 +86,11 @@ class WorkerGroup {
         array_push($workers, ... $this->workers);
         array_push($workers, ... $other->workers);
         return new WorkerGroup($workers);
+    }
+
+    #[Override]
+    public function marshal(): mixed
+    {
+        return array_map(fn ($w) => $w->marshal(), array_values($this->workers));
     }
 }

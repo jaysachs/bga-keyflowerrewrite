@@ -33,28 +33,12 @@ use Bga\Games\keyflowerrewrite\Model\Village;
 
 class Marshaller {
 
-    /** @return array<mixed> */
-    public static function worker(Worker $w): array {
-        return [
-            'id' => $w->id,
-            'color' => $w->color->value,
-        ];
-    }
-
     /**
-     * @param array<int,Worker> $ws
+     * @param Worker[]|null $ws
      * @return array<mixed>
      */
     public static function workers(?array $ws): array {
-        return array_map(fn (Worker $w) => self::worker($w), array_values($ws ?? []));
-    }
-
-    /** @return array<mixed> */
-    private static function skill(Skill $s): array {
-        return [
-            'id' => $s->id,
-            'type' => $s->type->value,
-        ];
+        return array_map(fn (Worker $w) => $w->marshal(), array_values($ws ?? []));
     }
 
     /**
@@ -62,15 +46,7 @@ class Marshaller {
      * @return array<mixed>
      */
     public static function skills(?array $ss): array {
-        return array_map(fn (Skill $s) => self::skill($s), $ss ?? []);
-    }
-
-    /** @return array<mixed> */
-    private static function resource(Resource $r): array {
-        return [
-            'id' => $r->id,
-            'type' => $r->type->value,
-        ];
+        return array_map(fn (Skill $s) => $s->marshal(), $ss ?? []);
     }
 
     /**
@@ -78,7 +54,7 @@ class Marshaller {
      * @return array<mixed>
      */
     public static function resources(?array $rs): array {
-        return array_map(fn (Resource $r) => self::resource($r), $rs ?? []);
+        return array_map(fn (Resource $r) => $r->marshal(), $rs ?? []);
     }
 
     /**
