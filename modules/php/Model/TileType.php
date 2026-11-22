@@ -851,45 +851,83 @@ enum TileType: string
     public function description(): array
     {
         return match ($this) {
-            TileType::HOME1,
-            TileType::HOME2,
-            TileType::HOME3,
-            TileType::HOME4,
-            TileType::HOME5,
+            TileType::HOME1 => [
+                'summary' =>
+                    clienttranslate('Allows transporting resources over 1 tile, then upgrading 1 tile.'),
+                'upgrade' =>
+                    clienttranslate('Can be upgraded for 1 ${stone} and 1 ${wood} to allow transporting resources over 2 tiles, then upgrading 1 tile.'),
+                'points' =>
+                    clienttranslate('Grants 5 ${points} when upgraded.')
+            ],
+            TileType::HOME2 => [
+                'summary' =>
+                    clienttranslate('Allows transporting resources over 1 tile, then upgrading 1 tile.'),
+                'upgrade' =>
+                    clienttranslate('Can be upgraded for 1 ${iron} and 1 ${stone} to allow transporting resources over 2 tiles, then upgrading 1 tile.'),
+                'points' =>
+                    clienttranslate('Grants 5 ${points} when upgraded.')
+            ],
+            TileType::HOME3 => [
+                'summary' =>
+                    clienttranslate('Allows transporting resources over 1 tile, then upgrading 1 tile.'),
+                'upgrade' =>
+                    clienttranslate('Can be upgraded for 1 ${wood} and 1 ${iron} to allow transporting resources over 2 tiles, then upgrading 1 tile.'),
+                'points' =>
+                    clienttranslate('Grants 5 ${points} when upgraded.')
+            ],
+            TileType::HOME4 => [
+                'summary' =>
+                    clienttranslate('Allows transporting resources over 1 tile, then upgrading 1 tile.'),
+                'upgrade' =>
+                    clienttranslate('Can be upgraded for 1 ${wood} and 1 ${stone} to allow transporting resources over 2 tiles, then upgrading 1 tile.'),
+                'points' =>
+                    clienttranslate('Grants 5 ${points} when upgraded.')
+            ],
+            TileType::HOME5 => [
+                'summary' =>
+                    clienttranslate('Allows transporting resources over 1 tile, then upgrading 1 tile.'),
+                'upgrade' =>
+                    clienttranslate('Can be upgraded for 1 ${stone} and 1 ${iron} to allow transporting resources over 2 tiles, then upgrading 1 tile.'),
+                'points' =>
+                    clienttranslate('Grants 5 ${points} when upgraded.')
+            ],
             TileType::HOME6 => [
                 'summary' =>
                     clienttranslate('Allows transporting resources over 1 tile, then upgrading 1 tile.'),
                 'upgrade' =>
-                    clienttranslate('Can be upgraded for #1 stone and 1 wood# to allow transporting resources over 2 tiles, then upgrading 1 tile.'),
-                'notes' =>
+                    clienttranslate('Can be upgraded for 1 ${iron} and 1 ${wood} to allow transporting resources over 2 tiles, then upgrading 1 tile.'),
+                'points' =>
                     clienttranslate('Grants 5 ${points} when upgraded.')
             ],
             TileType::KEYFLOWER => [
                 'summary' =>
-                    clienttranslate('In spring and summer, brings 7 workers and 1 tool, in autumn, 3 workers and 2 tools.'),
-                'notes' =>
+                    clienttranslate('In spring and summer, brings 7 ${workers} and 1 ${tool}, in autumn, 3 ${workers} and 2 ${tools}.'),
+                'points' =>
                     clienttranslate('If acquired at the end of the game, grants 1 ${points} for each 1 transport capacity.')
             ],
             TileType::SEABASTION => [
                 'summary' =>
-                    clienttranslate('In spring, summer and autumn, brings 6 workers and 2 tools.'),
-                'notes' =>
+                    clienttranslate('In spring, summer and autumn, brings 6 workers and 2 ${tools}.'),
+                'points' =>
                     clienttranslate('If acquired at the end of the game, grants 1 ${points} for each tile which is connected by roads as part of a loop which connects back to the starting point without using the same road twice.'),
             ],
             TileType::SEABREESE => [
                 'summary' =>
-                    clienttranslate('In spring brings 6 workers and 1 tool, in summer and autumn, 4 workers and 1 tool.'),
-                'notes' => clienttranslate('If acquired at the end of the game, grants 2, 4, 8, 16 or 32 ${points} for 1-5 river tiles connected to the home tile.')
+                    clienttranslate('In spring brings 6 ${workers} and 1 ${tool}, in summer and autumn, 4 ${workers} and 1 ${tool}.'),
+                'points' =>
+                    clienttranslate('If acquired at the end of the game, grants 2/4/8/16/32 ${points} for 1/2/3/4/5 river tiles connected to the home tile.')
             ],
             TileType::FLIPPER => [
                 'summary' =>
-                    clienttranslate('In spring and summer brings 5 workers and 2 tools, in autumn, 2 workers and 2 tools.'),
-                'notes' => clienttranslate('If acquired at the end of the game allows the player to flip one tile without paying the upgrade cost and grants 2 ${points}.'),
+                    clienttranslate('In spring and summer brings 5 ${workers} and 2 ${tools}, in autumn, 2 ${workers} and 2 ${tools}.'),
+                // FIXME: should this be points? or split into notes and points?
+                'notes' =>
+                    clienttranslate('If acquired at the end of the game allows the player to flip one tile without paying the upgrade cost and grants 2 ${points}.'),
             ],
             TileType::INVINCIBLE => [
                 'summary' =>
-                    clienttranslate('In spring and summer brings 5 workers and 1 tool, in autumn, 3 workers and 1 tool.'),
-                'notes' =>
+                    clienttranslate('In spring and summer brings 5 ${workers} and 1 ${tool}, in autumn, 3 ${workers} and 1 ${tool}.'),
+                'points' =>
                     clienttranslate('If acquired at the end of the game grants 5 ${points}.'),
             ],
             /*
