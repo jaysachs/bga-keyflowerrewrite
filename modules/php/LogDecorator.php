@@ -3,9 +3,9 @@
 /**
  *------
  * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
- * Zooloretto implementation : © Jay Sachs <vagabond@covariant.org>
+ * Keyflower implementation : © Jay Sachs <vagabond@covariant.org>
  *
- * Copyright 2025 Jay Sachs <vagabond@covariant.org>
+ * Copyright 2026 Jay Sachs <vagabond@covariant.org>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
