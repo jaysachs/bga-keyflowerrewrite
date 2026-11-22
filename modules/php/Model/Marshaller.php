@@ -50,6 +50,11 @@ class Marshaller {
     }
 
     /** @return array<mixed> */
+    public static function workerGroup(WorkerGroup $wg): array {
+        return array_map(fn (Worker $w) => self::worker($w), array_values($wg->workers()));
+    }
+
+    /** @return array<mixed> */
     private static function skill(Skill $s): array {
         return [
             'id' => $s->id,
@@ -153,8 +158,7 @@ class Marshaller {
                 'activations' => self::activations($mt->productionActivations()),
                 'bids' => array_map(fn ($b, $pid) => [
                         'player_id' => $pid,
-                        // FIXME: need positions?
-                        'workers' => self::workers($b->workers()),
+                        'workers' => self::workerGroup($b),
                     ],
                     $mt->bids(),
                     array_keys($mt->bids())
