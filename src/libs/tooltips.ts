@@ -16,15 +16,15 @@ export class TooltipManager {
         }
         tooltip.removeTarget(id);
 
-        let timeoutId: null | NodeJS.Timeout = null;
+        let timeoutId: null | number = null;
         elem.addEventListener('pointerenter', (e) => {
-            timeoutId = setTimeout(() => { timeoutId = null; tooltip.open(id) }, 300);
+            timeoutId = window.setTimeout(() => { timeoutId = null; tooltip.open(id) }, 300);
         });
         elem.addEventListener('pointerleave', (e) => {
             if (timeoutId == null) {
                 tooltip.close();
             } else {
-                clearTimeout(timeoutId);
+                window.clearTimeout(timeoutId);
             }
         })
     }
