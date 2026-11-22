@@ -129,7 +129,7 @@ class AllGameData {
     public function takeActivationRewards(ActivationReward $rewardType, ?ResourceType $requested): ProductionResult {
         $skills = null;
         $resources = null;
-        $workers = null;
+        $workers = new WorkerGroup();
         $upgrades = null;
 
         switch ($rewardType) {
@@ -211,19 +211,19 @@ class AllGameData {
                 $skills = $this->skillPile->take(3);
                 break;
             case ActivationReward::WORKER_ANY:
-                $workers = $this->workerStock->takeFromBag(1);
+                $workers = WorkerGroup::of(... $this->workerStock->takeFromBag(1));
                 break;
             case ActivationReward::WORKER_ANY_2:
-                $workers = $this->workerStock->takeFromBag(2);
+                $workers = WorkerGroup::of(... $this->workerStock->takeFromBag(2));
                 break;
             case ActivationReward::WORKER_ANY_3:
-                $workers = $this->workerStock->takeFromBag(3);
+                $workers = WorkerGroup::of(... $this->workerStock->takeFromBag(3));
                 break;
             case ActivationReward::WORKER_GREEN:
-                $workers = $this->workerStock->takeGreens(1);
+                $workers = WorkerGroup::of(... $this->workerStock->takeGreens(1));
                 break;
             case ActivationReward::WORKER_GREEN_2:
-                $workers = $this->workerStock->takeGreens(2);
+                $workers = WorkerGroup::of(... $this->workerStock->takeGreens(2));
                 break;
             case ActivationReward::UPGRADE_1:
                 $upgrades = 1;

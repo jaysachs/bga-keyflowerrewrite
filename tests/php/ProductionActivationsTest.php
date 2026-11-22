@@ -36,11 +36,11 @@ final class ProductionActivationsTest extends TestCase
 
     private int $lastId = 0;
     private function workerGroup(WorkerColor $color, int $size = 1): WorkerGroup {
-        $ws = [];
+        $wg = new WorkerGroup();
         for ($i = 0; $i < $size; ++$i) {
-            $ws[] = new Worker($this->lastId++, $color);
+            $wg->add(new Worker($this->lastId++, $color));
         }
-        return new WorkerGroup($ws);
+        return $wg;
     }
 
     public function testOneActivation(): void {

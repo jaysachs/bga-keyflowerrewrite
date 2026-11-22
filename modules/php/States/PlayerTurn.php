@@ -160,7 +160,7 @@ class PlayerTurn extends AbstractState {
                 'player_id' => $active_player_id,
                 'workers' => $activationResult->activatingWorkerGroup->marshal(),
                 'produced' => [
-                    'workers' => Marshaller::workers($activationResult->prodResult->workers ?? []),
+                    'workers' => $activationResult->prodResult->workers->marshal(),
                     'resources' => Marshaller::resources($activationResult->prodResult->resources),
                     'skills' => Marshaller::skills($activationResult->prodResult->skills),
                     'upgrades' => $activationResult->prodResult->upgrades,

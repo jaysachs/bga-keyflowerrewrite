@@ -46,6 +46,10 @@ class WorkerGroup implements Marshalable {
         }
     }
 
+    public static function of(Worker... $ws): WorkerGroup {
+        return new WorkerGroup($ws);
+    }
+
     public function isEmpty(): bool {
         return count($this->workers) == 0;
     }
@@ -78,6 +82,11 @@ class WorkerGroup implements Marshalable {
     /** @return array<int,Worker> */
     public function workers(): array {
         return $this->workers;
+    }
+
+    /** @return list<int> */
+    public function workerIds(): array {
+        return array_keys($this->workers);
     }
 
     public function size(): int {

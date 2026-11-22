@@ -15,7 +15,7 @@ use Bga\Games\keyflowerrewrite\Model\{
 final class MarketLotTest extends TestCase
 {
     public function testCreationAndGetters() : void{
-        $bids = [98 => new WorkerGroup([new Worker(3, WorkerColor::BLUE)])];
+        $bids = [98 => WorkerGroup::of(new Worker(3, WorkerColor::BLUE))];
         $mt = new MarketLot(1000, TileType::ALEHOUSE, $bids);
         $this->assertEquals(1000, $mt->tile_id);
         $this->assertEquals(TileType::ALEHOUSE, $mt->type);
@@ -26,7 +26,7 @@ final class MarketLotTest extends TestCase
     }
 
     public function testBiddingColor(): void {
-        $bids = [98 => new WorkerGroup([new Worker(3, WorkerColor::BLUE)])];
+        $bids = [98 => WorkerGroup::of(new Worker(3, WorkerColor::BLUE))];
         $mt = new MarketLot(1000, TileType::ALEHOUSE, $bids);
         $this->assertEquals(WorkerColor::BLUE, $mt->currentColor());
         $mt = new MarketLot(1000, TileType::ALEHOUSE);
@@ -34,8 +34,8 @@ final class MarketLotTest extends TestCase
     }
 
     public function testHasNonWinningBid(): void {
-        $bids = [98 => new WorkerGroup([new Worker(3, WorkerColor::BLUE)]),
-                 97 => new WorkerGroup([new Worker(4, WorkerColor::BLUE), new Worker(6, WorkerColor::BLUE)])];
+        $bids = [98 => WorkerGroup::of(new Worker(3, WorkerColor::BLUE)),
+                 97 => WorkerGroup::of(new Worker(4, WorkerColor::BLUE), new Worker(6, WorkerColor::BLUE))];
         $mt = new MarketLot(1000, TileType::ALEHOUSE, $bids);
         $this->assertTrue($mt->hasNonWinningBid(98), "98 has only bid 1 blue");
         $this->assertFalse($mt->hasNonWinningBid(99), "99 has not made a bid");
@@ -43,22 +43,22 @@ final class MarketLotTest extends TestCase
     }
 
     public function testHighBid(): void {
-        $bids = [98 => new WorkerGroup([new Worker(3, WorkerColor::BLUE)]),
-                 97 => new WorkerGroup([new Worker(4, WorkerColor::BLUE), new Worker(6, WorkerColor::BLUE)])];
+        $bids = [98 => WorkerGroup::of(new Worker(3, WorkerColor::BLUE)),
+                 97 => WorkerGroup::of(new Worker(4, WorkerColor::BLUE), new Worker(6, WorkerColor::BLUE))];
         $mt = new MarketLot(1000, TileType::ALEHOUSE, $bids);
         $this->assertEquals($bids[97], $mt->highBid());
 
         $mt = new MarketLot(1000, TileType::ALEHOUSE);
-        $this->assertEquals(new WorkerGroup([]), $mt->highBid());
+        $this->assertEquals(WorkerGroup::of(), $mt->highBid());
     }
 
     public function testBidSuccessful(): void {
-        $bids = [98 => new WorkerGroup([new Worker(3, WorkerColor::BLUE)]),
-                 97 => new WorkerGroup([new Worker(4, WorkerColor::BLUE), new Worker(5, WorkerColor::BLUE)])];
+        $bids = [98 => WorkerGroup::of(new Worker(3, WorkerColor::BLUE)),
+                 97 => WorkerGroup::of(new Worker(4, WorkerColor::BLUE), new Worker(5, WorkerColor::BLUE))];
 
         $mt = new MarketLot(1000, TileType::ALEHOUSE, $bids);
         $this->assertEquals($bids, $mt->bids());
-        $newBid = new WorkerGroup([new Worker(6, WorkerColor::BLUE), new Worker(7, WorkerColor::BLUE)]);
+        $newBid = WorkerGroup::of(new Worker(6, WorkerColor::BLUE), new Worker(7, WorkerColor::BLUE));
         $mt->bid(98, $newBid);
         $wg = new WorkerGroup(array_merge($bids[98]->workers(), $newBid->workers()));
         $this->assertEquals([97 => $bids[97], 98 => $wg], $mt->bids());
@@ -66,8 +66,8 @@ final class MarketLotTest extends TestCase
     }
 
     public function testBidTooLow(): void {
-        $bids = [98 => new WorkerGroup([new Worker(3, WorkerColor::BLUE)]),
-                 97 => new WorkerGroup([new Worker(4, WorkerColor::BLUE), new Worker(5, WorkerColor::BLUE)])];
+        $bids = [98 => WorkerGroup::of(new Worker(3, WorkerColor::BLUE)),
+                 97 => WorkerGroup::of(new Worker(4, WorkerColor::BLUE), new Worker(5, WorkerColor::BLUE))];
 
         $mt = new MarketLot(1000, TileType::ALEHOUSE);
         $mt->bid(97, $bids[97]);
@@ -80,8 +80,8 @@ final class MarketLotTest extends TestCase
    }
 
     public function donttestBidWrongColor(): void {
-        $bids = [98 => new WorkerGroup([new Worker(3, WorkerColor::YELLOW)]),
-                 97 => new WorkerGroup([new Worker(4, WorkerColor::BLUE), new Worker(5, WorkerColor::BLUE)])];
+        $bids = [98 => WorkerGroup::of(new Worker(3, WorkerColor::YELLOW)),
+                 97 => WorkerGroup::of(new Worker(4, WorkerColor::BLUE), new Worker(5, WorkerColor::BLUE))];
 
         $mt = new MarketLot(1000, TileType::ALEHOUSE);
         $mt->bid(98, $bids[98]);

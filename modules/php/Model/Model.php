@@ -380,8 +380,8 @@ class Model {
             foreach ($result->skills as $skill) {
                 $this->village()->addSkill($skill);
             }
-        } else if ($result->workers) {
-            foreach ($result->workers as $worker) {
+        } else if (!$result->workers->isEmpty()) {
+            foreach ($result->workers->workers() as $worker) {
                 $this->village()->addWorker($worker);
             }
         }

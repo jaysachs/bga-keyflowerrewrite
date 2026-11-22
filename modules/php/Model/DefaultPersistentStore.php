@@ -408,9 +408,9 @@ class DefaultPersistentStore implements PersistentStore {
         if ($payment->skill) {
             $this->db->execute($this->sqlUpdateLocation([$payment->skill->id], LocType::SKILLPILE));
         }
-        if ($productionResult->workers) {
+        if (!$productionResult->workers->isEmpty()) {
             $this->db->execute($this->sqlUpdateLocation(
-                array_map(fn ($w) => $w->id, $productionResult->workers),
+                $productionResult->workers->workerIds(),
                 LocType::VILLAGE, null, null, $player_id)
             );
         }

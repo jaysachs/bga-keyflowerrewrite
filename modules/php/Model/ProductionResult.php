@@ -31,18 +31,17 @@ use InvalidArgumentException;
 
 class ProductionResult {
     /**
-     * @param list<Worker>|null $workers
      * @param list<Resource>|null $resources
      * @param list<Skill>|null $skills
      * @param int|null $upgrades
      */
     public function __construct(
-        public readonly ?array $workers,
+        public readonly WorkerGroup $workers, // = new WorkerGroup(),
         public readonly ?array $resources,
         public readonly ?array $skills,
         public readonly ?int $upgrades) {
             // TODO: keep this validation?
-            $specified = ($workers !== null ? 1 : 0) + ($resources !== null ? 1 : 0) + ($skills !== null ? 1 : 0) + ($upgrades !== null ? 1 : 0);
+            $specified = ($workers->isEmpty() ? 0 : 1) + ($resources !== null ? 1 : 0) + ($skills !== null ? 1 : 0) + ($upgrades !== null ? 1 : 0);
             if ($specified != 1) {
                 throw new InvalidArgumentException("must specify exactly one of workers, resources, skills, and upgrades");
             }

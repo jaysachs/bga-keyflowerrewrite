@@ -111,7 +111,7 @@ class MarketLot {
             throw new InvalidArgumentException("multiple high bids: {$sz}");
         }
         // return $winner;
-        return $winner === null ? new WorkerGroup([]) : $winner;
+        return $winner === null ? WorkerGroup::of() : $winner;
     }
 
     public function productionActivations(): ProductionActivations { return $this->productionActivations; }
