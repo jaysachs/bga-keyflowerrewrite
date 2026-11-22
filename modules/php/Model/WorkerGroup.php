@@ -41,31 +41,24 @@ class WorkerGroup implements Marshalable {
     public function __construct(array $workers)
     {
         $this->workers = [];
-        $color = null;
-        // FIXME: if boat4b in play, need to by pass this check if making
-        //   a group for activation
         foreach ($workers as $worker) {
-            if ($color === null) {
-                $color = $worker->color;
-            } else if ($worker->color != $color) {
-                // throw new InvalidArgumentException("worker groups must be of a single color, got {$color->value} and {$worker->color->value}");
-            }
             $this->workers[$worker->id] = $worker;
         }
     }
 
     /**
-     * @return WorkerColor|null color, of null if (a) no workers or (b) multiple colors
+     * @return WorkerColor color, NONE if no workers, ANY if multiple colors
      */
-    public function color(): ?WorkerColor {
-        $color = null;
+    public function color(): WorkerColor {
+        // FIXME: return ANY if no workers?
+        $color = WorkerColor::NONE;
         foreach ($this->workers as $worker) {
-            if ($color === null) {
+            if ($color === WorkerColor::NONE) {
                 $color = $worker->color;
             }
             else if ($color != $worker->color) {
                 // FIXME: null means "multiple" ... is that ok?
-                return null;
+                return WorkerColor::ANY;
             }
         }
         return $color;

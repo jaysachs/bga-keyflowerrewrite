@@ -105,10 +105,6 @@ class Marshaller {
         );
     }
 
-    public static function color(?WorkerColor $color): ?string {
-        return $color === null ? null : $color->value;
-    }
-
     /** @return array<mixed> */
     public static function activations(ProductionActivations $productionActivations): array {
         $result = [];

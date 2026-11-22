@@ -72,7 +72,7 @@ class MarketLot {
         return null;
     }
 
-    public function currentColor(): ?WorkerColor {
+    public function currentColor(): WorkerColor {
         // TODO: take into account any activations.
         // color of lowest bid is the bid color
         $lowest = null;

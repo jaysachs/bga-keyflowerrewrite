@@ -62,11 +62,11 @@ class ProductionActivations {
         $this->activations[] = $wg;
     }
 
-    public function currentColor(): ?WorkerColor {
+    public function currentColor(): WorkerColor {
         if (isset($this->activations[0])) {
             return $this->activations[0]->color();
         }
-        return null;
+        return WorkerColor::NONE;
     }
 
     public function isActivatable(): bool {

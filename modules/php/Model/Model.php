@@ -188,7 +188,7 @@ class Model {
         $lot = $market->marketLotById($market_tile_id);
 
         $currentColor = $lot->currentColor();
-        if ($currentColor !== null && $workerColor != $currentColor) {
+        if ($currentColor->isConcrete() && $workerColor != $currentColor) {
             if (!$hasBoat4a || $currentColor == WorkerColor::GREEN) {
                 throw new InvalidArgumentException("bids must match bid color");
             }
@@ -342,12 +342,12 @@ class Model {
         $activatingWorkerGroup = $activationInfo["group"];
 
         $currentColor = $t->currentColor();
-        if ($currentColor !== null) {
+        if ($currentColor->isConcrete()) {
             if ($activatingWorkerGroup->color() !== $currentColor && !$hasBoat4b) {
-                throw new InvalidArgumentException("activations must match tile color {$currentColor->value} != {$activatingWorkerGroup->color()?->value}");
+                throw new InvalidArgumentException("activations must match tile color {$currentColor->value} != {$activatingWorkerGroup->color()->value}");
             }
         } else {
-            if ($activatingWorkerGroup->color() === null) {
+            if (!$activatingWorkerGroup->color()->isConcrete()) {
                 throw new InvalidArgumentException("activations on empty tile must have a single color");
             }
         }

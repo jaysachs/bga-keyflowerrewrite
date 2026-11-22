@@ -28,7 +28,7 @@ final class ProductionActivationsTest extends TestCase
         $this->assertEquals(6, $pa->maxAllowededToActivate());
         $this->assertEquals(1, $pa->minRequiredToActivate());
         $this->assertEquals(0, $pa->totalWorkers());
-        $this->assertEquals(null, $pa->currentColor());
+        $this->assertEquals(WorkerColor::NONE, $pa->currentColor());
         $this->assertEquals([], $pa->activations());
         $this->assertEquals(0, $pa->lastActivationSize());
         $this->assertEquals(null, $pa->mostRecent());
