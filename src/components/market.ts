@@ -84,14 +84,9 @@ export class MarketComponent extends BaseComponent<MarketLot> {
         this.redraw(tileId);
     }
 
-    /**
-     * The element showing a player's bid on a tile. Each bid is drawn twice, along the tile's edge and
-     * as a row under the tile, and the CSS shows one of them depending on the layout's width; this
-     * returns the one that's shown (the other has no size).
-     */
+    /** The element showing a player's bid on a tile, along the tile's edge. */
     private shownBid(tileId: number, playerId: number): HTMLElement | undefined {
-        return Array.from(document.querySelectorAll<HTMLElement>(`#kf_lot_${tileId} [data-kf-player="${playerId}"]`))
-            .find(e => e.getBoundingClientRect().width > 0);
+        return document.querySelector<HTMLElement>(`#kf_lot_${tileId} [data-kf-player="${playerId}"]`) ?? undefined;
     }
 
     /** Where a player's bid on a tile is drawn now. */
@@ -200,14 +195,12 @@ export class MarketComponent extends BaseComponent<MarketLot> {
             }
         });
 
-        // Bids sit along the tile's edges; where the market is too narrow for that, the CSS shows
-        // them as rows under the tile instead. The tile button's label reads them out either way.
+        // Bids sit along the tile's edges, each player on their own edge; the tile button's label reads them out.
         return Html.div({ id: `kf_lot_${mt.id}`, classes: 'kf_lot', attrs: { 'data-kf-market-tile': mt.id } },
             Html.div({ classes: 'kf_lot_box' },
                 tileButton,
                 ...shown.map(b => this.edgeBid(b, edges.get(b.playerId) ?? 3)),
             ),
-            Html.div({ classes: 'kf_bids', attrs: { 'aria-hidden': true } }, ...shown.map(b => this.bidRow(b))),
         );
     }
 
@@ -221,25 +214,6 @@ export class MarketComponent extends BaseComponent<MarketLot> {
         return Html.div({
                 classes: this.bidClasses(b, 'kf_ebid'),
                 attrs: { 'data-kf-player': b.playerId, 'data-kf-edge': edge, 'aria-hidden': true },
-                style: `--kf-player-color: #${player.color}`,
-            },
-            Html.img({ classes: 'kf_avatar', attrs: { src: this.bga.players.getPlayerAvatarUrl(b.playerId, 32), alt: '' } }),
-            workerIcons(b.color, b.num),
-            b.added ? Html.span({ classes: 'kf_chip', text: `+${b.added}` }) : undefined,
-            b.moving ? Html.span({ classes: 'kf_chip', text: `−${b.num}` }) : undefined,
-        );
-    }
-
-    /**
-     * A bid as a row under the tile, for narrow screens: as along the edges, the player's avatar then
-     * their workers, and an outbid bid in a grey frame (a name and the word "outbid" don't fit beside
-     * three workers under a phone-sized tile). The tile button's label still reads it all out.
-     */
-    private bidRow(b: ShownBid): HTMLElement {
-        const player = this.bga.gameui.gamedatas.players[b.playerId]!;
-        return Html.div({
-                classes: this.bidClasses(b, 'kf_bid'),
-                attrs: { 'data-kf-player': b.playerId },
                 style: `--kf-player-color: #${player.color}`,
             },
             Html.img({ classes: 'kf_avatar', attrs: { src: this.bga.players.getPlayerAvatarUrl(b.playerId, 32), alt: '' } }),

@@ -87,12 +87,15 @@ html {
     box-sizing: border-box;
 }
 
-/* Phones and narrow windows: tiles shrink so three fit across the market, with their bids in rows
-   under them (below). BGA's minimum width is 360px: tiles are then about 104px. */
+/* Phones and narrow windows: tiles shrink so two fit across the market with their bids along the
+   edges, as on desktop (28px each side). BGA's minimum width is 360px: tiles are then 116px. */
 @media (max-width: 499px) {
     #kf_main {
-        --kf-tile-w: min(128px, calc((100vw - 48px) / 3));
+        --kf-tile-w: min(128px, calc((100vw - 128px) / 2));
         --kf-tile-h: calc(var(--kf-tile-w) * 0.875);
+    }
+    #kf_market {
+        justify-content: center;
     }
 }
 
@@ -158,8 +161,7 @@ html {
 /*
  * Market: each tile with the bids on it. Bids sit along the tile's edges, as on the table: each
  * player always has the same edge, yours at the bottom (data-kf-edge, 0 top, clockwise to 5 upper
- * left). Where three tiles with their edges don't fit side by side (phones, narrow windows), bids are
- * rows under the tile.
+ * left). On phones the tiles shrink so two fit across with their edges (above).
  */
 
 #kf_market {
@@ -268,67 +270,6 @@ html {
 .kf_ebid .kf_chip {
     font-size: 11px;
     margin-left: 2px;
-}
-
-/* Rows under the tile: only where the edges don't fit. With bids along the edges, a tile takes 184px
-   (128px and 28px each side), so three need 552px; with bids under it, 140px. Below 552px, bids go
-   under the tiles, which keeps three tiles across (and on phones, the tiles shrink to fit, above) */
-.kf_bids {
-    display: none;
-}
-
-@container (max-width: 551px) {
-    .kf_lot_box {
-        width: var(--kf-tile-w);
-        height: var(--kf-tile-h);
-    }
-    .kf_lot_box > .kf_lot_tile {
-        left: 0;
-        top: 0;
-    }
-    .kf_ebid {
-        display: none;
-    }
-    .kf_lot {
-        width: var(--kf-tile-w);
-        margin: 0 6px 12px;
-    }
-    .kf_lot .kf_bids {
-        display: flex;
-    }
-}
-
-.kf_lot .kf_bids {
-    flex-direction: column;
-    align-self: stretch;
-    align-items: center;   /* each row as wide as its avatar and workers, so an outbid frame fits around them */
-    gap: 2px;
-    font-size: 12px;
-}
-
-/* A row under the tile, as along the edges: avatar, then workers; outbid in a grey frame */
-.kf_bid {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1px;
-    padding: 1px 4px;
-    border-radius: 10px;
-}
-
-.kf_bid.kf_outbid {
-    outline: 1.5px solid #9a9a9a;
-    outline-offset: 1px;
-}
-
-.kf_bid.kf_outbid .kf_avatar {
-    border-color: #a8a8a8;
-    filter: grayscale(1);
-    opacity: 0.6;
-}
-
-.kf_bid.kf_moving {
-    opacity: 0.6;
 }
 
 .kf_pending {
