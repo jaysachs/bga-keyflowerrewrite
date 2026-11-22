@@ -1,4 +1,4 @@
-import { KFGameDatas, KFPlayer, ResourceType, Season, SkillType, TileType, WorkerColor } from "../kfdata";
+import { KFGameDatas, KFPlayer, ResourceType, Season, SkillType, TileDescription, TileType, WorkerColor } from "../kfdata";
 
 /**
  * Names in the player's language, from the server's tables (`gamedatas.translations`). It has no
@@ -8,37 +8,50 @@ import { KFGameDatas, KFPlayer, ResourceType, Season, SkillType, TileType, Worke
  */
 export class TranslationComponent {
 
-    public constructor(private bga: Bga<KFPlayer, KFGameDatas>) {
+    private translations: typeof this.bga.gameui.gamedatas.translations;
+
+    public constructor(private bga: Bga<KFPlayer, KFGameDatas>) {}
+
+    public setup(): void {
+        this.translations = this.bga.gameui.gamedatas.translations;
+    }
+
+    public tileDescription(tiletype: TileType): TileDescription {
+        const desc = this.translations.tile_descriptions[tiletype];
+        return {
+            summary: this.translated(desc?.summary) ,
+            upgrade: this.translated(desc?.upgrade),
+            scoring: this.translated(desc?.scoring),
+            notes: this.translated(desc?.notes)
+        }
     }
 
     /** A tile's name, e.g. "Keystone quarry". */
     public tileName(tiletype: TileType): string {
-        return this.name('tiles', tiletype);
+        return this.translated(this.translations.tiles[tiletype], tiletype);
     }
 
     /** A worker color, e.g. "blue". */
     public color(color: WorkerColor): string {
-        return this.name('colors', color);
+        return this.translated(this.translations.colors[color], color);
     }
 
     /** A season, e.g. "Autumn" (the server's "fall"). */
     public season(season: Season): string {
-        return this.name('seasons', season);
+        return this.translated(this.translations.seasons[season], season);
     }
 
     /** A resource, e.g. "stone". */
     public resource(resource: ResourceType): string {
-        return this.name('resources', resource);
+        return this.translated(this.translations.resources[resource], resource);
     }
 
     /** A tool (skill tile), e.g. "pickaxe". */
     public skill(skill: SkillType): string {
-        return this.name('skills', skill);
+        return this.translated(this.translations.skills[skill], skill);
     }
 
-    private name(table: keyof KFGameDatas['translations'], item: string): string {
-        const names: Record<string, string> = this.bga.gameui.gamedatas.translations[table]!;
-        const name = names[item];
-        return name ? _(name) : item;
+    private translated(s: string | undefined, fallback: string = ""): string {
+        return s ? _(s) : fallback;
     }
 }
