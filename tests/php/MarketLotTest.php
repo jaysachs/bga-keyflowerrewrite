@@ -28,9 +28,9 @@ final class MarketLotTest extends TestCase
     public function testBiddingColor(): void {
         $bids = [98 => new WorkerGroup([new Worker(3, WorkerColor::BLUE)])];
         $mt = new MarketLot(1000, TileType::ALEHOUSE, $bids);
-        $this->assertEquals(WorkerColor::BLUE, $mt->biddingColor());
+        $this->assertEquals(WorkerColor::BLUE, $mt->currentColor());
         $mt = new MarketLot(1000, TileType::ALEHOUSE);
-        $this->assertNull($mt->biddingColor());
+        $this->assertNull($mt->currentColor());
     }
 
     public function testHasNonWinningBid(): void {

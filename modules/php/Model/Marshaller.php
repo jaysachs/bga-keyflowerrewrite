@@ -45,8 +45,8 @@ class Marshaller {
      * @param array<int,Worker> $ws
      * @return array<mixed>
      */
-    public static function workers(array $ws): array {
-        return array_map(fn ($w) => self::worker($w), $ws);
+    public static function workers(?array $ws): array {
+        return array_map(fn (Worker $w) => self::worker($w), array_values($ws ?? []));
     }
 
     /** @return array<mixed> */
@@ -61,8 +61,24 @@ class Marshaller {
      * @param array<int,Skill> $ss
      * @return array<mixed>
      */
-    private static function skills(array $ss): array {
-        return array_map(fn ($s) => self::skill($s), $ss);
+    public static function skills(?array $ss): array {
+        return array_map(fn (Skill $s) => self::skill($s), $ss ?? []);
+    }
+
+    /** @return array<mixed> */
+    private static function resource(Resource $r): array {
+        return [
+            'id' => $r->id,
+            'type' => $r->type->value,
+        ];
+    }
+
+    /**
+     * @param array<int,Resource> $rs
+     * @return array<mixed>
+     */
+    public static function resources(?array $rs): array {
+        return array_map(fn (Resource $r) => self::resource($r), $rs ?? []);
     }
 
     /**
@@ -76,6 +92,7 @@ class Marshaller {
                     'tiletype' => $vt->type->value,
                     'rowcol' => $vt->rowcol,
                     'orientation' => $vt->orientation,
+                    'activations' => self::activations($vt->productionActivations()),
                 ],
                 $village->tiles()
             ),
@@ -116,6 +133,15 @@ class Marshaller {
         return $color === null ? null : $color->value;
     }
 
+    /** @return array<mixed> */
+    public static function activations(ProductionActivations $productionActivations): array {
+        $result = [];
+        foreach ($productionActivations->activations() as $pos => $act) {
+            $result[$pos] = self::workers($act->workers());
+        }
+        return $result;
+    }
+
     /**
      * @return array<array<string,mixed>>
      */
@@ -124,6 +150,7 @@ class Marshaller {
             fn ($mt) => [
                 'id' => $mt->tile_id,
                 'tiletype' => $mt->type->value,
+                'activations' => self::activations($mt->productionActivations()),
                 'bids' => array_map(fn ($b, $pid) => [
                         'player_id' => $pid,
                         // FIXME: need positions?

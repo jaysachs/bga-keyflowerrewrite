@@ -55,6 +55,10 @@ class ResourceStock {
         $this->verifyUniqueIds();
     }
 
+    /** @return list<Resource> */
+    public function take(ResourceType $rt, int $num = 1): array {
+        return array_splice($this->resources[$rt->value], 0, $num);
+    }
 
     public static function forNewGame(): ResourceStock {
         $lastId = 3000;

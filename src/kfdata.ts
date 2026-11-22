@@ -13,9 +13,10 @@ export interface Skill {
     id: number;
     type: SkillType;
 }
-export interface Activations {
-    // TODO flesh this out
-}
+
+// sequence x workers, e.g. [ /* first activation */ 0 => [ workers ... ], /* second */ 1 => [ ... ] ]
+export type Activations = Worker[][];
+
 export interface VillageTile {
     tile_id: number;
     tiletype: TileType;
@@ -23,6 +24,7 @@ export interface VillageTile {
     orientation: number; // 1-6
     activations: Activations;
 }
+
 export type Season = 'spring' | 'summer' | 'fall' | 'winter';
 /** A tile up for auction in the market, with the bids on it. */
 export interface MarketLot {
