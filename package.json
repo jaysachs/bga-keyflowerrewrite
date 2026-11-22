@@ -7,15 +7,21 @@
     "build:ts": "rollup -c --failAfterWarnings",
     "watch:ts": "rollup -c -w --failAfterWarnings",
     "watch": "npm run watch:ts",
-    "build": "npm run build:ts"
+    "build": "npm run build:ts",
+    "test": "node --import tsx --test 'tests/ts/**test.ts'"
   },
   "author": "Jay Sachs",
   "license": "EPL2.0",
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.3.0",
+    "@types/node": "^26.6.6",
     "rollup": "^4.53.3",
     "sass": "^1.71.0",
     "tslib": "^2.8.1",
+    "tsx": "^4.23.15",
     "typescript": "^5.3.3"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
   }
 }

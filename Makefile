@@ -12,7 +12,7 @@ TS_STUBS=src/bga-framework.d.ts
 JS=modules/js/Game.js
 PHPSTAN_LEVEL=10
 
-.PHONY: build test phpstan deploy clean
+.PHONY: build test phpstan deploy clean ts-test php-test
 
 build: $(JS) $(STUBS) $(STATS)
 
@@ -32,8 +32,13 @@ $(STUBS): $(WORK) _ide_helper.php Makefile
 	mkdir -p $(WORK)/module/table
 	perl -p -e 's/type_arg=null,/type_arg,/;' -e 's/  exit/\/\/ exit/;' -e 's/APP_GAMEMODULE_PATH = ""/APP_GAMEMODULE_PATH = "work\/"/;' -e 's/{}\(\)\;/{}\;/;' -e 's/function clienttranslate/function clienttranslate(string \x{24}text): string { return \x{24}text; }\n    function xclienttranslate/;' _ide_helper.php > $(STUBS)
 
-test: build
+ts-test: build
+	npm run test
+
+php-test:
 	phpunit --bootstrap tests/autoload.php tests/php --testdox
+
+test: ts-test php-test
 
 phpstan: build $(STUBS)
 	phpstan --autoload-file=$(STUBS) --level=$(PHPSTAN_LEVEL) --memory-limit=1G analyse modules/php modules/php/Model tests/php

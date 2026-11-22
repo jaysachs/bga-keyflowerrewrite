@@ -17,32 +17,13 @@
         "moduleResolution": "bundler",
         "lib": ["dom", "esnext"],
         "sourceMap": false,
-        "rootDir": "src",
-        "strict": false
-
-        // "outFile": "zooloretto.js",
-        // "noImplicitOverride": true,
-        // "typeRoots": [
-        //     "src/types",
-        //     "./types",
-        //     "./node_modules/@types"
-        // ]
+        //"rootDir": "src",
+        "strict": false,
+        "types": ["node"]
     },
     "include": [
+        "tests/ts/**/*.ts",
         "src/**/*.d.ts",
         "src/**/*.ts"
     ]
-    // "files": [
-    //     "work/bga-framework.d.ts",
-    //     "src/bga-animations.d.ts",
-    //     "src/bga-score-sheet.d.ts",
-    //     "src/more-animations.ts",
-    //     "src/colormap.ts",
-    //     "src/html.ts",
-    //     "src/basegame.ts",
-    //     "src/flow.ts",
-    //     "src/zhtml.ts",
-    //     "src/zooloretto.ts",
-    //     "src/define.ts"
-    // ]
 }

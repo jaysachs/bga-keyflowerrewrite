@@ -11,6 +11,7 @@ export default {
   plugins: [
     typescript({
       tsconfig: './tsconfig.json',
+      exclude: ["tests/ts", "**/*.test.ts"],
     }),
   ],
   treeshake: false,
