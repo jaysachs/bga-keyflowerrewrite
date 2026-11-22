@@ -62,6 +62,20 @@ export interface Village {
     won_tiles: StockTile[] | undefined;
 }
 
+export interface TileDescription {
+    // what the tile does ("Produces 2 stone.");
+    summary?: string;
+
+    // how to upgrade it ("Can be upgraded for 1 pickaxe to produce 1 gold and 1 stone.");
+    upgrade?: string;
+
+    // scoring, when upgraded or at the end of the game ("Grants 3 points when upgraded.");
+    scoring?: string;
+
+    // notes ("Workers scored here cannot be scored on another tile.").
+    notes?: string;
+}
+
 export interface KFGameDatas extends Gamedatas<KFPlayer> {
     season: Season;
     startPlayerId: number;
@@ -73,7 +87,8 @@ export interface KFGameDatas extends Gamedatas<KFPlayer> {
     bagCount: number;
     greenCount: number;
     translations: {
-        tiles: Record<TileType,string>;
+        tiles:  Record<TileType,string>;
+        tile_descriptions:  Record<TileType,TileDescription>;
         resources: Record<ResourceType,string>;
         skills: Record<SkillType,string>;
         colors: Record<WorkerColor,string>;
