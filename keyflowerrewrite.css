@@ -848,14 +848,15 @@ html {
 
 #logs > .log > .roundedbox {
     background: transparent;
-    padding: 7px 10px;
+    padding: 8px 10px 0;
     line-height: 1.35;
 }
 
+/* The time under its entry, where the text starts, with a clear gap from the text above it */
 #logs > .log > .timestamp {
-    margin: -4px 0 0;
-    padding: 0 10px 6px;
-    text-align: right;
+    margin: 0;
+    padding: 6px 10px 8px;
+    text-align: left;
 }
 
 /* No rounded corners where a panel meets the screen's edge: on desktop the panels end at its right edge;
