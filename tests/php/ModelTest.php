@@ -123,7 +123,7 @@ final class ModelTest extends TestCase {
             };
             $this->assertEquals($expectedBoats, array_map(fn ($b) => $b->type, $boats));
             foreach ($boats as $boat) {
-                $this->assertEquals($boat->type->passengerCapacity(), count($boat->passengers()));
+                $this->assertEquals($boat->type->passengerCapacity(), $boat->passengers()->size());
                 $this->assertEquals($boat->type->cargoCapacity(), count($boat->cargo()));
 
                 // simulate end of season stuff

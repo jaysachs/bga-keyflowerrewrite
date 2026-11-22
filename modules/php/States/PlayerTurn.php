@@ -121,7 +121,7 @@ class PlayerTurn extends AbstractState {
                         "current_bid" => $bid === null ? null : [
                             "color" => $bid->color()->marshal(),
                             "num" => $bid->size(),
-                            "workers" => Marshaller::workers($bid->workers()),
+                            "workers" => $bid->marshal(),
                         ]
                     ];
                 },
@@ -160,7 +160,7 @@ class PlayerTurn extends AbstractState {
                 'player_id' => $active_player_id,
                 'workers' => $activationResult->activatingWorkerGroup->marshal(),
                 'produced' => [
-                    'workers' => Marshaller::workers($activationResult->prodResult->workers),
+                    'workers' => Marshaller::workers($activationResult->prodResult->workers ?? []),
                     'resources' => Marshaller::resources($activationResult->prodResult->resources),
                     'skills' => Marshaller::skills($activationResult->prodResult->skills),
                     'upgrades' => $activationResult->prodResult->upgrades,
@@ -214,11 +214,7 @@ class PlayerTurn extends AbstractState {
                 'tiletype' => $model->market()->marketLotById($market_tile_id)->type->value,
                 // the tiles the moved bids (bidMoved, just before) leave, so the client can show the whole bid in one step
                 'moved_from' => array_map(fn ($mb) => $mb->sourceTile->tile_id, $bidResult->movedBids),
-                'bid' => array_map(fn ($w) => [
-                    // FIXME: do we need position too?
-                    'id' => $w->id,
-                    'color' => $w->color->value
-                ], $bid->workers())
+                'bid' => $bid->marshal()
             ]
         );
         return NextPlayer::class;

@@ -120,7 +120,7 @@ class DefaultPersistentStore implements PersistentStore {
                             // $result->market->addTile(new MarketLot($id, $type));
                             break;
                         case LocType::DOCK:
-                            $result->dock->add(new DockTile($id, $type, [], [] ));
+                            $result->dock->add(new DockTile($id, $type));
                             break;
                         case LocType::TURNORDER:
                             $result->tilesStock->addStartTile(new StockTile($id, $type));
@@ -352,7 +352,7 @@ class DefaultPersistentStore implements PersistentStore {
         }
         foreach ($data->dock->boats() as $pos => $mt) {
             $values[] = $this->vals($mt->id, PieceType::TILE, LocType::DOCK, $mt->type->value, null, $pos);
-            array_push($values, ... $this->workervals(LocType::BOAT, $mt->passengers(), $mt->id));
+            array_push($values, ... $this->workervals(LocType::BOAT, $mt->passengers()->workers(), $mt->id));
             array_push($values, ... $this->skillvals(LocType::BOAT, $mt->cargo(), $mt->id));
         }
         foreach ($data->villages as $pid => $village) {

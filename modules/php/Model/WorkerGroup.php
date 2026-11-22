@@ -37,13 +37,17 @@ class WorkerGroup implements Marshalable {
     /** @var array<int,Worker> */
     private array $workers;
 
-    /** @param array<int,Worker> $workers */
-    public function __construct(array $workers)
+    /** @param array<Worker> $workers */
+    public function __construct(array $workers = [])
     {
         $this->workers = [];
         foreach ($workers as $worker) {
-            $this->workers[$worker->id] = $worker;
+            $this->add($worker);
         }
+    }
+
+    public function isEmpty(): bool {
+        return count($this->workers) == 0;
     }
 
     /**
@@ -62,6 +66,13 @@ class WorkerGroup implements Marshalable {
             }
         }
         return $color;
+    }
+
+    public function add(Worker $worker): void {
+        if (isset($this->workers[$worker->id])) {
+            throw new InvalidArgumentException("cannot add worker twice to group");
+        }
+        $this->workers[$worker->id] = $worker;
     }
 
     /** @return array<int,Worker> */

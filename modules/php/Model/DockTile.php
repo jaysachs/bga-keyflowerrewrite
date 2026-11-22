@@ -32,17 +32,15 @@ use InvalidArgumentException;
 // TODO: Rename to Boat? need to distinguish from summer boats though. Boats & SummerBoats ?
 class DockTile {
     /**
-     * @param list<Worker> $passengers
      * @param list<Skill> $cargo
      */
-    public function __construct(public readonly int $id, public TileType $type, private array $passengers = [], private array $cargo = []) {
+    public function __construct(public readonly int $id, public TileType $type, private WorkerGroup $passengers = new WorkerGroup(), private array $cargo = []) {
         if (!$this->type->isStandardBoat()) {
             throw new InvalidArgumentException("only standard boats permitted at docks {$this->type->value}");
         }
     }
 
-    /** @return list<Worker> */
-    public function passengers(): array {
+    public function passengers(): WorkerGroup {
         return $this->passengers;
     }
 
@@ -52,16 +50,17 @@ class DockTile {
     }
 
     public function addPassenger(Worker $worker): void {
-        $this->passengers[] = $worker;
+        $this->passengers->add($worker);
     }
 
     public function addCargo(Skill $skill): void {
         $this->cargo[] = $skill;
     }
 
-    /** @return list<Worker> */
-    public function takeAllPassengers(): array {
-        return array_splice($this->passengers, 0, count($this->passengers));
+    public function takeAllPassengers(): WorkerGroup {
+        $result = $this->passengers();
+        $this->passengers = new WorkerGroup();
+        return $result;
     }
 
     /** @return list<Skill> */
@@ -70,10 +69,10 @@ class DockTile {
     }
 
     public function refill(WorkerStock $workerStock, SkillPile $skillPile): void {
-        if (count($this->passengers) != 0 || count($this->cargo) != 0) {
+        if (!$this->passengers->isEmpty() || count($this->cargo) != 0) {
             throw new InvalidArgumentException("boat {$this->type->value} not empty");
         }
-        $this->passengers = $workerStock->takeFromBag($this->type->passengerCapacity());
+        $this->passengers = new WorkerGroup($workerStock->takeFromBag($this->type->passengerCapacity()));
         $this->cargo = $skillPile->take($this->type->cargoCapacity());
     }
 

@@ -34,11 +34,11 @@ use Bga\Games\keyflowerrewrite\Model\Village;
 class Marshaller {
 
     /**
-     * @param Worker[]|null $ws
+     * @param list<Worker> $ws
      * @return array<mixed>
      */
-    public static function workers(?array $ws): array {
-        return array_map(fn (Worker $w) => $w->marshal(), array_values($ws ?? []));
+    public static function workers(array $ws): array {
+        return array_map(fn (Worker $w) => $w->marshal(), $ws);
     }
 
     /**
@@ -98,7 +98,7 @@ class Marshaller {
                 'id' => $b->id,
                 'boattype' => $b->type->value,
                 // FIXME: need positions
-                'passengers' => self::workers($b->passengers()),
+                'passengers' => $b->passengers()->marshal(),
                 'cargo' => self::skills($b->cargo())
             ],
             $dock->boats()
@@ -109,7 +109,7 @@ class Marshaller {
     public static function activations(ProductionActivations $productionActivations): array {
         $result = [];
         foreach ($productionActivations->activations() as $pos => $act) {
-            $result[$pos] = self::workers($act->workers());
+            $result[$pos] = self::workers(array_values($act->workers()));
         }
         return $result;
     }
@@ -125,8 +125,7 @@ class Marshaller {
                 'activations' => self::activations($mt->productionActivations()),
                 'bids' => array_map(fn ($b, $pid) => [
                         'player_id' => $pid,
-                        // FIXME: need positions?
-                        'workers' => self::workers($b->workers()),
+                        'workers' => $b->marshal(),
                     ],
                     $mt->bids(),
                     array_keys($mt->bids())
