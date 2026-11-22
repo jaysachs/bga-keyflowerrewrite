@@ -16,7 +16,7 @@ export class TooltipManager {
         }
         tooltip.removeTarget(id);
 
-        let timeoutId: null | number = null;
+        let timeoutId: null | NodeJS.Timeout = null;
         elem.addEventListener('pointerenter', (e) => {
             timeoutId = setTimeout(() => { timeoutId = null; tooltip.open(id) }, 300);
         });
