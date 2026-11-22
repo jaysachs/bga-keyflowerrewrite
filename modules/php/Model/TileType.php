@@ -901,247 +901,485 @@ enum TileType: string
             ],
             TileType::KEYFLOWER => [
                 'summary' =>
-                    clienttranslate('In spring and summer, brings 7 ${workers} and 1 ${tool}, in autumn, 3 ${workers} and 2 ${tools}.'),
+                    clienttranslate('In spring and summer, brings 7 ${workers} and 1 ${skill}, in autumn, 3 ${workers} and 2 ${skills}.'),
                 'points' =>
-                    clienttranslate('If acquired at the end of the game, grants 1 ${points} for each 1 transport capacity.')
+                    clienttranslate('If acquired at the end of the game, grants 1 ${point} for each 1 transport capacity.')
             ],
             TileType::SEABASTION => [
                 'summary' =>
-                    clienttranslate('In spring, summer and autumn, brings 6 workers and 2 ${tools}.'),
+                    clienttranslate('In spring, summer and autumn, brings 6 ${workers} and 2 ${skills}.'),
                 'points' =>
-                    clienttranslate('If acquired at the end of the game, grants 1 ${points} for each tile which is connected by roads as part of a loop which connects back to the starting point without using the same road twice.'),
+                    clienttranslate('If acquired at the end of the game, grants 1 ${point} for each tile which is connected by roads as part of a loop which connects back to the starting point without using the same road twice.'),
             ],
             TileType::SEABREESE => [
                 'summary' =>
-                    clienttranslate('In spring brings 6 ${workers} and 1 ${tool}, in summer and autumn, 4 ${workers} and 1 ${tool}.'),
+                    clienttranslate('In spring brings 6 ${workers} and 1 ${skill}, in summer and autumn, 4 ${workers} and 1 ${skill}.'),
                 'points' =>
                     clienttranslate('If acquired at the end of the game, grants 2/4/8/16/32 ${points} for 1/2/3/4/5 river tiles connected to the home tile.')
             ],
             TileType::FLIPPER => [
                 'summary' =>
-                    clienttranslate('In spring and summer brings 5 ${workers} and 2 ${tools}, in autumn, 2 ${workers} and 2 ${tools}.'),
+                    clienttranslate('In spring and summer brings 5 ${workers} and 2 ${skills}, in autumn, 2 ${workers} and 2 ${skills}.'),
                 // FIXME: should this be points? or split into notes and points?
                 'notes' =>
                     clienttranslate('If acquired at the end of the game allows the player to flip one tile without paying the upgrade cost and grants 2 ${points}.'),
             ],
             TileType::INVINCIBLE => [
                 'summary' =>
-                    clienttranslate('In spring and summer brings 5 ${workers} and 1 ${tool}, in autumn, 3 ${workers} and 1 ${tool}.'),
+                    clienttranslate('In spring and summer brings 5 ${workers} and 1 ${skill}, in autumn, 3 ${workers} and 1 ${skill}.'),
                 'points' =>
                     clienttranslate('If acquired at the end of the game grants 5 ${points}.'),
             ],
-            /*
-            TileType::WHITEWIND =>
-            clienttranslate('In spring and summer brings 4 workers and 2 tools, in autumn, 4 workers and 1 tool.<hr/>If acquired at the end of the game grants $1$ for each worker the player has, that has not been scored on another tile.'),
-            TileType::TURN_ORDER_2 =>
-            clienttranslate('Determines player order when bidding for the boats.<hr/>At the end of winter, can be added to the player's village, granting $1$ for each neighboring tile.'),
-            TileType::TURN_ORDER_3 =>
-            clienttranslate('Determines player order when bidding for the boats.<hr/>At the end of winter, can be added to the player's village, granting $1$ for each neighboring tile.'),
-            TileType::TURN_ORDER_36 =>
-            clienttranslate('Determines player order when bidding for the boats.<hr/>At the end of winter, can be added to the player's village, granting $1$ for each neighboring tile.'),
-            TileType::TURN_ORDER_4 =>
-            clienttranslate('Determines player order when bidding for the boats. Gives the first player token to the auction winner.<hr/>At the end of winter, can be added to the player's village, granting $1$ for each neighboring tile.'),
-            TileType::QUARRYMAN =>
-            clienttranslate('Produces @2 stone@.<hr/>Can be upgraded for #1 pickaxe# to produce @1 gold and 1 stone@.<hr/>Grants $3$ when upgraded.'),
-            TileType::STABLE =>
-            clienttranslate('Allows transporting resources over 2 tiles, then upgrading 1 tile.<hr/>Can be upgraded for #1 wood and 1 iron# to allow transporting resources over 4 tiles, then upgrading 2 tiles.<hr/>Grants $5$ when upgraded.'),
-            TileType::WOODCUTTER =>
-            clienttranslate('Produces @2 wood@.<hr/>Can be upgraded for #1 saw# to produce @1 gold and 1 wood@.<hr/>Grants $3$ when upgraded.'),
-            TileType::WORKSHOP =>
-            clienttranslate('Produces @1 basic resource: iron, stone or wood@.<hr/>Can be upgraded for #2 resources# to produce @1 iron, 1 stone and 1 wood@.<hr/>Grants $3$ when upgraded.'),
-            TileType::KEYSTONEQUARRY =>
-            clienttranslate('Produces @1 stone@.<hr/>Can be upgraded for #1 pickaxe# to produce @3 stone@.<hr/>Grants $3$ when upgraded.'),
-            TileType::KEYWOOD =>
-            clienttranslate('Produces @1 wood@.<hr/>Can be upgraded for #1 saw# to produce @3 wood@.<hr/>Grants $3$ when upgraded.'),
-            TileType::ALEHOUSE =>
-            clienttranslate('Brings @1 random worker@.<hr/>Can be upgraded for #1 iron, 1 stone and 1 wood# to enable bringing @2 random workers@.'),
-            TileType::APPRENTICEHALL =>
-            clienttranslate('Produces @1 tool@.<hr/>Can be upgraded for #1 stone and 1 wood# to produce @2 tools@.<hr/>Grants $3$ when upgraded.'),
-            TileType::GOLDMINE =>
-            clienttranslate('Produces @1 gold@.<hr/>Can be upgraded for #1 iron and 1 stone# to produce @2 gold@.<hr/>Grants $3$ when upgraded.'),
-            TileType::KEYMINE =>
-            clienttranslate('Produces @1 iron@.<hr/>Can be upgraded for #1 anvil# to produce @3 iron@.<hr/>Grants $3$ when upgraded.'),
-            TileType::MINER =>
-            clienttranslate('Produces @2 iron@.<hr/>Can be upgraded for #1 anvil# to produce @1 gold and 1 iron@.<hr/>Grants $3$ when upgraded.'),
-            TileType::PEDDLAR =>
-            clienttranslate('Brings @1 green worker@ but ^1 yellow worker^ has to be discarded in exchange.<hr/>Can be upgraded for #1 gold# to enable bringing @2 green workers@.'),
-            TileType::FARRIER =>
-            clienttranslate('Allows transporting resources over 3 tiles, then upgrading 1 tile.<hr/>Can be upgraded for #2 resources# to allow transporting resources over 5 tiles, then upgrading 2 tiles.<hr/>Grants $5$ when upgraded.'),
-            TileType::HIRINGFAIR =>
-            clienttranslate('Produces @2 tools@ but ^1 tool^ is consumed in the process.<hr/>Can be upgraded for #1 wood and 1 iron# to produce @3 tools@.<hr/>Grants $5$ when upgraded.'),
-            TileType::MASON =>
-            clienttranslate('Produces @3 stone@ but ^1 pickaxe^ is consumed in the process.<hr/>Can be upgraded for #3 stone# to produce @3 gold@.<hr/>Grants $7$ when upgraded.'),
-            TileType::SMELTER =>
-            clienttranslate('Produces @3 iron@ but ^1 anvil^ is consumed in the process.<hr/>Can be upgraded for #3 iron# to produce @3 gold@.<hr/>Grants $7$ when upgraded.'),
-            TileType::BOAT1A =>
-            clienttranslate('When taking workers from the boats at the end of the summer and autumn, take 2 additional workers from the bag if available. When taking a boat tile at the end of the winter, take 2 workers from the bag (after all winning bids have been placed in the bag).'),
-            TileType::BOAT2A =>
-            clienttranslate('When transporting resources, the resources may be transported across fields as well as across roads. When placing tiles, edges do not need to match (including water). Only properly connected roads will be counted for scoring purposes.'),
-            TileType::BOAT3A =>
-            clienttranslate('When upgrading, any type of resource can be used in place of any other type of resource.'),
-            TileType::BOAT4A =>
-            clienttranslate('You can counter-bid another player's red,yellow or blue (but not green) bid with workers of another color (all your workers in that bid have to be of the same color though).'),
-            TileType::BREWER =>
-            clienttranslate('Brings @2 random workers@ but ^1 tool^ is consumed in the process.<hr/>Can be upgraded for #1 stone and 1 iron# to enable bringing @3 random workers@.<hr/>Grants $3$ when upgraded.'),
-            TileType::CARPENTER =>
-            clienttranslate('Produces @3 wood@ but ^1 saw^ is consumed in the process.<hr/>Can be upgraded for #3 wood# to produce @3 gold@.<hr/>Grants $7$ when upgraded.'),
-            TileType::STORE =>
-            clienttranslate('Brings @1 green worker@ but ^1 blue worker^ has to be discarded in exchange.<hr/>Can be upgraded for #1 gold# to enable bringing @2 green workers@.<hr/>Grants $3$ when upgraded.'),
-            TileType::TAVERN =>
-            clienttranslate('Brings @2 random workers@ but ^1 worker^ has to be discarded in exchange.<hr/>Can be upgraded for #1 iron, 1 stone and 1 wood# to enable bringing @3 random workers@.'),
-            TileType::BARN =>
-            clienttranslate('Grants $1$ for each resource assigned to this tile (the resource must be found on this tile).<hr/>Can be upgraded for #1 tool# to grant $2$ for each assigned resource.<hr/>Resources scored here cannot be scored elsewhere.'),
-            TileType::BLACKSMITH =>
-            clienttranslate('Grants $2$ for each iron assigned to this tile (the resource must be found on this tile).<hr/>Can be upgraded for #1 anvil# to grant $3$ for iron on this tile.<hr/>Resources scored here cannot be scored elsewhere.'),
-            TileType::FAIR =>
-            clienttranslate('Brings @1 green worker@ but ^1 red worker^ has to be discarded in exchange.<hr/>Can be upgraded for #1 gold# to enable bringing @2 green workers@.<hr/>Grants $5$ when upgraded.'),
-            TileType::FORGE =>
-            clienttranslate('Can be upgraded for #3 iron#.<hr/>Grants $3$ or $10$ when upgraded.'),
-            TileType::GOLDSMITH =>
-            clienttranslate('Can be upgraded for #2 gold#.<hr/>Grants $7$ when upgraded.'),
-            TileType::INN =>
-            clienttranslate('Brings @1 random worker@.<hr/>Can be upgraded for #1 tool and 1 resource# to enable bringing @3 random workers@.'),
-            TileType::SAWMILL =>
-            clienttranslate('Can be upgraded for #3 wood#.<hr/>Grants $3$ or $10$ when upgraded.'),
-            TileType::SCULPTOR =>
-            clienttranslate('Can be upgraded for #3 stone#.<hr/>Grants $3$ or $10$ when upgraded.'),
-            TileType::STONEYARD =>
-            clienttranslate('Grants $2$ for each stone assigned to this tile (the resource must be found on this tile).<hr/>Can be upgraded for #1 pickaxe# to grant $3$ for stone on this tile.<hr/>Resources scored here cannot be scored elsewhere.'),
-            TileType::TIMBERYARD =>
-            clienttranslate('Grants $2$ for each wood assigned to this tile (the resource must be found on this tile).<hr/>Can be upgraded for #1 saw# to grant $3$ for wood on this tile.<hr/>Resources scored here cannot be scored elsewhere.'),
-            TileType::WAINWRIGHT =>
-            clienttranslate('Allows transporting resources over 4 tiles, then upgrading 2 tiles.<hr/>Can be upgraded for #2 resources# to allow transporting resources over 6 tiles, then upgrading 2 tiles.<hr/>Grants $5$ when upgraded.'),
-            TileType::WELL =>
-            clienttranslate('Can be upgraded for #3 resources#.<hr/>Grants $3$ or $7$ when upgraded.'),
-            TileType::APOTHECARY =>
-            clienttranslate('Grants $3$ for each 5 workers assigned to this tile (workers played on the player's village in the last round can be used). <hr/>Workers scored here cannot be scored on another tile.'),
-            TileType::CRAFTSMANSGUILD =>
-            clienttranslate('Grants $3$ for each set of 1 red, 1 yellow and 1 blue worker assigned to this tile (workers played on the player's village in the last round can be used). <hr/>Workers scored here cannot be scored on another tile.'),
-            TileType::JEWELLER =>
-            clienttranslate('Grants $2$ for each 1 gold assigned to this tile (the gold can be found anywhere in the player's village). <hr/>Gold score here cannot also be scored separately or on another tile.'),
-            TileType::KEYGUILD =>
-            clienttranslate('Grants $10$ for each set of 5 tools assigned to this tile. <hr/>Tools scored here cannot be scored on another tile.'),
-            TileType::KEYMARKET =>
-            clienttranslate('Grants $2$ for each green worker assigned to this tile, (workers played on the player's village in the last round can be used). <hr/>Workers scored here cannot be scored on another tile.'),
-            TileType::KEYTHEDRAL =>
-            clienttranslate('<hr/>Grants $12$.'),
-            TileType::MERCERSGUILD =>
-            clienttranslate('Grants $5$ for each set of 1 wood, 1 iron, 1 stone assigned to this tile (the resources can be found anywhere in the player's village; gold can be used as substitute). <hr/>Resources scored here cannot be scored on another tile.'),
-            TileType::SCHOLAR =>
-            clienttranslate('Grants $3$ for each 1 tool assigned to this tile in a set of tools of the same type. <hr/>Tools scored here cannot be scored on another tile.'),
-            TileType::SCRIBES =>
-            clienttranslate('Grants $10$ for each set of 1 anvil, 1 pick and 1 saw assigned to this tile. <hr/>Tools scored here cannot be scored on another tile.'),
-            TileType::VILLAGEHALL =>
-            clienttranslate('Grants $1$ for each 1 worker in a set of workers of the same type assigned to this tile (workers played on the player's village in the last round can be used). <hr/>Workers scored here cannot be scored on another tile.'),
-            TileType::WATERMILL =>
-            clienttranslate('Grants $1$ for each 1 resource in a set of resources of the same type assigned to this tile (the resources can be found anywhere in the player's village). <hr/>Resources scored here cannot be scored on another tile.'),
-            TileType::WINDMILL =>
-            clienttranslate('Grants $5$ for each set of 5 resources of any type assigned to this tile (the resources can be found anywhere in the player's village). <hr/>Resources scored here cannot be scored on another tile.'),
-            TileType::HOME1_U =>
-            clienttranslate('Allows transporting resources over 2 tiles, then upgrading 1 tile.<hr/>Grants $5$.'),
-            TileType::HOME2_U =>
-            clienttranslate('Allows transporting resources over 2 tiles, then upgrading 1 tile.<hr/>Grants $5$.'),
-            TileType::HOME3_U =>
-            clienttranslate('Allows transporting resources over 2 tiles, then upgrading 1 tile.<hr/>Grants $5$.'),
-            TileType::HOME4_U =>
-            clienttranslate('Allows transporting resources over 2 tiles, then upgrading 1 tile.<hr/>Grants $5$.'),
-            TileType::HOME5_U =>
-            clienttranslate('Allows transporting resources over 2 tiles, then upgrading 1 tile.<hr/>Grants $5$.'),
-            TileType::HOME6_U =>
-            clienttranslate('Allows transporting resources over 2 tiles, then upgrading 1 tile.<hr/>Grants $5$.'),
-            TileType::KEYFLOWER_U =>
-            clienttranslate('In spring and summer, brings 7 workers and 1 tool, in autumn, 3 workers and 2 tools.<hr/>If acquired at the end of the game, grants $1$ for each 1 transport capacity.'),
-            TileType::SEABASTION_U =>
-            clienttranslate('In spring, summer and autumn, brings 6 workers and 2 tools.<hr/>If acquired at the end of the game, grants $1$ for each tile which is connected by roads as part of a loop which connects back to the starting point without using the same road twice.'),
-            TileType::SEABREESE_U =>
-            clienttranslate('In spring brings 6 workers and 1 tool, in summer and autumn, 4 workers and 1 tool.<hr/>If acquired at the end of the game, grants 2, 4, 8, 16 or 32 $$ for 1-5 river tiles connected to the home tile.'),
-            TileType::FLIPPER_U =>
-            clienttranslate('In spring and summer brings 5 workers and 2 tools, in autumn, 2 workers and 2 tools.<hr/>If acquired at the end of the game allows the player to flip one tile without paying the upgrade cost and grants $2$.'),
-            TileType::INVINCIBLE_U =>
-            clienttranslate('In spring and summer brings 5 workers and 1 tool, in autumn, 3 workers and 1 tool.<hr/>If acquired at the end of the game grants $5$.'),
-            TileType::WHITEWIND_U =>
-            clienttranslate('In spring and summer brings 4 workers and 2 tools, in autumn, 4 workers and 1 tool.<hr/>If acquired at the end of the game grants $1$ for each worker the player has, that has not been scored on another tile.'),
-            TileType::TURN_ORDER_46 =>
-            clienttranslate('Determines player order when bidding for the boats. Gives the first player token to the auction winner.<hr/>At the end of winter, can be added to the player's village, granting $1$ for each neighboring tile.'),
-            TileType::TURN_ORDER_56A =>
-            clienttranslate('Determines player order when bidding for the boats. Gives the first player token to the auction winner.<hr/>At the end of winter, can be added to the player's village, granting $1$ for each neighboring tile.'),
-            TileType::TURN_ORDER_56B =>
-            clienttranslate('Determines player order when bidding for the boats. Gives the first player token to the auction winner.<hr/>At the end of winter, can be added to the player's village, granting $1$ for each neighboring tile.'),
-            TileType::QUARRYMAN_U =>
-            clienttranslate('Produces @1 gold and 1 stone@.<hr/>Grants $3$.'),
-            TileType::STABLE_U =>
-            clienttranslate('Allows transporting resources over 4 tiles, then upgrading 2 tiles.<hr/>Grants $5$.'),
-            TileType::WOODCUTTER_U =>
-            clienttranslate('Produces @1 gold and 1 wood@.<hr/>Grants $3$.'),
-            TileType::WORKSHOP_U =>
-            clienttranslate('Produces @1 iron, 1 stone and 1 wood@.<hr/>Grants $3$.'),
-            TileType::KEYSTONEQUARRY_U =>
-            clienttranslate('Produces @3 stone@.<hr/>Grants $3$.'),
-            TileType::KEYWOOD_U =>
-            clienttranslate('Produces @3 wood@.<hr/>Grants $3$.'),
-            TileType::ALEHOUSE_U =>
-            clienttranslate('Brings @2 random workers@.'),
-            TileType::APPRENTICEHALL_U =>
-            clienttranslate('Produces @2 tools@.<hr/>Grants $3$.'),
-            TileType::GOLDMINE_U =>
-            clienttranslate('Produces @2 gold@.<hr/>Grants $3$.'),
-            TileType::KEYMINE_U =>
-            clienttranslate('Produces @3 iron@.<hr/>Grants $3$.'),
-            TileType::MINER_U =>
-            clienttranslate('Produces @1 gold and 1 iron@.<hr/>Grants $3$.'),
-            TileType::PEDDLAR_U =>
-            clienttranslate('Brings @2 green workers@ but ^1 yellow worker^ has to be discarded in exchange.'),
-            TileType::FARRIER_U =>
-            clienttranslate('Allows transporting resources over 5 tiles, then upgrading 2 tiles.<hr/>Grants $5$.'),
-            TileType::HIRINGFAIR_U =>
-            clienttranslate('Produces @3 tools@ but ^1 tool^ is consumed in the process.<hr/>Grants $5$.'),
-            TileType::MASON_U =>
-            clienttranslate('Produces @3 gold@ but ^1 pickaxe^ is consumed in the process.<hr/>Grants $7$.'),
-            TileType::SMELTER_U =>
-            clienttranslate('Produces @3 gold@ but ^1 anvil^ is consumed in the process.<hr/>Grants $7$.'),
-            TileType::BOAT1B =>
-            clienttranslate('When taking workers from the boats at the end of the summer and autumn and when taking a boat at the end of the winter, take one green worker from the supply if available.'),
-            TileType::BOAT2B =>
-            clienttranslate('All your transport and upgrade capacity is doubled. If you own the Keyflower boat at the end of the game, boat's score is doubled.'),
-            TileType::BOAT3B =>
-            clienttranslate('For end-game scoring purposes, you can score any resource in place of any other resource.'),
-            TileType::BOAT4B =>
-            clienttranslate('If a tile has been already bid for, or it has been used for production, you don't have to follow the color when placing workers on the tile.'),
-            TileType::BREWER_U =>
-            clienttranslate('Brings @3 random workers@ but ^1 tool^ is consumed in the process.<hr/>Grants $3$.'),
-            TileType::CARPENTER_U =>
-            clienttranslate('Produces @3 gold@ but ^1 saw^ is consumed in the process.<hr/>Grants $7$.'),
-            TileType::STORE_U =>
-            clienttranslate('Brings @2 green workers@ but ^1 blue worker^ has to be discarded in exchange.<hr/>Grants $3$.'),
-            TileType::TAVERN_U =>
-            clienttranslate('Brings @3 random workers@ but ^1 worker^ has to be discarded in exchange.'),
-            TileType::BARN_U =>
-            clienttranslate('Grants $2$ for each resource assigned to this tile (the resource must be found on this tile).<hr/>Resources scored here cannot be scored elsewhere.'),
-            TileType::BLACKSMITH_U =>
-            clienttranslate('Grants $3$ for each iron assigned to this tile (the resource must be found on this tile).<hr/>Resources scored here cannot be scored elsewhere.'),
-            TileType::FAIR_U =>
-            clienttranslate('Brings @2 green workers@ but ^1 red worker^ has to be discarded in exchange.<hr/>Grants $5$.'),
-            TileType::FORGE_U =>
-            clienttranslate('<hr/>Grants $10$.'),
-            TileType::GOLDSMITH_U =>
-            clienttranslate('<hr/>Grants $7$.'),
-            TileType::INN_U =>
-            clienttranslate('Brings @3 random workers@.'),
-            TileType::SAWMILL_U =>
-            clienttranslate('<hr/>Grants $10$.'),
-            TileType::SCULPTOR_U =>
-            clienttranslate('<hr/>Grants $10$.'),
-            TileType::STONEYARD_U =>
-            clienttranslate('Grants $3$ for each stone assigned to this tile (the resource must be found on this tile).<hr/>Resources scored here cannot be scored elsewhere.'),
-            TileType::TIMBERYARD_U =>
-            clienttranslate('Grants $3$ for each wood assigned to this tile (the resource must be found on this tile).<hr/>Resources scored here cannot be scored elsewhere.'),
-            TileType::WAINWRIGHT_U =>
-            clienttranslate('Allows transporting resources over 6 tiles, then upgrading 2 tiles.<hr/>Grants $5$.'),
-            TileType::WELL_U =>
-            clienttranslate('<hr/>Grants $7$.')
-            */
-            default => [
-                'summary' => $this->value,
+            TileType::WHITEWIND => [
+                'summary' =>
+                clienttranslate('In spring and summer brings 4 ${workers} and 2 ${skills}, in autumn, 4 ${workers} and 1 ${skill}.'),
+                'points' =>
+                clienttranslate('If acquired at the end of the game grants 1 ${point} for each ${worker} the player has, that has not been scored on another tile.'),
+            ],
+            TileType::TURN_ORDER_2 => [
+                'summary' => clienttranslate('Determines player order when bidding for the boats. Gives the first player token to the auction winner.'),
+                'points' => clienttranslate('At the end of winter, can be added to the player\'s village, granting 1 ${point} for each neighboring tile.'),
+            ],
+            TileType::TURN_ORDER_3 => [
+                'summary' => clienttranslate('Determines player order when bidding for the boats. Gives the first player token to the auction winner.'),
+                'points' => clienttranslate('At the end of winter, can be added to the player\'s village, granting 1 ${point} for each neighboring tile.'),
+            ],
+            TileType::TURN_ORDER_36 => [
+                'summary' => clienttranslate('Determines player order when bidding for the boats.'),
+                'points' => clienttranslate('At the end of winter, can be added to the player\'s village, granting 1 ${point} for each neighboring tile.'),
+            ],
+            TileType::TURN_ORDER_4 => [
+                'summary' => clienttranslate('Determines player order when bidding for the boats. Gives the first player token to the auction winner.'),
+                'points' => clienttranslate('At the end of winter, can be added to the player\'s village, granting 1 ${point} for each neighboring tile.'),
+            ],
+            TileType::QUARRYMAN => [
+                'summary' => clienttranslate('Produces 2 ${stone}.'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${pickaxe} to produce 1 ${gold} and 1 ${stone}.'),
+                'points' => clienttranslate('Grants 3 ${points} when upgraded.'),
+            ],
+            TileType::STABLE => [
+                'summary' => clienttranslate('Allows transporting resources over 2 tiles, then upgrading 1 tile.'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${wood} and 1 ${iron} to allow transporting resources over 4 tiles, then upgrading 2 tiles.'),
+                'points' => clienttranslate('Grants 5 ${points} when upgraded.'),
+            ],
+            TileType::WOODCUTTER => [
+                'summary' => clienttranslate('Produces 2 ${wood}.'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${saw} to produce 1 ${gold} and 1 ${wood}.'),
+                'points' => clienttranslate('Grants 3 ${points} when upgraded.'),
+            ],
+            TileType::WORKSHOP => [
+                'summary' => clienttranslate('Produces 1 basic resource: ${iron}, ${stone} or ${wood}.'),
+                'upgrade' => clienttranslate('Can be upgraded for 2 ${resources} to produce 1 ${iron}, 1 ${stone} and 1 ${wood}.'),
+                'points' => clienttranslate('Grants 3 ${points} when upgraded.'),
+            ],
+            TileType::KEYSTONEQUARRY => [
+                'summary' => clienttranslate('Produces 1 ${stone}.'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${pickaxe} to produce 3 ${stone}.'),
+                'points' => clienttranslate('Grants 3 ${points} when upgraded.'),
+            ],
+            TileType::KEYWOOD => [
+                'summary' => clienttranslate('Produces 1 ${wood}.'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${saw} to produce 3 ${wood}.'),
+                'points' => clienttranslate('Grants 3 ${points} when upgraded.'),
+            ],
+            TileType::ALEHOUSE => [
+                'summary' => clienttranslate('Brings 1 ${worker}.'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${iron}, 1 ${stone} and 1 ${wood} to enable bringing 2 ${workers}.'),
+            ],
+            TileType::APPRENTICEHALL => [
+                'summary' => clienttranslate('Produces 1 ${skill}.'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${stone} and 1 ${wood} to produce 2 ${skills}.'),
+                'points' => clienttranslate('Grants 3 ${points} when upgraded.'),
+            ],
+            TileType::GOLDMINE => [
+                'summary' => clienttranslate('Produces 1 ${gold}.'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${iron} and 1 ${stone} to produce 2 ${gold}.'),
+                'points' => clienttranslate('Grants 3 ${points} when upgraded.'),
+            ],
+            TileType::KEYMINE => [
+                'summary' => clienttranslate('Produces 1 ${iron}.'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${anvil} to produce 3 ${iron}.'),
+                'points' => clienttranslate('Grants 3 ${points} when upgraded.'),
+            ],
+            TileType::MINER => [
+                'summary' => clienttranslate('Produces 2 ${iron}.'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${anvil} to produce 1 ${gold} and 1 ${iron}.'),
+                'points' => clienttranslate('Grants 3 ${points} when upgraded.'),
+            ],
+            TileType::PEDDLAR => [
+                'summary' => clienttranslate('Brings 1 ${green} but ^1 yellow worker^ has to be discarded in exchange.'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${gold} to enable bringing 2 ${green}.'),
+            ],
+            TileType::FARRIER => [
+                'summary' => clienttranslate('Allows transporting resources over 3 tiles, then upgrading 1 tile.'),
+                'upgrade' => clienttranslate('Can be upgraded for 2 ${resources} to allow transporting resources over 5 tiles, then upgrading 2 tiles.'),
+                'points' => clienttranslate('Grants 5 ${points} when upgraded.'),
+            ],
+            TileType::HIRINGFAIR => [
+                'summary' => clienttranslate('Produces 2 ${skills} but 1 ${skill} is consumed in the process.'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${wood} and 1 ${iron} to produce 3 ${skills}.'),
+                'points' => clienttranslate('Grants 5 ${points} when upgraded.'),
+            ],
+            TileType::MASON => [
+                'summary' => clienttranslate('Produces 3 ${stone} but 1 ${pickaxe} is consumed in the process.'),
+                'upgrade' => clienttranslate('Can be upgraded for 3 ${stone} to produce 3 ${gold}.'),
+                'points' => clienttranslate('Grants 7 ${points} when upgraded.'),
+            ],
+            TileType::SMELTER => [
+                'summary' => clienttranslate('Produces 3 ${iron} but 1 ${anvil} is consumed in the process.'),
+                'upgrade' => clienttranslate('Can be upgraded for 3 ${iron} to produce 3 ${gold}.'),
+                'points' => clienttranslate('Grants 7 ${points} when upgraded.'),
+            ],
+            TileType::BOAT1A => [
+                'summary' => clienttranslate('When taking workers from the boats at the end of the summer and autumn, take 2 additional workers from the bag if available. When taking a boat tile at the end of the winter, take 2 workers from the bag (after all winning bids have been placed in the bag).'),
+            ],
+            TileType::BOAT2A => [
+                'summary' => clienttranslate('When transporting resources, the resources may be transported across fields as well as across roads. When placing tiles, edges do not need to match (including water). Only properly connected roads will be counted for scoring purposes.'),
+            ],
+            TileType::BOAT3A => [
+                'summary' => clienttranslate('When upgrading, any type of resource can be used in place of any other type of resource.'),
+            ],
+            TileType::BOAT4A => [
+                'summary' => clienttranslate('You can counter-bid another player\'s red,yellow or blue (but not green) bid with workers of another color (all your workers in that bid have to be of the same color though).'),
+            ],
+            TileType::BREWER => [
+                'summary' => clienttranslate('Brings 2 ${workers} but 1 ${skill} is consumed in the process.'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${stone} and 1 ${iron} to enable bringing 3 ${workers}.'),
+                'points' => clienttranslate('Grants 3 ${points} when upgraded.'),
+            ],
+            TileType::CARPENTER => [
+                'summary' => clienttranslate('Produces 3 ${wood} but 1 ${saw} is consumed in the process.'),
+                'upgrade' => clienttranslate('Can be upgraded for 3 ${wood} to produce 3 ${gold}.'),
+                'points' => clienttranslate('Grants 7 ${points} when upgraded.'),
+            ],
+            TileType::STORE => [
+                'summary' => clienttranslate('Brings 1 ${green} but ^1 blue worker^ has to be discarded in exchange.'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${gold} to enable bringing 2 ${green}.'),
+                'points' => clienttranslate('Grants 3 ${points} when upgraded.'),
+            ],
+            TileType::TAVERN => [
+                'summary' => clienttranslate('Brings 2 ${workers} but 1 ${worker} has to be discarded in exchange.'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${iron}, 1 ${stone} and 1 ${wood} to enable bringing 3 ${workers}.'),
+            ],
+            TileType::BARN => [
+                'summary' => clienttranslate('Grants 1 ${point} for each resource assigned to this tile (the resource must be found on this tile).'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${skill} to grant 2 ${points} for each assigned resource.'),
+                'points' => clienttranslate('Resources scored here cannot be scored elsewhere.'),
+            ],
+            TileType::BLACKSMITH => [
+                'summary' => clienttranslate('Grants 2 ${points} for each iron assigned to this tile (the resource must be found on this tile).'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${anvil} to grant 3 ${points} for iron on this tile.'),
+                'points' => clienttranslate('Resources scored here cannot be scored elsewhere.'),
+            ],
+            TileType::FAIR => [
+                'summary' => clienttranslate('Brings 1 ${green} but 1 ${red} has to be discarded in exchange.'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${gold} to enable bringing 2 ${green}.'),
+                'points' => clienttranslate('Grants 5 ${points} when upgraded.'),
+            ],
+            TileType::FORGE => [
+                'summary' => clienttranslate(''),
+                'upgrade' => clienttranslate('Can be upgraded for 3 ${iron}.'),
+                'points' => clienttranslate('Grants 3 ${points} or 10 ${points} when upgraded.'),
+            ],
+            TileType::GOLDSMITH => [
+                'summary' => clienttranslate(''),
+                'upgrade' => clienttranslate('Can be upgraded for 2 ${gold}.'),
+                'points' => clienttranslate('Grants 7 ${points} when upgraded.'),
+            ],
+            TileType::INN => [
+                'summary' => clienttranslate('Brings 1 ${worker}.'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${skill} and 1 ${resource} to enable bringing 3 ${workers}.'),
+            ],
+            TileType::SAWMILL => [
+                'summary' => clienttranslate(''),
+                'upgrade' => clienttranslate('Can be upgraded for 3 ${wood}.'),
+                'points' => clienttranslate('Grants 3 ${points} or 10 ${points} when upgraded.'),
+            ],
+            TileType::SCULPTOR => [
+                'summary' => clienttranslate(''),
+                'upgrade' => clienttranslate('Can be upgraded for 3 ${stone}.'),
+                'points' => clienttranslate('Grants 3 ${points} or 10 ${points} when upgraded.'),
+            ],
+            TileType::STONEYARD => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 2 ${points} for each stone assigned to this tile (the resource must be found on this tile).'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${pickaxe} to grant 3 ${points} for stone on this tile.'),
+                'notes' => clienttranslate('Resources scored here cannot be scored elsewhere.'),
+            ],
+            TileType::TIMBERYARD => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 2 ${points} for each wood assigned to this tile (the resource must be found on this tile).'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${saw} to grant 3 ${points} for wood on this tile.'),
+                'notes' => clienttranslate('Resources scored here cannot be scored elsewhere.'),
+            ],
+            TileType::WAINWRIGHT => [
+                'summary' => clienttranslate('Allows transporting resources over 4 tiles, then upgrading 2 tiles.'),
+                'upgrade' => clienttranslate('Can be upgraded for 2 ${resources} to allow transporting resources over 6 tiles, then upgrading 2 tiles.'),
+                'points' => clienttranslate('Grants 5 ${points} when upgraded.'),
+            ],
+            TileType::WELL => [
+                'summary' => clienttranslate(''),
+                'upgrade' => clienttranslate('Can be upgraded for 3 ${resources}.'),
+                'points' => clienttranslate('Grants 3 ${points} or 7 ${points} when upgraded.'),
+            ],
+            TileType::APOTHECARY => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 3 ${points} for each 5 workers assigned to this tile (workers played on the player\'s village in the last round can be used). '),
+                'notes' => clienttranslate('Workers scored here cannot be scored on another tile.'),
+            ],
+            TileType::CRAFTSMANSGUILD => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 3 ${points} for each set of 1 red, 1 yellow and 1 blue worker assigned to this tile (workers played on the player\'s village in the last round can be used). '),
+                'notes' => clienttranslate('Workers scored here cannot be scored on another tile.'),
+            ],
+            TileType::JEWELLER => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 2 ${points} for each 1 gold assigned to this tile (the gold can be found anywhere in the player\'s village). '),
+                'notes' => clienttranslate('Gold score here cannot also be scored separately or on another tile.'),
+            ],
+            TileType::KEYGUILD => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 10 ${points} for each set of 5 skills assigned to this tile. '),
+                'notes' => clienttranslate('Skills scored here cannot be scored on another tile.'),
+            ],
+            TileType::KEYMARKET => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 2 ${points} for each green worker assigned to this tile, (workers played on the player\'s village in the last round can be used). '),
+                'notes' => clienttranslate('Workers scored here cannot be scored on another tile.'),
+            ],
+            TileType::KEYTHEDRAL => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 12 ${points}.'),
+            ],
+            TileType::MERCERSGUILD => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 5 ${points} for each set of 1 wood, 1 iron, 1 stone assigned to this tile (the resources can be found anywhere in the player\'s village; gold can be used as substitute). '),
+                'notes' => clienttranslate('Resources scored here cannot be scored on another tile.'),
+            ],
+            TileType::SCHOLAR => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 3 ${points} for each 1 skill assigned to this tile in a set of skills of the same type. '),
+                'notes' => clienttranslate('Skills scored here cannot be scored on another tile.'),
+            ],
+            TileType::SCRIBES => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 10 ${points} for each set of 1 anvil, 1 pick and 1 saw assigned to this tile. '),
+                'notes' => clienttranslate('Skills scored here cannot be scored on another tile.'),
+            ],
+            TileType::VILLAGEHALL => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 1 ${point} for each 1 worker in a set of workers of the same type assigned to this tile (workers played on the player\'s village in the last round can be used). '),
+                'notes' => clienttranslate('Workers scored here cannot be scored on another tile.'),
+            ],
+            TileType::WATERMILL => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 1 ${point} for each 1 resource in a set of resources of the same type assigned to this tile (the resources can be found anywhere in the player\'s village). '),
+                'notes' => clienttranslate('Resources scored here cannot be scored on another tile.'),
+            ],
+            TileType::WINDMILL => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 5 ${points} for each set of 5 resources of any type assigned to this tile (the resources can be found anywhere in the player\'s village). '),
+                'notes' => clienttranslate('Resources scored here cannot be scored on another tile.'),
+            ],
+            TileType::HOME1_U => [
+                'summary' => clienttranslate('Allows transporting resources over 2 tiles, then upgrading 1 tile.'),
+                'points' => clienttranslate('Grants 5 ${points}.'),
+            ],
+            TileType::HOME2_U => [
+                'summary' => clienttranslate('Allows transporting resources over 2 tiles, then upgrading 1 tile.'),
+                'points' => clienttranslate('Grants 5 ${points}.'),
+            ],
+            TileType::HOME3_U => [
+                'summary' => clienttranslate('Allows transporting resources over 2 tiles, then upgrading 1 tile.'),
+                'points' => clienttranslate('Grants 5 ${points}.'),
+            ],
+            TileType::HOME4_U => [
+                'summary' => clienttranslate('Allows transporting resources over 2 tiles, then upgrading 1 tile.'),
+                'points' => clienttranslate('Grants 5 ${points}.'),
+            ],
+            TileType::HOME5_U => [
+                'summary' => clienttranslate('Allows transporting resources over 2 tiles, then upgrading 1 tile.'),
+                'points' => clienttranslate('Grants 5 ${points}.'),
+            ],
+            TileType::HOME6_U => [
+                'summary' => clienttranslate('Allows transporting resources over 2 tiles, then upgrading 1 tile.'),
+                'points' => clienttranslate('Grants 5 ${points}.'),
+            ],
+            TileType::KEYFLOWER_U => [
+                'summary' => clienttranslate('In spring and summer, brings 7 ${workers} and 1 ${skill}, in autumn, 3 ${workers} and 2 ${skills}.'),
+                'points' => clienttranslate('If acquired at the end of the game, grants 1 ${point} for each 1 transport capacity.'),
+            ],
+            TileType::SEABASTION_U => [
+                'summary' => clienttranslate('In spring, summer and autumn, brings 6 ${workers} and 2 ${skills}.'),
+                'points' => clienttranslate('If acquired at the end of the game, grants 1 ${point} for each tile which is connected by roads as part of a loop which connects back to the starting point without using the same road twice.'),
+            ],
+            TileType::SEABREESE_U => [
+                'summary' => clienttranslate('In spring brings 6 ${workers} and 1 ${skill}, in summer and autumn, 4 ${workers} and 1 ${skill}.'),
+                'points' => clienttranslate('If acquired at the end of the game, grants 2, 4, 8, 16 or 32 ${points} for 1-5 river tiles connected to the home tile.'),
+            ],
+            TileType::FLIPPER_U => [
+                'summary' => clienttranslate('In spring and summer brings 5 ${workers} and 2 ${skills}, in autumn, 2 ${workers} and 2 ${skills}.'),
+                'points' => clienttranslate('If acquired at the end of the game allows the player to flip one tile without paying the upgrade cost and grants 2 ${points}.'),
+            ],
+            TileType::INVINCIBLE_U => [
+                'summary' => clienttranslate('In spring and summer brings 5 ${workers} and 1 ${skill}, in autumn, 3 ${workers} and 1 ${skill}.'),
+                'points' => clienttranslate('If acquired at the end of the game grants 5 ${points}.'),
+            ],
+            TileType::WHITEWIND_U => [
+                'summary' => clienttranslate('In spring and summer brings 4 ${workers} and 2 ${skills}, in autumn, 4 ${workers} and 1 ${skill}.'),
+                'points' => clienttranslate('If acquired at the end of the game grants 1 ${point} for each worker the player has, that has not been scored on another tile.'),
+            ],
+            TileType::TURN_ORDER_46 => [
+                'summary' => clienttranslate('Determines player order when bidding for the boats. Gives the first player token to the auction winner.'),
+                'points' => clienttranslate('At the end of winter, can be added to the player\'s village, granting 1 ${point} for each neighboring tile.'),
+            ],
+            TileType::TURN_ORDER_56A => [
+                'summary' => clienttranslate('Determines player order when bidding for the boats. Gives the first player token to the auction winner.'),
+                'points' => clienttranslate('At the end of winter, can be added to the player\'s village, granting 1 ${point} for each neighboring tile.'),
+            ],
+            TileType::TURN_ORDER_56B => [
+                'summary' => clienttranslate('Determines player order when bidding for the boats. Gives the first player token to the auction winner.'),
+                'points' => clienttranslate('At the end of winter, can be added to the player\'s village, granting 1 ${point} for each neighboring tile.'),
+            ],
+            TileType::QUARRYMAN_U => [
+                'summary' => clienttranslate('Produces 1 ${gold} and 1 ${stone}.'),
+                'points' => clienttranslate('Grants 3 ${points}.'),
+            ],
+            TileType::STABLE_U => [
+                'summary' => clienttranslate('Allows transporting resources over 4 tiles, then upgrading 2 tiles.'),
+                'points' => clienttranslate('Grants 5 ${points}.'),
+            ],
+            TileType::WOODCUTTER_U => [
+                'summary' => clienttranslate('Produces 1 ${gold} and 1 ${wood}.'),
+                'points' => clienttranslate('Grants 3 ${points}.'),
+            ],
+            TileType::WORKSHOP_U => [
+                'summary' => clienttranslate('Produces 1 ${iron}, 1 ${stone} and 1 ${wood}.'),
+                'points' => clienttranslate('Grants 3 ${points}.'),
+            ],
+            TileType::KEYSTONEQUARRY_U => [
+                'summary' => clienttranslate('Produces 3 ${stone}.'),
+                'points' => clienttranslate('Grants 3 ${points}.'),
+            ],
+            TileType::KEYWOOD_U => [
+                'summary' => clienttranslate('Produces 3 ${wood}.'),
+                'points' => clienttranslate('Grants 3 ${points}.'),
+            ],
+            TileType::ALEHOUSE_U => [
+                'summary' => clienttranslate('Brings 2 ${workers}.'),
+            ],
+            TileType::APPRENTICEHALL_U => [
+                'summary' => clienttranslate('Produces 2 ${skills}.'),
+                'points' => clienttranslate('Grants 3 ${points}.'),
+            ],
+            TileType::GOLDMINE_U => [
+                'summary' => clienttranslate('Produces 2 ${gold}.'),
+                'points' => clienttranslate('Grants 3 ${points}.'),
+            ],
+            TileType::KEYMINE_U => [
+                'summary' => clienttranslate('Produces 3 ${iron}.'),
+                'points' => clienttranslate('Grants 3 ${points}.'),
+            ],
+            TileType::MINER_U => [
+                'summary' => clienttranslate('Produces 1 ${gold} and 1 ${iron}.'),
+                'points' => clienttranslate('Grants 3 ${points}.'),
+            ],
+            TileType::PEDDLAR_U => [
+                'summary' => clienttranslate('Brings 2 ${green} but 1 ${yellow} has to be discarded in exchange.'),
+            ],
+            TileType::FARRIER_U => [
+                'summary' => clienttranslate('Allows transporting resources over 5 tiles, then upgrading 2 tiles.'),
+                'points' => clienttranslate('Grants 5 ${points}.'),
+            ],
+            TileType::HIRINGFAIR_U => [
+                'summary' => clienttranslate('Produces 3 ${skills} but 1 ${skill} is consumed in the process.'),
+                'points' => clienttranslate('Grants 5 ${points}.'),
+            ],
+            TileType::MASON_U => [
+                'summary' => clienttranslate('Produces 3 ${gold} but 1 ${pickaxe} is consumed in the process.'),
+                'points' => clienttranslate('Grants 7 ${points}.'),
+            ],
+            TileType::SMELTER_U => [
+                'summary' => clienttranslate('Produces 3 ${gold} but 1 ${anvil} is consumed in the process.'),
+                'points' => clienttranslate('Grants 7 ${points}.'),
+            ],
+            TileType::BOAT1B => [
+                'summary' => clienttranslate('When taking workers from the boats at the end of the summer and autumn and when taking a boat at the end of the winter, take one green worker from the supply if available.'),
+            ],
+            TileType::BOAT2B => [
+                'summary' => clienttranslate('All your transport and upgrade capacity is doubled. If you own the Keyflower boat at the end of the game, boat\'s score is doubled.'),
+            ],
+            TileType::BOAT3B => [
+                'summary' => clienttranslate('For end-game scoring purposes, you can score any resource in place of any other resource.'),
+            ],
+            TileType::BOAT4B => [
+                'summary' => clienttranslate('If a tile has been already bid for, or it has been used for production, you don\'t have to follow the color when placing workers on the tile.'),
+            ],
+            TileType::BREWER_U => [
+                'summary' => clienttranslate('Brings 3 ${workers} but 1 ${skill} is consumed in the process.'),
+                'points' => clienttranslate('Grants 3 ${points}.'),
+            ],
+            TileType::CARPENTER_U => [
+                'summary' => clienttranslate('Produces 3 ${gold} but 1 ${saw} is consumed in the process.'),
+                'points' => clienttranslate('Grants 7 ${points}.'),
+            ],
+            TileType::STORE_U => [
+                'summary' => clienttranslate('Brings 2 ${green} but 1 ${blue} has to be discarded in exchange.'),
+                'points' => clienttranslate('Grants 3 ${points}.'),
+            ],
+            TileType::TAVERN_U => [
+                'summary' => clienttranslate('Brings 3 ${workers} but 1 ${worker} has to be discarded in exchange.'),
+            ],
+            TileType::BARN_U => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 2 ${points} for each resource assigned to this tile (the resource must be found on this tile).'),
+                'notes' => clienttranslate('Resources scored here cannot be scored elsewhere.'),
+            ],
+            TileType::BLACKSMITH_U => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 3 ${points} for each iron assigned to this tile (the resource must be found on this tile).'),
+                'notes' => clienttranslate('Resources scored here cannot be scored elsewhere.'),
+            ],
+            TileType::FAIR_U => [
+                'summary' => clienttranslate('Brings 2 ${green} but 1 ${red} has to be discarded in exchange.'),
+                'points' => clienttranslate('Grants 5 ${points}.'),
+            ],
+            TileType::FORGE_U => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 10 ${points}.'),
+            ],
+            TileType::GOLDSMITH_U => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 7 ${points}.'),
+            ],
+            TileType::INN_U => [
+                'summary' => clienttranslate('Brings 3 ${workers}.'),
+            ],
+            TileType::SAWMILL_U => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 10 ${points}.'),
+            ],
+            TileType::SCULPTOR_U => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 10 ${points}.'),
+            ],
+            TileType::STONEYARD_U => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 3 ${points} for each stone assigned to this tile (the resource must be found on this tile).'),
+                'notes' => clienttranslate('Resources scored here cannot be scored elsewhere.'),
+            ],
+            TileType::TIMBERYARD_U => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 3 ${points} for each wood assigned to this tile (the resource must be found on this tile).'),
+                'notes' => clienttranslate('Resources scored here cannot be scored elsewhere.'),
+            ],
+            TileType::WAINWRIGHT_U => [
+                'summary' => clienttranslate('Allows transporting resources over 6 tiles, then upgrading 2 tiles.'),
+                'points' => clienttranslate('Grants 5 ${points}.'),
+            ],
+            TileType::WELL_U => [
+                'summary' => clienttranslate(''),
+                'points' => clienttranslate('Grants 7 ${points}.'),
             ]
         };
     }
