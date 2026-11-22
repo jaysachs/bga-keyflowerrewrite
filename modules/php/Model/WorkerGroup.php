@@ -3,7 +3,7 @@
 /**
  *------
  * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
- * zooloretto implementation : © Jay Sachs <vagabond@covariant.org>
+ * Keyflower implementation : © Jay Sachs <vagabond@covariant.org>
  *
  * Copyright 2026 Jay Sachs <vagabond@covariant.org>
  *
