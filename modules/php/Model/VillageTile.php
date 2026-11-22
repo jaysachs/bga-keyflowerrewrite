@@ -29,14 +29,29 @@ namespace Bga\Games\keyflowerrewrite\Model;
 
 
 class VillageTile {
+    /**
+     * @param list<Resource> $resources
+     */
     public function __construct(
         public readonly int $tile_id,
         public readonly TileType $type,
         public readonly int $rowcol,
-        public readonly int $orientation) {
+        public readonly int $orientation,
+        // FIXME: this is somewhat redundant; consider removing it.
+        public readonly int $playerId,
+        private array $resources = [],
+        private ProductionActivations $productionActivations = new ProductionActivations()) { }
 
-        }
-        // public array $activations = [],
-    /** @var list<Resource> */
-    public array $resources = [];
+    /** @return list<Resource> */
+    public function resources(): array { return $this->resources; }
+
+    public function addResource(Resource $res): void {
+        $this->resources[] = $res;
+    }
+
+    public function currentColor(): ?WorkerColor {
+        return $this->productionActivations->currentColor();
+    }
+
+    public function productionActivations(): ProductionActivations { return $this->productionActivations; }
 }
