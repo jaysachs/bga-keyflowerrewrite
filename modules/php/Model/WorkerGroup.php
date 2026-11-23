@@ -80,7 +80,7 @@ class WorkerGroup implements Marshalable {
         }
 
         // FIXME
-        Arrays::shuffle($this->workers);
+        // Arrays::shuffle($this->workers);
 
         foreach ($this->workers as $worker) {
             if ($worker->color == $color || $color == WorkerColor::ANY) {
