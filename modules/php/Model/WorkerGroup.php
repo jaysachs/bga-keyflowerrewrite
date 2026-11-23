@@ -72,6 +72,38 @@ class WorkerGroup implements Marshalable {
         return $color;
     }
 
+    public function takeNWorkersOfColor(int $n, WorkerColor $color): WorkerGroup {
+        $result = new WorkerGroup();
+        if ($n <= 0) {
+            return $result;
+        }
+        foreach ($this->workers as $worker) {
+            if ($worker->color == $color) {
+                $result->add($worker);
+                // FIXME: can this work during iteration or do we need to accumulate removed keys?
+                unset($this->workers[$worker->id]);
+
+                if (--$n == 0) {
+                    break;
+                }
+            }
+        }
+        return $result;
+    }
+
+    public function takeWorkerById(int $id): Worker {
+        if (!isset($this->workers[$id])) {
+            throw new InvalidArgumentException("no worker with id {$id}");
+        }
+        $w = $this->workers[$id];
+        unset($this->workers[$id]);
+        return $w;
+    }
+
+    public function workerById(int $id): ?Worker {
+        return isset($this->workers[$id]) ? $this->workers[$id] : null;
+    }
+
     public function add(Worker $worker): void {
         if (isset($this->workers[$worker->id])) {
             throw new InvalidArgumentException("cannot add worker twice to group");

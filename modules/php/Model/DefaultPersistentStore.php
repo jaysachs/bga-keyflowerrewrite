@@ -361,7 +361,7 @@ class DefaultPersistentStore implements PersistentStore {
                 array_push($values, ... $this->activationVals($vt->productionActivations(), $vt->tile_id));
                 array_push($values, ... $this->resourceVals($vt->resources(), $vt->tile_id, $pid));
             }
-            array_push($values, ... $this->workervals(LocType::VILLAGE, $village->workers(), null, $village->playerId));
+            array_push($values, ... $this->workervals(LocType::VILLAGE, $village->workers()->workers(), null, $village->playerId));
             array_push($values, ... $this->skillVals(LocType::VILLAGE, $village->skills(), null, $village->playerId));
             if ($village->hasStartPlayer()) {
                 $values[] = $this->vals(1, PieceType::STARTPLAYER, LocType::VILLAGE, null, null, null, $village->playerId);

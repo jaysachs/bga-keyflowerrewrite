@@ -90,14 +90,12 @@ class WorkerStock {
         $this->validate();
     }
 
-    /** @return list<Worker> */
-    public function takeGreens(int $n): array {
-        return array_splice($this->greens, 0, $n);
+    public function takeGreens(int $n): WorkerGroup {
+        return new WorkerGroup(array_splice($this->greens, 0, $n));
     }
 
-    /** @return list<Worker> */
-    public function takeFromBag(int $n): array {
-        return array_splice($this->bag, 0, $n);
+    public function takeFromBag(int $n): WorkerGroup {
+        return new WorkerGroup(array_splice($this->bag, 0, $n));
     }
 
     public function bagSize(): int {

@@ -21,11 +21,11 @@ final class WorkerStockTest extends TestCase
         $stock->putGreen(new Worker(5, WorkerColor::GREEN));
         $stock->putGreen(new Worker(6, WorkerColor::GREEN));
         $w = $stock->takeGreens(2);
-        $this->assertEquals(2, count($w));
+        $this->assertEquals(2, $w->size());
         $this->assertEquals(1, count($stock->greens()));
 
         $w = $stock->takeGreens(2);
-        $this->assertEquals(1, count($w));
+        $this->assertEquals(1, $w->size());
         $this->assertEquals(0, $stock->greensSize());
     }
 
@@ -35,11 +35,11 @@ final class WorkerStockTest extends TestCase
         $stock->putInBag(new Worker(2, WorkerColor::BLUE));
         $stock->putInBag(new Worker(3, WorkerColor::RED));
         $w = $stock->takeFromBag(2);
-        $this->assertEquals(2, count($w));
+        $this->assertEquals(2, $w->size());
         $this->assertEquals(1, count($stock->bagWorkers()));
 
         $w = $stock->takeFromBag(2);
-        $this->assertEquals(1, count($w));
+        $this->assertEquals(1, $w->size());
         $this->assertEquals(0, count($stock->bagWorkers()));
     }
 }

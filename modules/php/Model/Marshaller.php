@@ -83,7 +83,7 @@ class Marshaller {
             'has_start_player' => $village->hasStartPlayer(),
         ];
         if ($allData) {
-            $result['workers'] = self::workers($village->workers());
+            $result['workers'] = $village->workers()->marshal();
             $result['skills'] = self::skills($village->skills());
         }
         return $result;

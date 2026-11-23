@@ -32,7 +32,6 @@ use InvalidArgumentException;
 class Village {
     /**
      * @param array<int,VillageTile> $tiles  key is encoded row/col
-     * @param list<Worker> $workers
      * @param list<Skill> $skills
      * @param list<StockTile> $winterTiles
      * @param list<StockTile> $wonTiles
@@ -40,23 +39,14 @@ class Village {
     public function __construct(
         public readonly int $playerId,
         private array $tiles,
-        private array $workers,
+        private WorkerGroup $workers,
         private array $skills,
         private array $winterTiles,
         private array $wonTiles,
         private bool $hasStartPlayer) {}
 
-    /** @return list<Worker> */
-    public function takeWorkersFromStock(WorkerColor $color, int $num): array {
-        $result = [];
-        $workers = $this->workers;
-        for ($i = 0; $i < $num; ++$i) {
-            $idx = array_find_key($workers, fn ($w) => $w->color == $color);
-            if ($idx !== null) {
-                $result[] = array_splice($workers, $idx, 1)[0];
-            }
-        }
-        return $result;
+    public function takeWorkersFromStock(WorkerColor $color, int $num): WorkerGroup {
+        return $this->workers->takeNWorkersOfColor($num, $color);
     }
 
     /** @return array<int,VillageTile> */
@@ -64,21 +54,21 @@ class Village {
         return $this->tiles;
     }
 
-    /** @return list<Worker> */
-    public function workers(): array {
+    public function workers(): WorkerGroup {
         return $this->workers;
     }
 
+    // FIXME: do we need these 3 forwarders now?
+
+    public function workerById(int $id): ?Worker {
+        return $this->workers->workerById($id);
+    }
     public function addWorker(Worker $worker): void {
-        $this->workers[] = $worker;
+        $this->workers->add($worker);
     }
 
     public function takeWorker(int $id): void {
-        $i = array_find_key($this->workers, fn(Worker $w) => $w->id == $id);
-        if ($i === null) {
-            throw new InvalidArgumentException("no worker with id {$id}");
-        }
-        array_splice($this->workers, $i, 1);
+        $this->workers->takeWorkerById($id);
     }
 
     /** @return list<Skill> */

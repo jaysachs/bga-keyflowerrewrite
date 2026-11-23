@@ -156,15 +156,14 @@ class Model {
             throw new InvalidArgumentException("no workers bid from stock, no bids moved");
         }
 
-        $stockWorkers = [];
-        array_push($stockWorkers, ... $this->village()->takeWorkersFromStock(WorkerColor::BLUE, $numBlue));
-        array_push($stockWorkers, ... $this->village()->takeWorkersFromStock(WorkerColor::RED, $numRed));
-        array_push($stockWorkers, ... $this->village()->takeWorkersFromStock(WorkerColor::YELLOW, $numYellow));
-        array_push($stockWorkers, ... $this->village()->takeWorkersFromStock(WorkerColor::GREEN, $numGreen));
-        if (count($stockWorkers) < $numWorkersFromStock) {
+        $group = new WorkerGroup();
+        $group = $group->combineWith($this->village()->takeWorkersFromStock(WorkerColor::BLUE, $numBlue));
+        $group = $group->combineWith($this->village()->takeWorkersFromStock(WorkerColor::RED, $numRed));
+        $group = $group->combineWith($this->village()->takeWorkersFromStock(WorkerColor::YELLOW, $numYellow));
+        $group = $group->combineWith($this->village()->takeWorkersFromStock(WorkerColor::GREEN, $numGreen));
+        if ($group->size() < $numWorkersFromStock) {
             throw new InvalidArgumentException("Insufficent workers from hand");
         }
-        $group = new WorkerGroup($stockWorkers);
         foreach ($moved as $movedBid) {
             $group = $group->combineWith($movedBid->bid);
         }
@@ -229,7 +228,7 @@ class Model {
         }
         $worker = null;
         if ($worker_pmt_id !== null) {
-            $worker = array_find($this->village()->workers(), fn ($w) => $w->id == $worker_pmt_id);
+            $worker = $this->village()->workerById($worker_pmt_id);
             if (!$worker) {
                 throw new InvalidArgumentException("No worker {$worker_pmt_id} found");
             }

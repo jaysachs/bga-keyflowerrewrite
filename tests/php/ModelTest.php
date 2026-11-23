@@ -200,15 +200,15 @@ final class ModelTest extends TestCase {
     }
 
     private function makeVillage(int $pid, int $red = 0, int $blue = 0, int $yellow = 0, int $green = 0): Village {
-        $workers = [];
+        $workers = new WorkerGroup();
         for ($i = 0; $i < $red; $i++) {
-            $workers[] = $this->makeWorker(WorkerColor::RED);
+            $workers->add($this->makeWorker(WorkerColor::RED));
         }
         for ($i = 0; $i < $blue; $i++) {
-            $workers[] = $this->makeWorker(WorkerColor::BLUE);
+            $workers->add($this->makeWorker(WorkerColor::BLUE));
         }
         for ($i = 0; $i < $yellow; $i++) {
-            $workers[] = $this->makeWorker(WorkerColor::YELLOW);
+            $workers->add($this->makeWorker(WorkerColor::YELLOW));
         }
         /** @var TileType */
         $home = array_shift($this->homeTiles);

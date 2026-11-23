@@ -39,7 +39,7 @@ class AllGameData {
         $this->tilesStock = new TilesStock();
         $this->villages = [];
         foreach ($this->playerIds as $pid) {
-            $this->villages[$pid] = new Village($pid, [], [], [], [], [], false);
+            $this->villages[$pid] = new Village($pid, [], new WorkerGroup(), [], [], [], false);
         }
 
         $this->market = new Market();
@@ -211,19 +211,19 @@ class AllGameData {
                 $skills = $this->skillPile->take(3);
                 break;
             case ActivationReward::WORKER_ANY:
-                $workers = WorkerGroup::of(... $this->workerStock->takeFromBag(1));
+                $workers = $this->workerStock->takeFromBag(1);
                 break;
             case ActivationReward::WORKER_ANY_2:
-                $workers = WorkerGroup::of(... $this->workerStock->takeFromBag(2));
+                $workers = $this->workerStock->takeFromBag(2);
                 break;
             case ActivationReward::WORKER_ANY_3:
-                $workers = WorkerGroup::of(... $this->workerStock->takeFromBag(3));
+                $workers = $this->workerStock->takeFromBag(3);
                 break;
             case ActivationReward::WORKER_GREEN:
-                $workers = WorkerGroup::of(... $this->workerStock->takeGreens(1));
+                $workers = $this->workerStock->takeGreens(1);
                 break;
             case ActivationReward::WORKER_GREEN_2:
-                $workers = WorkerGroup::of(... $this->workerStock->takeGreens(2));
+                $workers = $this->workerStock->takeGreens(2);
                 break;
             case ActivationReward::UPGRADE_1:
                 $upgrades = 1;

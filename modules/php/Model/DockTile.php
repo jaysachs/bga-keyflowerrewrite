@@ -72,7 +72,7 @@ class DockTile {
         if (!$this->passengers->isEmpty() || count($this->cargo) != 0) {
             throw new InvalidArgumentException("boat {$this->type->value} not empty");
         }
-        $this->passengers = new WorkerGroup($workerStock->takeFromBag($this->type->passengerCapacity()));
+        $this->passengers = $workerStock->takeFromBag($this->type->passengerCapacity());
         $this->cargo = $skillPile->take($this->type->cargoCapacity());
     }
 
