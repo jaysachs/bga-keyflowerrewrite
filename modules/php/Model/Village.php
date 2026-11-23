@@ -135,4 +135,36 @@ class Village {
         }
         return false;
     }
+
+    /**
+     * @return array<mixed>
+     */
+    public function marshal(bool $allData = false): array {
+        $result = [
+            'tiles' => array_map(
+                fn ($vt) => [
+                    'tile_id' => $vt->tile_id,
+                    'tiletype' => $vt->type->value,
+                    'rowcol' => $vt->rowcol,
+                    'orientation' => $vt->orientation,
+                    'activations' => $vt->productionActivations()->marshal()
+                ],
+                $this->tiles()
+            ),
+            'won_tiles' => array_map(
+                fn ($wt) => [
+                    'tile_id' => $wt->tile_id,
+                    'tiletype' => $wt->type->value,
+                ],
+                $this->wonTiles()
+            ),
+            'player_id' => $this->playerId,
+            'has_start_player' => $this->hasStartPlayer(),
+        ];
+        if ($allData) {
+            $result['workers'] = $this->workers()->marshal();
+            $result['skills'] = $this->skills->marshal();
+        }
+        return $result;
+    }
 }
