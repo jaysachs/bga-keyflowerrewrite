@@ -83,16 +83,7 @@ class TestStore implements PersistentStore {
     }
 }
 
-final class ModelTest extends TestCase {
-
-    private function assertThrows(Closure $c, string $msg = "should have thrown exception"): void {
-        try {
-            $c();
-            $this->assertTrue(false, $msg);
-        } catch (InvalidArgumentException $e) {
-            $this->assertTrue(true, $msg);
-        }
-    }
+final class ModelTest extends TestBase {
 
     public function testNextSeason(): void {
         $pids = [self::PID1, self::PID2];

@@ -10,7 +10,7 @@ use Bga\Games\keyflowerrewrite\Model\{
     WorkerColor,
 };
 
-final class WorkerStockTest extends TestCase
+final class WorkerStockTest extends TestBase
 {
     public function testTakeFromGreens(): void {
         $stock = new WorkerStock();

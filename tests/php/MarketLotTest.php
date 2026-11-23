@@ -12,7 +12,7 @@ use Bga\Games\keyflowerrewrite\Model\{
     WorkerGroup,
 };
 
-final class MarketLotTest extends TestCase
+final class MarketLotTest extends TestBase
 {
     public function testCreationAndGetters() : void{
         $bids = [98 => WorkerGroup::of(new Worker(3, WorkerColor::BLUE))];

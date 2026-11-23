@@ -10,17 +10,8 @@ use Bga\Games\keyflowerrewrite\Model\{
     SkillSet,
 };
 
-final class SkillSetTest extends TestCase
+final class SkillSetTest extends TestBase
 {
-    private function assertThrows(Closure $c, string $msg = "should have thrown exception"): void {
-        try {
-            $c();
-            $this->assertTrue(false, $msg);
-        } catch (InvalidArgumentException $e) {
-            $this->assertTrue(true, $msg);
-        }
-    }
-
     public function testEmpty() : void {
         $ss = new SkillSet();
 

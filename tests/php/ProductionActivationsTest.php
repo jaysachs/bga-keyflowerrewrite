@@ -11,17 +11,8 @@ use Bga\Games\keyflowerrewrite\Model\{
     WorkerGroup,
 };
 
-final class ProductionActivationsTest extends TestCase
+final class ProductionActivationsTest extends TestBase
 {
-    private function assertThrows(Closure $c, string $msg = "should have thrown exception"): void {
-        try {
-            $c();
-            $this->assertTrue(false, $msg);
-        } catch (InvalidArgumentException $e) {
-            $this->assertTrue(true, $msg);
-        }
-    }
-
     public function testEmpty(): void {
         $pa = new ProductionActivations([]);
         $this->assertTrue($pa->isActivatable(), "empty activations should be activatable");
