@@ -16,6 +16,7 @@ use Bga\Games\keyflowerrewrite\Model\{
     PersistentStore,
     ProductionResult,
     Resource,
+    ResourceSet,
     ResourceType,
     RowCol,
     Season,
@@ -227,7 +228,7 @@ final class ModelTest extends TestCase {
 
         $result = $this->model->activate($lot1->tile_id, [], 0, 1, 1, 0);
 
-        $this->assertEquals(new ActivationResult($lot1, new ProductionResult(WorkerGroup::of($worker), null, new SkillSet(), null), $wg, [], null), $result);
+        $this->assertEquals(new ActivationResult($lot1, new ProductionResult(WorkerGroup::of($worker), new ResourceSet(), new SkillSet(), null), $wg, [], null), $result);
     }
 
     public function testActivate_boat4b_failsIfFirstWorkers(): void {
@@ -252,7 +253,7 @@ final class ModelTest extends TestCase {
 
         $result = $this->model->activate($lot1->tile_id, [], 1, 0, 0, 0);
 
-        $this->assertEquals(new ActivationResult($lot1, new ProductionResult(new WorkerGroup(), [$resource], new SkillSet(), null), $wg, [], $this->model->village()->homeTile()), $result);
+        $this->assertEquals(new ActivationResult($lot1, new ProductionResult(new WorkerGroup(), ResourceSet::of($resource), new SkillSet(), null), $wg, [], $this->model->village()->homeTile()), $result);
     }
 
     public function testActivate_resourcesFromOwnVillage(): void {
@@ -265,7 +266,7 @@ final class ModelTest extends TestCase {
 
         $result = $this->model->activate($tile->tile_id, [], 1, 0, 0, 0);
 
-        $this->assertEquals(new ActivationResult($tile, new ProductionResult(new WorkerGroup(), [$resource], new SkillSet(), null), $wg, [], $tile), $result);
+        $this->assertEquals(new ActivationResult($tile, new ProductionResult(new WorkerGroup(), ResourceSet::of($resource), new SkillSet(), null), $wg, [], $tile), $result);
     }
 
     public function testActivate_resourcesFromOtherVillage(): void {
@@ -278,7 +279,7 @@ final class ModelTest extends TestCase {
 
         $result = $this->model->activate($tile->tile_id, [], 1, 0, 0, 0);
 
-        $this->assertEquals(new ActivationResult($tile, new ProductionResult(new WorkerGroup(), [$resource], new SkillSet(), null), $wg, [], $this->model->village()->homeTile()), $result);
+        $this->assertEquals(new ActivationResult($tile, new ProductionResult(new WorkerGroup(), ResourceSet::of($resource), new SkillSet(), null), $wg, [], $this->model->village()->homeTile()), $result);
     }
 
 
@@ -291,7 +292,7 @@ final class ModelTest extends TestCase {
 
         $result = $this->model->activate($lot1->tile_id, [], 1, 0, 0, 0);
 
-        $this->assertEquals(new ActivationResult($lot1, new ProductionResult(WorkerGroup::of($worker), null, new SkillSet(), null), $wg, [], null), $result);
+        $this->assertEquals(new ActivationResult($lot1, new ProductionResult(WorkerGroup::of($worker), new ResourceSet(), new SkillSet(), null), $wg, [], null), $result);
     }
 
     public function testActivate_matchesColor(): void {
@@ -304,7 +305,7 @@ final class ModelTest extends TestCase {
 
         $result = $this->model->activate($lot1->tile_id, [], 1, 0, 0, 0);
 
-        $this->assertEquals(new ActivationResult($lot1, new ProductionResult(WorkerGroup::of($worker), null, new SkillSet(), null), $wg, [], null), $result);
+        $this->assertEquals(new ActivationResult($lot1, new ProductionResult(WorkerGroup::of($worker), new ResourceSet(), new SkillSet(), null), $wg, [], null), $result);
     }
 
     public function testActivate_doesNotMatchBidColor(): void {
@@ -334,7 +335,7 @@ final class ModelTest extends TestCase {
 
         $result = $this->model->activate($lot1->tile_id, [], 1, 0, 0, 0, null, $pmt->id);
 
-        $this->assertEquals(new ActivationResult($lot1, new ProductionResult(WorkerGroup::of($reward), null, new SkillSet(), null), $wg, [], null), $result);
+        $this->assertEquals(new ActivationResult($lot1, new ProductionResult(WorkerGroup::of($reward), new ResourceSet(), new SkillSet(), null), $wg, [], null), $result);
     }
 
     public function testActivate_costNotPaid(): void {

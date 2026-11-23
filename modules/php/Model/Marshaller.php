@@ -27,27 +27,9 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
-use Bga\Games\keyflowerrewrite\Model\Dock;
-use Bga\Games\keyflowerrewrite\Model\Market;
 use Bga\Games\keyflowerrewrite\Model\Village;
 
 class Marshaller {
-
-    /**
-     * @param array<int,Skill> $ss
-     * @return array<mixed>
-     */
-    public static function skills(?array $ss): array {
-        return array_map(fn (Skill $s) => $s->marshal(), $ss ?? []);
-    }
-
-    /**
-     * @param array<int,Resource> $rs
-     * @return array<mixed>
-     */
-    public static function resources(?array $rs): array {
-        return array_map(fn (Resource $r) => $r->marshal(), $rs ?? []);
-    }
 
     /**
      * @return array<mixed>

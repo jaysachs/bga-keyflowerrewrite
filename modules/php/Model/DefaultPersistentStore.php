@@ -347,9 +347,7 @@ class DefaultPersistentStore implements PersistentStore {
             }
             // TODO: add bids
         }
-        foreach (ResourceType::cases() as $rt) {
-            array_push($values, ... $this->resourceVals($data->resourceStock->ofType($rt)));
-        }
+        array_push($values, ... $this->resourceVals($data->resourceStock->allItems()));
         foreach ($data->dock->boats() as $pos => $mt) {
             $values[] = $this->vals($mt->id, PieceType::TILE, LocType::DOCK, $mt->type->value, null, $pos);
             array_push($values, ... $this->workervals(LocType::BOAT, $mt->passengers()->workers(), $mt->id));
@@ -359,7 +357,7 @@ class DefaultPersistentStore implements PersistentStore {
             foreach ($village->tiles() as $pos => $vt) {
                 $values[] = $this->vals($vt->tile_id, PieceType::TILE, LocType::VILLAGE, $vt->type->value, $vt->rowcol, $vt->orientation, $village->playerId);
                 array_push($values, ... $this->activationVals($vt->productionActivations(), $vt->tile_id));
-                array_push($values, ... $this->resourceVals($vt->resources(), $vt->tile_id, $pid));
+                array_push($values, ... $this->resourceVals($vt->resources()->allItems(), $vt->tile_id, $pid));
             }
             array_push($values, ... $this->workervals(LocType::VILLAGE, $village->workers()->workers(), null, $village->playerId));
             array_push($values, ... $this->skillVals(LocType::VILLAGE, $village->skills->skills(), null, $village->playerId));
@@ -420,12 +418,12 @@ class DefaultPersistentStore implements PersistentStore {
                 LocType::VILLAGE, null, null, $player_id)
             );
         }
-        else if ($productionResult->resources) {
+        else if (!$productionResult->resources->isEmpty()) {
             if ($destTile === null) {
                 throw new InvalidArgumentException("must specify destTile for resource production awards");
             }
             $this->db->execute($this->sqlUpdateLocation(
-                array_map(fn ($w) => $w->id, $productionResult->resources),
+                array_map(fn ($w) => $w->id, $productionResult->resources->allItems()),
                 LocType::TILE, $destTile->tile_id, null, $player_id)
             );
         } else {

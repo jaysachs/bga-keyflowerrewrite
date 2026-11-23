@@ -29,7 +29,7 @@ namespace Bga\Games\keyflowerrewrite\Model;
 
 use InvalidArgumentException;
 
-class ResourceStock {
+class ResourceSet {
 
     /** @var array<string,list<Resource>> */
     private array $resources;
@@ -38,9 +38,21 @@ class ResourceStock {
         $this->resources = array_fill_keys(array_map(fn ($t) => $t->value, ResourceType::cases()), []);
     }
 
+    public static function of(Resource... $res): ResourceSet {
+        $result = new ResourceSet();
+        foreach ($res as $r) {
+            $result->put($r);
+        }
+        return $result;
+    }
+
     /** @return list<Resource> */
-    public function ofType(ResourceType $type): array {
-        return $this->resources[$type->value];
+    public function allItems(): array {
+        $result = [];
+        foreach ($this->resources as $t => $rts) {
+            array_push($result, ... $rts);
+        }
+        return $result;
     }
 
     private function verifyUniqueIds(): void {
@@ -55,14 +67,34 @@ class ResourceStock {
         $this->verifyUniqueIds();
     }
 
-    /** @return list<Resource> */
-    public function take(ResourceType $rt, int $num = 1): array {
-        return array_splice($this->resources[$rt->value], 0, $num);
+
+    public function size(): int {
+        return array_reduce($this->resources, fn ($carry, $rts) => $carry + count($rts), 0);
     }
 
-    public static function forNewGame(): ResourceStock {
+    public function isEmpty(): bool {
+        return $this->size() == 0;
+    }
+
+    public function putAll(ResourceSet $other): void {
+        foreach ($other->resources as $t => $rts) {
+            array_shift($this->resources[$t], ... $rts);
+        }
+        $this->verifyUniqueIds();
+    }
+
+    public function take(ResourceType $rt, int $num = 1): ResourceSet {
+        $items = array_splice($this->resources[$rt->value], 0, $num);
+        $result = new ResourceSet();
+        foreach ($items as $resource) {
+            $result->put($resource);
+        }
+        return $result;
+    }
+
+    public static function forNewGame(): ResourceSet {
         $lastId = 3000;
-        $stock = new ResourceStock();
+        $stock = new ResourceSet();
         foreach (ResourceType::cases() as $rt) {
             $c = $rt == ResourceType::GOLD ? 48 : 24;
             for ($i = 0; $i < $c; ++$i) {
@@ -70,5 +102,11 @@ class ResourceStock {
             }
         }
         return $stock;
+    }
+
+    /** @return array<mixed> */
+    public function marshal(): mixed {
+
+        return array_merge(array_map(fn ($rs) => array_map(fn (Resource $r) => $r->marshal(), $rs), $this->resources));
     }
 }

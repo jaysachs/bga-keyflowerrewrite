@@ -35,7 +35,7 @@ class AllGameData {
     {
         $this->workerStock = new WorkerStock();
         $this->skillPile = new SkillSet();
-        $this->resourceStock = new ResourceStock();
+        $this->resourceStock = new ResourceSet();
         $this->tilesStock = new TilesStock();
         $this->villages = [];
         foreach ($this->playerIds as $pid) {
@@ -50,7 +50,7 @@ class AllGameData {
 
     public SkillSet $skillPile;
 
-    public ResourceStock $resourceStock;
+    public ResourceSet $resourceStock;
 
     public TilesStock $tilesStock;
 
@@ -73,7 +73,7 @@ class AllGameData {
         $result = new AllGameData($playerIds, null);
         $result->workerStock = WorkerStock::forNewGame();
         $result->skillPile = SkillSet::forNewGame();
-        $result->resourceStock = ResourceStock::forNewGame();
+        $result->resourceStock = ResourceSet::forNewGame();
         $result->tilesStock = TilesStock::forNewGame($numPlayers);
 
         $homes = TileType::initialHomeTiles();
@@ -128,7 +128,7 @@ class AllGameData {
 
     public function takeActivationRewards(ActivationReward $rewardType, ?ResourceType $requested): ProductionResult {
         $skills = new SkillSet();
-        $resources = null;
+        $resources = new ResourceSet();
         $workers = new WorkerGroup();
         $upgrades = null;
 
@@ -137,7 +137,7 @@ class AllGameData {
                 if (!$requested) {
                     throw new InvalidArgumentException("selected resource reward requires a specific type requested");
                 }
-                $resources = $this->resourceStock->take($requested, 1);
+                $resources->putAll($this->resourceStock->take($requested, 1));
                 $requested = null;
                 break;
             case ActivationReward::GOLD:
@@ -177,29 +177,21 @@ class AllGameData {
                 $resources = $this->resourceStock->take(ResourceType::STONE, 3);
                 break;
             case ActivationReward::IRON_GOLD:
-                $resources = array_merge(
-                    $resources = $this->resourceStock->take(ResourceType::IRON, 1),
-                    $resources = $this->resourceStock->take(ResourceType::GOLD, 1)
-                );
+                $resources = $this->resourceStock->take(ResourceType::IRON, 1);
+                $resources->putAll($this->resourceStock->take(ResourceType::GOLD, 1));
                 break;
             case ActivationReward::WOOD_GOLD:
-                $resources = array_merge(
-                    $resources = $this->resourceStock->take(ResourceType::WOOD, 1),
-                    $resources = $this->resourceStock->take(ResourceType::GOLD, 1)
-                );
+                $resources = $this->resourceStock->take(ResourceType::WOOD, 1);
+                $resources->putAll($this->resourceStock->take(ResourceType::GOLD, 1));
                 break;
             case ActivationReward::STONE_GOLD:
-                $resources = array_merge(
-                    $resources = $this->resourceStock->take(ResourceType::STONE, 1),
-                    $resources = $this->resourceStock->take(ResourceType::GOLD, 1)
-                );
+                $resources = $this->resourceStock->take(ResourceType::STONE, 1);
+                $resources->putAll($this->resourceStock->take(ResourceType::GOLD, 1));
                 break;
             case ActivationReward::RESOURCE_3:
-                 $resources = array_merge(
-                    $resources = $this->resourceStock->take(ResourceType::WOOD, 1),
-                    $resources = $this->resourceStock->take(ResourceType::STONE, 1),
-                    $resources = $this->resourceStock->take(ResourceType::IRON, 1)
-                );
+                $resources = $this->resourceStock->take(ResourceType::WOOD, 1);
+                $resources->putAll($this->resourceStock->take(ResourceType::STONE, 1));
+                $resources->putAll($this->resourceStock->take(ResourceType::IRON, 1));
                 break;
             case ActivationReward::SKILL_ANY:
                 $skills->addSet($this->skillPile->takeN(1));

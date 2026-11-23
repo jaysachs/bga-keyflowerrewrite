@@ -362,7 +362,7 @@ class Model {
         // TODO: consider that AllGameData is not that different from Model ... except that it doesnt' persist.
         //       that's an interesting avenue to explore.
         $destTile = null;
-        if ($result->resources) {
+        if (!$result->resources->isEmpty()) {
             if ($t instanceof VillageTile) {
                 if ($t->playerId == $this->activePlayerId) {
                     $destTile = $t;
@@ -372,7 +372,7 @@ class Model {
             } else {
                 $destTile = $this->village()->homeTile();
             }
-            foreach ($result->resources as $resource) {
+            foreach ($result->resources->allItems() as $resource) {
                 $destTile->addResource($resource);
             }
         } else if (!$result->skills->isEmpty()) {
