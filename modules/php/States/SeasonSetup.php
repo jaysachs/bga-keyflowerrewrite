@@ -56,8 +56,8 @@ class SeasonSetup extends AbstractState
         $this->game->notify->all('newSeason', 'Change of season to ${season}', [
             'season' => $seasonChangeData['season']->value,
             'startPlayerId' => $startPlayerId,
-            'dock' => Marshaller::dock($model->allData()->dock),
-            'market' => Marshaller::market($model->allData()->market),
+            'dock' => $model->allData()->dock->marshal(),
+            'market' => $model->allData()->market->marshal()
         ]);
 
         return PlayerTurn::class;

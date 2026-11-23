@@ -89,4 +89,20 @@ class Dock {
         }
         return $dock;
     }
+
+    /**
+     * @return array<mixed>
+     */
+    public function marshal(): array {
+        return array_map(
+            fn ($b) => [
+                'id' => $b->id,
+                'boattype' => $b->type->value,
+                // FIXME: need positions
+                'passengers' => $b->passengers()->marshal(),
+                'cargo' => Marshaller::skills($b->cargo())
+            ],
+            $this->boats()
+        );
+    }
 }

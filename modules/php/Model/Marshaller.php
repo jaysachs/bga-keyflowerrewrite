@@ -34,14 +34,6 @@ use Bga\Games\keyflowerrewrite\Model\Village;
 class Marshaller {
 
     /**
-     * @param list<Worker> $ws
-     * @return array<mixed>
-     */
-    public static function workers(array $ws): array {
-        return array_map(fn (Worker $w) => $w->marshal(), $ws);
-    }
-
-    /**
      * @param array<int,Skill> $ss
      * @return array<mixed>
      */
@@ -87,42 +79,5 @@ class Marshaller {
             $result['skills'] = self::skills($village->skills());
         }
         return $result;
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    public static function dock(Dock $dock): array {
-        return array_map(
-            fn ($b) => [
-                'id' => $b->id,
-                'boattype' => $b->type->value,
-                // FIXME: need positions
-                'passengers' => $b->passengers()->marshal(),
-                'cargo' => self::skills($b->cargo())
-            ],
-            $dock->boats()
-        );
-    }
-
-    /**
-     * @return array<array<string,mixed>>
-     */
-    public static function market(Market $market): array {
-        return array_map(
-            fn ($mt) => [
-                'id' => $mt->tile_id,
-                'tiletype' => $mt->type->value,
-                'activations' => $mt->productionActivations()->marshal(),
-                'bids' => array_map(fn ($b, $pid) => [
-                        'player_id' => $pid,
-                        'workers' => $b->marshal(),
-                    ],
-                    $mt->bids(),
-                    array_keys($mt->bids())
-                )
-            ],
-            $market->lots()
-        );
     }
 }
