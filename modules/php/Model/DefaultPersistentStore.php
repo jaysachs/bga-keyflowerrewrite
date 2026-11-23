@@ -410,7 +410,7 @@ class DefaultPersistentStore implements PersistentStore {
         }
         if (!$productionResult->workers->isEmpty()) {
             $this->db->execute($this->sqlUpdateLocation(
-                $productionResult->workers->workerIds(),
+                array_keys($productionResult->workers->workers()),
                 LocType::VILLAGE, null, null, $player_id)
             );
         }
