@@ -58,9 +58,13 @@ final class MarketLotTest extends TestCase
 
         $mt = new MarketLot(1000, TileType::ALEHOUSE, $bids);
         $this->assertEquals($bids, $mt->bids());
+
         $newBid = WorkerGroup::of(new Worker(6, WorkerColor::BLUE), new Worker(7, WorkerColor::BLUE));
         $mt->bid(98, $newBid);
-        $wg = $bids[98]->combineWith($newBid);
+
+        $wg = new WorkerGroup();
+        $wg->addGroup(WorkerGroup::of(new Worker(3, WorkerColor::BLUE)));
+        $wg->addGroup($newBid);
         $this->assertEquals([97 => $bids[97], 98 => $wg], $mt->bids());
         $this->assertEquals($wg, $mt->highBid());
     }

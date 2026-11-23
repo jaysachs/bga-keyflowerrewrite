@@ -157,15 +157,15 @@ class Model {
         }
 
         $group = new WorkerGroup();
-        $group = $group->combineWith($this->village()->takeWorkersFromStock(WorkerColor::BLUE, $numBlue));
-        $group = $group->combineWith($this->village()->takeWorkersFromStock(WorkerColor::RED, $numRed));
-        $group = $group->combineWith($this->village()->takeWorkersFromStock(WorkerColor::YELLOW, $numYellow));
-        $group = $group->combineWith($this->village()->takeWorkersFromStock(WorkerColor::GREEN, $numGreen));
+        $group->addGroup($this->village()->takeWorkersFromStock(WorkerColor::BLUE, $numBlue));
+        $group->addGroup($this->village()->takeWorkersFromStock(WorkerColor::RED, $numRed));
+        $group->addGroup($this->village()->takeWorkersFromStock(WorkerColor::YELLOW, $numYellow));
+        $group->addGroup($this->village()->takeWorkersFromStock(WorkerColor::GREEN, $numGreen));
         if ($group->size() < $numWorkersFromStock) {
             throw new InvalidArgumentException("Insufficent workers from hand");
         }
         foreach ($moved as $movedBid) {
-            $group = $group->combineWith($movedBid->bid);
+            $group->addGroup($movedBid->bid);
         }
 
         return [

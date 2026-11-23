@@ -51,7 +51,7 @@ class MarketLot {
             throw new InvalidArgumentException("bid must be non-empty");
         }
         if (isset($this->bids[$playerId])) {
-            $this->bids[$playerId] = $this->bids[$playerId]->combineWith($bid);
+            $this->bids[$playerId]->addGroup($bid);
         } else {
             $this->bids[$playerId] = $bid;
         }

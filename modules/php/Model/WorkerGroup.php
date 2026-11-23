@@ -111,6 +111,15 @@ class WorkerGroup implements Marshalable {
         $this->workers[$worker->id] = $worker;
     }
 
+    /* does not mutate this */
+    public function addGroup(WorkerGroup $other): void {
+        // TODO: take them out of the other one?
+        foreach ($other->workers as $w) {
+            $this->add($w);
+        }
+    }
+
+
     /** @return array<int,Worker> */
     public function workers(): array {
         return $this->workers;
@@ -123,14 +132,6 @@ class WorkerGroup implements Marshalable {
 
     public function size(): int {
         return count($this->workers);
-    }
-
-    /* does not mutate this */
-    public function combineWith(WorkerGroup $other): WorkerGroup {
-        $workers = [];
-        array_push($workers, ... $this->workers);
-        array_push($workers, ... $other->workers);
-        return new WorkerGroup($workers);
     }
 
     #[Override]

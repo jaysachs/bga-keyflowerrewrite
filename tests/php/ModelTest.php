@@ -457,7 +457,7 @@ final class ModelTest extends TestCase {
 
         $result = $this->model->bid($lot1->tile_id, [$lot2->tile_id], 2, WorkerColor::RED);
 
-        $wg = $wg->combineWith($bid1);
+        $wg->addGroup($bid1);
         $this->assertEquals(new BidResult($wg, $lot1->tile_id, [new MovedBid($bid1, $lot2)]), $result);
     }
 
