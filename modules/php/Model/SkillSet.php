@@ -83,12 +83,12 @@ class SkillSet implements Marshalable {
     }
 
     public function takeSkillById(int $id): Skill {
-        if (!isset($this->skills[$id])) {
+        $skill = $this->skillById($id);
+        if (!$skill) {
             throw new InvalidArgumentException("no skill with id {$id}");
         }
-        $s = $this->skills[$id];
         unset($this->skills[$id]);
-        return $s;
+        return $skill;
     }
 
     public function skillById(int $id): ?Skill {
