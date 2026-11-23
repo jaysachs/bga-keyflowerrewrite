@@ -87,7 +87,7 @@ class MarketLot {
     /** Returns true if the player has a non-empty bid that is not the high bid */
     public function hasNonWinningBid(int $playerId): bool {
         $bid = $this->bidBy($playerId);
-        if ($bid === null || count($bid->workers()) == 0) {
+        if ($bid === null || $bid->size() == 0) {
             // never bid, or already moved a losing bid
             return false;
         }

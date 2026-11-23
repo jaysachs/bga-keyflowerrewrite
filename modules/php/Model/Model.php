@@ -150,7 +150,7 @@ class Model {
                 throw new InvalidArgumentException("cannot mix colors in a bid");
             }
             // FIXME: remove from market tile? Or leave empty?
-            $moved[] = new MovedBid(new WorkerGroup($bid->workers()), $movedBidTile);
+            $moved[] = new MovedBid($bid, $movedBidTile);
         }
         if ($numWorkersFromStock <= 0 && count($moved) == 0) {
             throw new InvalidArgumentException("no workers bid from stock, no bids moved");
@@ -380,9 +380,7 @@ class Model {
                 $this->village()->addSkill($skill);
             }
         } else if (!$result->workers->isEmpty()) {
-            foreach ($result->workers->workers() as $worker) {
-                $this->village()->addWorker($worker);
-            }
+            $this->village()->addWorkerGroup($result->workers);
         }
 
         $this->ps->updateActivation(

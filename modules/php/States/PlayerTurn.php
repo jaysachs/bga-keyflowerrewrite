@@ -182,7 +182,7 @@ class PlayerTurn extends AbstractState {
                 'bidMoved',
                 '${player_name} moved bid of ${num} ${color} from ${tiletype}',
                 [
-                    'num' => count($mb->bid->workers()),
+                    'num' => $mb->bid->size(),
                     'color' => $mb->bid->color()->marshal(),
                     'tile_id' => $mb->sourceTile->tile_id,
                     'tiletype' => $mb->sourceTile->type->value,
@@ -209,7 +209,7 @@ class PlayerTurn extends AbstractState {
             [
                 'player_id' => $active_player_id,
                 'marketlot_id' => $market_tile_id,
-                'num' => count($bid->workers()),
+                'num' => $bid->size(),
                 'color' => $bid->color()->marshal(),
                 'tiletype' => $model->market()->marketLotById($market_tile_id)->type->value,
                 // the tiles the moved bids (bidMoved, just before) leave, so the client can show the whole bid in one step

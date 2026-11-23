@@ -67,6 +67,10 @@ class Village {
         $this->workers->add($worker);
     }
 
+    public function addWorkerGroup(WorkerGroup $wg): void {
+        $this->workers = $this->workers->combineWith($wg);
+    }
+
     public function takeWorker(int $id): void {
         $this->workers->takeWorkerById($id);
     }

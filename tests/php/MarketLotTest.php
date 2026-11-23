@@ -60,7 +60,7 @@ final class MarketLotTest extends TestCase
         $this->assertEquals($bids, $mt->bids());
         $newBid = WorkerGroup::of(new Worker(6, WorkerColor::BLUE), new Worker(7, WorkerColor::BLUE));
         $mt->bid(98, $newBid);
-        $wg = new WorkerGroup(array_merge($bids[98]->workers(), $newBid->workers()));
+        $wg = $bids[98]->combineWith($newBid);
         $this->assertEquals([97 => $bids[97], 98 => $wg], $mt->bids());
         $this->assertEquals($wg, $mt->highBid());
     }

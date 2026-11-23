@@ -185,9 +185,7 @@ final class ModelTest extends TestCase {
 
     private function initializeVillageWorkers(WorkerColor $color, int $num) : WorkerGroup {
         $wg = $this->makeWorkerGroup($color, $num);
-        foreach ($wg->workers() as $worker) {
-            $this->model->village()->addWorker($worker);
-        }
+        $this->model->village()->addWorkerGroup($wg);
         return $wg;
     }
 
@@ -224,9 +222,7 @@ final class ModelTest extends TestCase {
         $this->model->village()->placeTile(new VillageTile(50, TileType::BOAT4B, RowCol::fromRowCol(1,1), 1, self::PID1));
 
         $wg = WorkerGroup::of($this->makeWorker(WorkerColor::YELLOW), $this->makeWorker(WorkerColor::RED));
-        foreach ($wg->workers() as $w) {
-            $this->model->village()->addWorker($w);
-        }
+        $this->model->village()->addWorkerGroup($wg);
 
         $result = $this->model->activate($lot1->tile_id, [], 0, 1, 1, 0);
 
@@ -241,9 +237,7 @@ final class ModelTest extends TestCase {
         $this->model->village()->placeTile(new VillageTile(50, TileType::BOAT4B, RowCol::fromRowCol(1,1), 1, self::PID1));
 
         $wg = WorkerGroup::of($this->makeWorker(WorkerColor::YELLOW), $this->makeWorker(WorkerColor::RED));
-        foreach ($wg->workers() as $w) {
-            $this->model->village()->addWorker($w);
-        }
+        $this->model->village()->addWorkerGroup($wg);
 
         $this->assertThrows(fn () => $this->model->activate($lot1->tile_id, [], 0, 1, 1, 0));
     }
