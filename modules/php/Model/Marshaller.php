@@ -76,7 +76,7 @@ class Marshaller {
         ];
         if ($allData) {
             $result['workers'] = $village->workers()->marshal();
-            $result['skills'] = self::skills($village->skills());
+            $result['skills'] = $village->skills->marshal();
         }
         return $result;
     }

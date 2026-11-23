@@ -174,7 +174,7 @@ class DefaultPersistentStore implements PersistentStore {
                             $result->villages[$pid]->addSkill($skill);
                             break;
                         case LocType::SKILLPILE:
-                            $result->skillPile->put($skill);
+                            $result->skillPile->add($skill);
                             break;
                         case LocType::BOAT:
                             $boat_id = $loc_id;
@@ -297,7 +297,7 @@ class DefaultPersistentStore implements PersistentStore {
     }
 
     /**
-     * @param list<Skill> $ws
+     * @param array<int,Skill> $ws
      * @return list<string>
      */
      function skillVals(LocType $loc, array $ws, ?int $loc_id = null, ?int $pid = null): array {
@@ -353,7 +353,7 @@ class DefaultPersistentStore implements PersistentStore {
         foreach ($data->dock->boats() as $pos => $mt) {
             $values[] = $this->vals($mt->id, PieceType::TILE, LocType::DOCK, $mt->type->value, null, $pos);
             array_push($values, ... $this->workervals(LocType::BOAT, $mt->passengers()->workers(), $mt->id));
-            array_push($values, ... $this->skillvals(LocType::BOAT, $mt->cargo(), $mt->id));
+            array_push($values, ... $this->skillvals(LocType::BOAT, $mt->cargo()->skills(), $mt->id));
         }
         foreach ($data->villages as $pid => $village) {
             foreach ($village->tiles() as $pos => $vt) {
@@ -362,7 +362,7 @@ class DefaultPersistentStore implements PersistentStore {
                 array_push($values, ... $this->resourceVals($vt->resources(), $vt->tile_id, $pid));
             }
             array_push($values, ... $this->workervals(LocType::VILLAGE, $village->workers()->workers(), null, $village->playerId));
-            array_push($values, ... $this->skillVals(LocType::VILLAGE, $village->skills(), null, $village->playerId));
+            array_push($values, ... $this->skillVals(LocType::VILLAGE, $village->skills->skills(), null, $village->playerId));
             if ($village->hasStartPlayer()) {
                 $values[] = $this->vals(1, PieceType::STARTPLAYER, LocType::VILLAGE, null, null, null, $village->playerId);
             }
@@ -414,9 +414,9 @@ class DefaultPersistentStore implements PersistentStore {
                 LocType::VILLAGE, null, null, $player_id)
             );
         }
-        else if ($productionResult->skills) {
+        else if (!$productionResult->skills->isEmpty()) {
             $this->db->execute($this->sqlUpdateLocation(
-                array_map(fn ($w) => $w->id, $productionResult->skills),
+                array_map(fn ($w) => $w->id, $productionResult->skills->skills()),
                 LocType::VILLAGE, null, null, $player_id)
             );
         }

@@ -32,7 +32,6 @@ use InvalidArgumentException;
 class Village {
     /**
      * @param array<int,VillageTile> $tiles  key is encoded row/col
-     * @param list<Skill> $skills
      * @param list<StockTile> $winterTiles
      * @param list<StockTile> $wonTiles
      */
@@ -40,7 +39,7 @@ class Village {
         public readonly int $playerId,
         private array $tiles,
         private WorkerGroup $workers,
-        private array $skills,
+        public SkillSet $skills,
         private array $winterTiles,
         private array $wonTiles,
         private bool $hasStartPlayer) {}
@@ -75,21 +74,12 @@ class Village {
         $this->workers->takeWorkerById($id);
     }
 
-    /** @return list<Skill> */
-    public function skills(): array {
-        return $this->skills;
-    }
-
     public function addSkill(Skill $skill): void {
-        $this->skills[] = $skill;
+        $this->skills->add($skill);
     }
 
     public function takeSkill(int $id): void {
-        $i = array_find_key($this->skills, fn(Skill $s) => $s->id == $id);
-        if ($i === null) {
-            throw new InvalidArgumentException("no skill with id {$id}");
-        }
-        array_splice($this->skills, $i, 1);
+        $this->skills->takeSkillById($id);
     }
 
     /** @return list<StockTile> */

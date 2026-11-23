@@ -63,7 +63,7 @@ class Dock {
         }
     }
 
-    public function replenish(WorkerStock $workerStock, SkillPile $skillPile): void {
+    public function replenish(WorkerStock $workerStock, SkillSet $skillPile): void {
         foreach ($this->boats as $boat) {
             $boat->refill($workerStock, $skillPile);
         }
@@ -100,7 +100,7 @@ class Dock {
                 'boattype' => $b->type->value,
                 // FIXME: need positions
                 'passengers' => $b->passengers()->marshal(),
-                'cargo' => Marshaller::skills($b->cargo())
+                'cargo' => $b->cargo()->marshal()
             ],
             $this->boats()
         );

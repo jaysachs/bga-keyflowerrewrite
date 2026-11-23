@@ -221,7 +221,7 @@ class Model {
     private function computeActivationCost(mixed $tile, ?int $skill_pmt_id, ?int $worker_pmt_id): ActivationPayment {
         $skill = null;
         if ($skill_pmt_id !== null) {
-            $skill = array_find($this->village()->skills(), fn ($s) => $s->id == $skill_pmt_id);
+            $skill = $this->village()->skills->skillById($skill_pmt_id);
             if (!$skill) {
                 throw new InvalidArgumentException("No skill {$skill_pmt_id} found");
             }
@@ -375,10 +375,8 @@ class Model {
             foreach ($result->resources as $resource) {
                 $destTile->addResource($resource);
             }
-        } else if ($result->skills) {
-            foreach ($result->skills as $skill) {
-                $this->village()->addSkill($skill);
-            }
+        } else if (!$result->skills->isEmpty()) {
+            $this->village()->skills->addSet($result->skills);
         } else if (!$result->workers->isEmpty()) {
             $this->village()->addWorkerGroup($result->workers);
         }

@@ -162,7 +162,7 @@ class PlayerTurn extends AbstractState {
                 'produced' => [
                     'workers' => $activationResult->prodResult->workers->marshal(),
                     'resources' => Marshaller::resources($activationResult->prodResult->resources),
-                    'skills' => Marshaller::skills($activationResult->prodResult->skills),
+                    'skills' => $activationResult->prodResult->skills->marshal(),
                     'upgrades' => $activationResult->prodResult->upgrades,
                     'dest_tile_id' => $activationResult->destTile?->tile_id
                 ]

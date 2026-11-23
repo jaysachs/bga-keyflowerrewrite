@@ -31,10 +31,7 @@ use InvalidArgumentException;
 
 // TODO: Rename to Boat? need to distinguish from summer boats though. Boats & SummerBoats ?
 class DockTile {
-    /**
-     * @param list<Skill> $cargo
-     */
-    public function __construct(public readonly int $id, public TileType $type, private WorkerGroup $passengers = new WorkerGroup(), private array $cargo = []) {
+    public function __construct(public readonly int $id, public TileType $type, private WorkerGroup $passengers = new WorkerGroup(), private SkillSet $cargo = new SkillSet()) {
         if (!$this->type->isStandardBoat()) {
             throw new InvalidArgumentException("only standard boats permitted at docks {$this->type->value}");
         }
@@ -44,8 +41,7 @@ class DockTile {
         return $this->passengers;
     }
 
-    /** @return list<Skill> */
-    public function cargo(): array {
+    public function cargo(): SkillSet {
         return $this->cargo;
     }
 
@@ -54,7 +50,7 @@ class DockTile {
     }
 
     public function addCargo(Skill $skill): void {
-        $this->cargo[] = $skill;
+        $this->cargo->add($skill);
     }
 
     public function takeAllPassengers(): WorkerGroup {
@@ -63,17 +59,16 @@ class DockTile {
         return $result;
     }
 
-    /** @return list<Skill> */
-    public function takeAllCargo(): array {
-        return array_splice($this->cargo, 0, count($this->cargo));
+    public function takeAllCargo(): SkillSet {
+        return $this->cargo->takeN(100);
     }
 
-    public function refill(WorkerStock $workerStock, SkillPile $skillPile): void {
-        if (!$this->passengers->isEmpty() || count($this->cargo) != 0) {
+    public function refill(WorkerStock $workerStock, SkillSet $skillPile): void {
+        if (!$this->passengers->isEmpty() || !$this->cargo->isEmpty()) {
             throw new InvalidArgumentException("boat {$this->type->value} not empty");
         }
         $this->passengers = $workerStock->takeFromBag($this->type->passengerCapacity());
-        $this->cargo = $skillPile->take($this->type->cargoCapacity());
+        $this->cargo->addSet($skillPile->takeN($this->type->cargoCapacity()));
     }
 
     public function flip(): void {
