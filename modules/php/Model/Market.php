@@ -29,7 +29,7 @@ namespace Bga\Games\keyflowerrewrite\Model;
 
 use InvalidArgumentException;
 
-class Market {
+class Market implements Marshalable {
     /** @var array<int,MarketLot> */
     private array $lots = [];
     public function __construct() {

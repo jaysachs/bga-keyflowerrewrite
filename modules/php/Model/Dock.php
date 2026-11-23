@@ -29,7 +29,7 @@ namespace Bga\Games\keyflowerrewrite\Model;
 
 use InvalidArgumentException;
 
-class Dock {
+class Dock implements Marshalable{
     // TODO: convert to array<id, DockTile>
     /** @var list<DockTile> $boats */
     private  array $boats;

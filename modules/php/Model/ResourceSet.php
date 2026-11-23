@@ -29,7 +29,7 @@ namespace Bga\Games\keyflowerrewrite\Model;
 
 use InvalidArgumentException;
 
-class ResourceSet {
+class ResourceSet implements Marshalable {
 
     /** @var array<string,list<Resource>> */
     private array $resources;

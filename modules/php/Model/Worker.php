@@ -27,12 +27,10 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
-use Override;
 
 class Worker implements Marshalable {
     public function __construct(readonly int $id, readonly WorkerColor $color) {}
 
-    #[Override]
     public function marshal(): mixed
     {
         return [

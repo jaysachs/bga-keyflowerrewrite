@@ -27,7 +27,6 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
-use Override;
 
 enum WorkerColor: string implements Marshalable {
     case BLUE = "blue";
@@ -60,7 +59,6 @@ enum WorkerColor: string implements Marshalable {
         return [self::BLUE, self::RED, self::YELLOW, self::GREEN];
     }
 
-    #[Override]
     public function marshal(): ?string {
         return match ($this) {
             self::ANY,self::NONE => null,

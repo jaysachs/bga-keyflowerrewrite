@@ -29,7 +29,6 @@ namespace Bga\Games\keyflowerrewrite\Model;
 
 use Bga\Games\keyflowerrewrite\Utils\Arrays;
 use InvalidArgumentException;
-use Override;
 
 class SkillSet implements Marshalable {
 
@@ -118,7 +117,6 @@ class SkillSet implements Marshalable {
         return count($this->skills);
     }
 
-    #[Override]
     public function marshal(): mixed
     {
         return array_map(fn ($s) => $s->marshal(), array_values($this->skills));
