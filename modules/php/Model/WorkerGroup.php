@@ -31,8 +31,6 @@ use Bga\Games\keyflowerrewrite\Utils\Arrays;
 use InvalidArgumentException;
 use Override;
 
-// FIXME: Consider calling this BidGroup, and then can correctly validate single-color.
-// Compare that to an ActivationGroup, which is allowed to have multiple colors.
 class WorkerGroup implements Marshalable {
 
     /** @var array<int,Worker> */
@@ -79,19 +77,22 @@ class WorkerGroup implements Marshalable {
             return $result;
         }
 
-        // FIXME
-        // Arrays::shuffle($this->workers);
+        $ids = array_keys($this->workers);
+        Arrays::shuffle($ids);
 
-        foreach ($this->workers as $worker) {
-            if ($worker->color == $color || $color == WorkerColor::ANY) {
-                $result->add($worker);
-                // FIXME: can this work during iteration or do we need to accumulate removed keys?
-                unset($this->workers[$worker->id]);
-
-                if (--$n == 0) {
-                    break;
-                }
+        while ($n > 0) {
+            $id = array_shift($ids);
+            if ($id === null) {
+                break;
             }
+            $worker = $this->workers[$id];
+            if ($worker->color == $color || $color == WorkerColor::ANY) {
+                $n--;
+                $result->add($worker);
+            }
+        }
+        foreach ($result->allItems() as $w) {
+            unset($this->workers[$w->id]);
         }
         return $result;
     }
@@ -112,6 +113,9 @@ class WorkerGroup implements Marshalable {
     public function add(Worker $worker): void {
         if (isset($this->workers[$worker->id])) {
             throw new InvalidArgumentException("cannot add worker twice to group");
+        }
+        if (!$worker->color->isConcrete()) {
+            throw new InvalidArgumentException("cannot add uncolored worker");
         }
         $this->workers[$worker->id] = $worker;
     }
