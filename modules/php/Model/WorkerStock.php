@@ -30,20 +30,19 @@ namespace Bga\Games\keyflowerrewrite\Model;
 use InvalidArgumentException;
 
 class WorkerStock {
-    /** @var list<Worker> $bag */
-    private array $bag = [];
-    /** @var list<Worker> $greens */
-    private array $greens = [];
+    private WorkerGroup $bag;
+    private WorkerGroup $greens;
 
-    public function __construct() {}
+    public function __construct() {
+        $this->bag = new WorkerGroup();
+        $this->greens = new WorkerGroup();
+    }
 
-    /** @return list<Worker> */
-    public function greens(): array {
+    public function greens(): WorkerGroup {
         return $this->greens;
     }
 
-    /** @return list<Worker> */
-    public function bagWorkers(): array {
+    public function bag(): WorkerGroup {
         return $this->bag;
     }
 
@@ -52,12 +51,11 @@ class WorkerStock {
         $result = new WorkerStock();
         foreach ([WorkerColor::RED, WorkerColor::BLUE, WorkerColor::YELLOW] as $wt) {
             for ($i = 0; $i < 40; $i++) {
-                $result->bag[] = new Worker(++$lastId, $wt);
+                $result->bag->add(new Worker(++$lastId, $wt));
             }
         }
-        shuffle($result->bag);
         for ($i = 0; $i < 20; ++$i) {
-            $result->greens[] = new Worker(++$lastId, WorkerColor::GREEN);
+            $result->greens->add(new Worker(++$lastId, WorkerColor::GREEN));
         }
         $result->validate();
         return $result;
@@ -65,12 +63,12 @@ class WorkerStock {
 
     private function validate(): void {
         $allIds = array_merge(
-            array_map(fn (Worker $w) => $w->id, $this->greens),
-            array_map(fn (Worker $w) => $w->id, $this->bag));
+            array_map(fn (Worker $w) => $w->id, $this->greens->allItems()),
+            array_map(fn (Worker $w) => $w->id, $this->bag->allItems()));
         if (count($allIds) != count(array_unique($allIds))) {
             throw new InvalidArgumentException("duplicate worker added");
         };
-        foreach ($this->greens as $green) {
+        foreach ($this->greens->allItems() as $green) {
             if ($green->color != WorkerColor::GREEN) {
                 throw new InvalidArgumentException("green workers should be green but found {$green->color->value}");
             }
@@ -81,28 +79,28 @@ class WorkerStock {
         if ($worker->color != WorkerColor::GREEN) {
             throw new InvalidArgumentException("Only green workers go in green supply");
         }
-        $this->greens[] = $worker;
+        $this->greens->add($worker);
         $this->validate();
     }
 
     public function putInBag(Worker $worker): void {
-        $this->bag[] = $worker;
+        $this->bag->add($worker);
         $this->validate();
     }
 
     public function takeGreens(int $n): WorkerGroup {
-        return new WorkerGroup(array_splice($this->greens, 0, $n));
+        return $this->greens->takeNWorkersOfColor($n, WorkerColor::GREEN);
     }
 
     public function takeFromBag(int $n): WorkerGroup {
-        return new WorkerGroup(array_splice($this->bag, 0, $n));
+        return $this->bag->takeNWorkersOfColor($n, WorkerColor::ANY);
     }
 
     public function bagSize(): int {
-        return count($this->bag);
+        return $this->bag->size();
     }
 
     public function greensSize(): int {
-        return count($this->greens);
+        return $this->greens->size();
     }
 }

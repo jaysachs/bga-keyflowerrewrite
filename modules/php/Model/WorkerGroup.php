@@ -27,6 +27,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
+use Bga\Games\keyflowerrewrite\Utils\Arrays;
 use InvalidArgumentException;
 use Override;
 
@@ -77,8 +78,12 @@ class WorkerGroup implements Marshalable {
         if ($n <= 0) {
             return $result;
         }
+
+        // FIXME
+        Arrays::shuffle($this->workers);
+
         foreach ($this->workers as $worker) {
-            if ($worker->color == $color) {
+            if ($worker->color == $color || $color == WorkerColor::ANY) {
                 $result->add($worker);
                 // FIXME: can this work during iteration or do we need to accumulate removed keys?
                 unset($this->workers[$worker->id]);
@@ -120,7 +125,7 @@ class WorkerGroup implements Marshalable {
     }
 
     /** @return array<int,Worker> */
-    public function workers(): array {
+    public function allItems(): array {
         return $this->workers;
     }
 

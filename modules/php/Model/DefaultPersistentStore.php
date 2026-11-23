@@ -285,24 +285,22 @@ class DefaultPersistentStore implements PersistentStore {
     }
 
     /**
-     * @param array<int,Worker> $ws
      * @return list<string>
      */
-    private function workerVals(LocType $loc, array $ws, ?int $loc_id = null, ?int $pid = null): array {
+    private function workerVals(LocType $loc, WorkerGroup $wg, ?int $loc_id = null, ?int $pid = null): array {
         $result = [];
-        foreach ($ws as $pos => $w) {
+        foreach ($wg->allItems() as $pos => $w) {
             $result[] = $this->vals($w->id, PieceType::WORKER, $loc, $w->color->value, $loc_id, $pos, $pid);
         }
         return $result;
     }
 
     /**
-     * @param array<int,Skill> $ws
      * @return list<string>
      */
-     function skillVals(LocType $loc, array $ws, ?int $loc_id = null, ?int $pid = null): array {
+     function skillVals(LocType $loc, SkillSet $ss, ?int $loc_id = null, ?int $pid = null): array {
         $result = [];
-        foreach ($ws as $pos => $w) {
+        foreach ($ss->allItems() as $pos => $w) {
             $result[] = $this->vals($w->id, PieceType::SKILL, $loc, $w->type->value, $loc_id, $pos, $pid);
         }
         return $result;
@@ -312,7 +310,8 @@ class DefaultPersistentStore implements PersistentStore {
     private function activationVals(ProductionActivations $productionActivations, int $tile_id): array {
         $result = [];
         foreach ($productionActivations->activations() as $apos => $activation) {
-            foreach ($activation->workers() as $worker) {
+            // FIXME: use workervals ?
+            foreach ($activation->allItems() as $worker) {
                 $result[] =  $this->vals($worker->id, PieceType::WORKER, LocType::TILE, $worker->color->value, $tile_id, $apos);
             }
         }
@@ -335,13 +334,13 @@ class DefaultPersistentStore implements PersistentStore {
         $values = [];
 
         array_push($values, ... $this->workervals(LocType::GREENS, $data->workerStock->greens()));
-        array_push($values, ... $this->workervals(LocType::BAG, $data->workerStock->bagWorkers()));
-        array_push($values, ... $this->skillVals(LocType::SKILLPILE, $data->skillPile->skills()));
+        array_push($values, ... $this->workervals(LocType::BAG, $data->workerStock->bag()));
+        array_push($values, ... $this->skillVals(LocType::SKILLPILE, $data->skillPile));
         foreach ($data->market->lots() as $pos => $mt) {
             $values[] = $this->vals($mt->tile_id, PieceType::TILE, LocType::MARKET, $mt->type->value, null, $pos, null);
             array_push($values, ... $this->activationVals($mt->productionActivations(), $mt->tile_id));
             foreach ($mt->bids() as $pid => $bid) {
-                foreach ($bid->workers() as $bpos => $worker) {
+                foreach ($bid->allItems() as $bpos => $worker) {
                     $values[] = $this->vals($worker->id, PieceType::WORKER, LocType::TILE, $worker->color->value, $mt->tile_id, $bpos, $pid);
                 }
             }
@@ -350,8 +349,8 @@ class DefaultPersistentStore implements PersistentStore {
         array_push($values, ... $this->resourceVals($data->resourceStock->allItems()));
         foreach ($data->dock->boats() as $pos => $mt) {
             $values[] = $this->vals($mt->id, PieceType::TILE, LocType::DOCK, $mt->type->value, null, $pos);
-            array_push($values, ... $this->workervals(LocType::BOAT, $mt->passengers()->workers(), $mt->id));
-            array_push($values, ... $this->skillvals(LocType::BOAT, $mt->cargo()->skills(), $mt->id));
+            array_push($values, ... $this->workervals(LocType::BOAT, $mt->passengers(), $mt->id));
+            array_push($values, ... $this->skillvals(LocType::BOAT, $mt->cargo(), $mt->id));
         }
         foreach ($data->villages as $pid => $village) {
             foreach ($village->tiles() as $pos => $vt) {
@@ -359,8 +358,8 @@ class DefaultPersistentStore implements PersistentStore {
                 array_push($values, ... $this->activationVals($vt->productionActivations(), $vt->tile_id));
                 array_push($values, ... $this->resourceVals($vt->resources()->allItems(), $vt->tile_id, $pid));
             }
-            array_push($values, ... $this->workervals(LocType::VILLAGE, $village->workers()->workers(), null, $village->playerId));
-            array_push($values, ... $this->skillVals(LocType::VILLAGE, $village->skills->skills(), null, $village->playerId));
+            array_push($values, ... $this->workervals(LocType::VILLAGE, $village->workers(), null, $village->playerId));
+            array_push($values, ... $this->skillVals(LocType::VILLAGE, $village->skills, null, $village->playerId));
             if ($village->hasStartPlayer()) {
                 $values[] = $this->vals(1, PieceType::STARTPLAYER, LocType::VILLAGE, null, null, null, $village->playerId);
             }
@@ -397,7 +396,7 @@ class DefaultPersistentStore implements PersistentStore {
         ActivationPayment $payment,
         ?VillageTile $destTile): void {
         $this->db->execute($this->sqlUpdateLocation(
-            array_map(fn ($w) => $w->id, $group->workers()),
+            array_map(fn ($w) => $w->id, $group->allItems()),
             LocType::TILE, $tile_id, $activationPos, $player_id)
         );
         if ($payment->worker) {
@@ -408,13 +407,13 @@ class DefaultPersistentStore implements PersistentStore {
         }
         if (!$productionResult->workers->isEmpty()) {
             $this->db->execute($this->sqlUpdateLocation(
-                array_keys($productionResult->workers->workers()),
+                array_keys($productionResult->workers->allItems()),
                 LocType::VILLAGE, null, null, $player_id)
             );
         }
         else if (!$productionResult->skills->isEmpty()) {
             $this->db->execute($this->sqlUpdateLocation(
-                array_map(fn ($w) => $w->id, $productionResult->skills->skills()),
+                array_map(fn ($w) => $w->id, $productionResult->skills->allItems()),
                 LocType::VILLAGE, null, null, $player_id)
             );
         }
@@ -433,7 +432,7 @@ class DefaultPersistentStore implements PersistentStore {
 
     public function updateBidWorkerLocations(int $player_id, MarketLot $bidTile, WorkerGroup $newBid): void {
         $this->db->execute($this->sqlUpdateLocation(
-            array_map(fn ($w) => $w->id, $newBid->workers()),
+            array_map(fn ($w) => $w->id, $newBid->allItems()),
             LocType::MARKET, $bidTile->tile_id, null, $player_id)
         );
     }

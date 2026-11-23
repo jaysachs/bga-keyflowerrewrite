@@ -110,7 +110,7 @@ class SkillSet implements Marshalable {
     }
 
     /** @return array<int,Skill> */
-    public function skills(): array {
+    public function allItems(): array {
         return $this->skills;
     }
 
