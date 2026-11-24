@@ -327,6 +327,18 @@ export class PlayerTurnState extends BaseState {
         this.market.setSelected(inMarket ? tileId : null);
         this.villages.setSelected(inMarket ? null : tileId);
         this.showPick();
+        // Selecting redraws the tile, which loses keyboard focus: it goes to the picker's first choice
+        // instead, so a screen reader reads where you are (the switch, or the first worker)
+        document.querySelector<HTMLElement>('#generalactions [role="radio"][aria-checked="true"], #generalactions .kf_pick_worker')?.focus();
+    }
+
+    /** Back from the picker to the tile it was opened from (Cancel removes the button that had focus). */
+    private cancelPick(): void {
+        const tileId = this.pick?.tileId;
+        this.showChoices();
+        if (tileId != null) {
+            document.querySelector<HTMLElement>(`#kf_lot_${tileId} .kf_lot_tile, #kf_tile_${tileId}`)?.focus();
+        }
     }
 
     /** Switches between bidding and using; the choice starts over, with the only color preselected. */
@@ -395,8 +407,16 @@ export class PlayerTurnState extends BaseState {
 
         const modes = p.both ? Html.div({ classes: 'kf_pick_modes', attrs: { role: 'radiogroup', 'aria-label': fill(_('What to do with ${tile}'), { tile: name }) } },
             ...(['bid', 'use'] as const).map(m => {
-                const b = Html.button({ text: m == 'bid' ? _('Bid on it') : _('Use it'), attrs: { role: 'radio', 'aria-checked': p.mode == m, 'data-kf-key': `mode:${m}` } });
-                b.addEventListener('click', () => { if (p.mode != m) { this.setMode(p, m); this.showPick(); } });
+                // A radio group: one Tab stop (the chosen half), the arrow keys move between the two
+                const b = Html.button({ text: m == 'bid' ? _('Bid on it') : _('Use it'), attrs: { role: 'radio', 'aria-checked': p.mode == m, tabindex: p.mode == m ? 0 : -1, 'data-kf-key': `mode:${m}` } });
+                const choose = (to: 'bid' | 'use') => {
+                    if (p.mode != to) { this.setMode(p, to); this.showPick(); }
+                    document.querySelector<HTMLElement>(`#generalactions [data-kf-key="mode:${to}"]`)?.focus();
+                };
+                b.addEventListener('click', () => choose(m));
+                b.addEventListener('keydown', e => {
+                    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) { e.preventDefault(); choose(m == 'bid' ? 'use' : 'bid'); }
+                });
                 return b;
             })) : undefined;
 
@@ -465,7 +485,7 @@ export class PlayerTurnState extends BaseState {
         go.setAttribute('aria-describedby', 'kf_pick_msg');
         // Cancel in red and set apart on the right: BGA's guidelines reserve red for cancel, undo and exit
         // ("mandatory for UX consistency"), and grey for disabled.
-        this.bga.statusBar.addActionButton(_('Cancel'), () => this.showChoices(), { color: 'alert', classes: 'kf_cancel', destination: actions });
+        this.bga.statusBar.addActionButton(_('Cancel'), () => this.cancelPick(), { color: 'alert', classes: 'kf_cancel', destination: actions });
 
         if (focused) {
             document.querySelector<HTMLElement>(`#generalactions [data-kf-key="${focused}"]`)?.focus();
