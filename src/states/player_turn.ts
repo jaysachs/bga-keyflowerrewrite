@@ -91,6 +91,12 @@ export class PlayerTurnState extends BaseState {
     constructor(bga: Bga<KFPlayer, KFGameDatas>, animationManager: AnimationManager, private market: MarketComponent,
         private villages: VillageComponent, private translations: TranslationComponent, private panels: PanelsComponent, private tileRules: TileRulesComponent) {
         super(bga, animationManager);
+        // Escape cancels the picker, as it closes dialogs; not while typing (BGA's chat), and not when a
+        // dialog has already used it (it calls preventDefault)
+        document.addEventListener('keydown', e => {
+            const typing = (e.target as Element | null)?.closest('input, textarea, [contenteditable="true"]');
+            if (e.key == 'Escape' && this.pick && !typing && !e.defaultPrevented) { e.preventDefault(); this.cancelPick(); }
+        });
     }
 
     override onEnteringState(args: PlayerTurnArgs, isCurrentPlayerActive: boolean): void {
@@ -467,10 +473,13 @@ export class PlayerTurnState extends BaseState {
         const choices = use ? this.choices(p, info!) : [];
         // As in the mockup: the rule line and the switch under the title, the workers beside them, the
         // buttons at the right (stacked on phones; the CSS lays it out).
+        // The workers, and each choice row, are one Tab stop each, moved inside with the arrow keys
+        const rowsEl = Html.div({ classes: 'kf_pick_rows', attrs: { role: 'group', 'aria-labelledby': 'kf_pick_label' } }, ...rows);
+        [rowsEl, ...choices].forEach(group => this.rove(group, focused));
         const workers = Html.div({ classes: 'kf_pick_workers' },
-            Html.div({ classes: 'kf_pick_label', text: _('Tap the workers to use') }),
+            Html.div({ id: 'kf_pick_label', classes: 'kf_pick_label', text: _('Tap the workers to use') }),
             ...choices,
-            Html.div({ classes: 'kf_pick_rows' }, ...rows));
+            rowsEl);
         const actions = Html.div({ classes: 'kf_pick_actions' });
         const pick = Html.div({ classes: 'kf_pick' }, msg, modes, workers, actions);
         document.getElementById('generalactions')!.appendChild(pick);
@@ -490,6 +499,41 @@ export class PlayerTurnState extends BaseState {
         if (focused) {
             document.querySelector<HTMLElement>(`#generalactions [data-kf-key="${focused}"]`)?.focus();
         }
+    }
+
+    /**
+     * One Tab stop for a group of buttons (the one last used, else the first chosen, else the first);
+     * the arrow keys move inside it: left and right along it, up and down to the same place in the row
+     * before or after (one row per color), Home and End to its ends.
+     */
+    private rove(group: HTMLElement, focusedKey?: string): void {
+        const items = Array.from(group.querySelectorAll<HTMLButtonElement>('button'));
+        if (!items.length) { return; }
+        const start = items.find(b => b.dataset['kfKey'] == focusedKey) ?? items.find(b => b.getAttribute('aria-pressed') == 'true') ?? items[0]!;
+        items.forEach(b => { b.tabIndex = b == start ? 0 : -1; });
+        const rows = Array.from(group.querySelectorAll<HTMLElement>('.kf_pick_row'));
+        group.addEventListener('keydown', e => {
+            const at = e.target as HTMLButtonElement, i = items.indexOf(at);
+            if (i < 0) { return; }
+            let next: HTMLButtonElement | undefined;
+            if (e.key == 'ArrowRight') { next = items[i + 1]; }
+            else if (e.key == 'ArrowLeft') { next = items[i - 1]; }
+            else if (e.key == 'Home') { next = items[0]; }
+            else if (e.key == 'End') { next = items[items.length - 1]; }
+            else if (e.key == 'ArrowDown' || e.key == 'ArrowUp') {
+                const r = rows.findIndex(row => row.contains(at));
+                if (r < 0) { next = items[i + (e.key == 'ArrowDown' ? 1 : -1)]; }
+                else {
+                    const to = rows[r + (e.key == 'ArrowDown' ? 1 : -1)];
+                    const col = Array.from(rows[r]!.querySelectorAll('button')).indexOf(at);
+                    const there = to ? Array.from(to.querySelectorAll<HTMLButtonElement>('button')) : [];
+                    next = there[Math.min(col, there.length - 1)];
+                }
+            }
+            else { return; }
+            e.preventDefault();
+            if (next) { items.forEach(b => { b.tabIndex = -1; }); next.tabIndex = 0; next.focus(); }
+        });
     }
 
     private roomText(room: number): string {
