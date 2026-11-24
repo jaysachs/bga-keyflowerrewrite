@@ -1412,12 +1412,14 @@ html {
 }
 
 /* A tile's rules (the Rules button's dialog): the tile large, its rules beside it, under it on phones */
+/* The tile at its art's full resolution (256px wide in tiles-large.jpg): sharp on standard screens,
+   and larger would only blur it. Sharper or larger needs higher-resolution art */
 .kf_rules_dialog {
     display: flex;
     align-items: flex-start;
     gap: 20px;
-    max-width: 560px;
-    --kf-tile-w: 192px;
+    max-width: 640px;
+    --kf-tile-w: 256px;
     --kf-tile-h: calc(var(--kf-tile-w) * 0.875);
 }
 
@@ -1429,7 +1431,7 @@ html {
     flex-direction: column;
     align-items: center;
     gap: 16px;
-    --kf-tile-w: 160px;
+    --kf-tile-w: min(256px, calc(100vw - 48px));   /* as wide as the dialog allows, up to the art's 256px */
 }
 
 /* The rules themselves: one item per part (what it does, upgrade, scoring, notes), divided by thin
