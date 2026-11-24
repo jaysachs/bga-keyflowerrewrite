@@ -19,10 +19,9 @@
         "sourceMap": false,
         //"rootDir": "src",
         "strict": false,
-        "types": ["node"]
+        "types": []
     },
     "include": [
-        "tests/ts/**/*.ts",
         "src/**/*.d.ts",
         "src/**/*.ts"
     ]
