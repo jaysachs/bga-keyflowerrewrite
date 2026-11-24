@@ -27,51 +27,108 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
+use Bga\Games\keyflowerrewrite\Utils\Arrays;
 use InvalidArgumentException;
 
-// FIXME: Consider calling this BidGroup, and then can correctly validate single-color.
-// Compare that to an ActivationGroup, which is allowed to have multiple colors.
-class WorkerGroup {
+class WorkerGroup implements Marshalable {
 
     /** @var array<int,Worker> */
     private array $workers;
 
-    /** @param array<int,Worker> $workers */
-    public function __construct(array $workers)
+    /** @param array<Worker> $workers */
+    public function __construct(array $workers = [])
     {
         $this->workers = [];
-        $color = null;
-        // FIXME: if boat4b in play, need to by pass this check if making
-        //   a group for activation
         foreach ($workers as $worker) {
-            if ($color === null) {
-                $color = $worker->color;
-            } else if ($worker->color != $color) {
-                // throw new InvalidArgumentException("worker groups must be of a single color, got {$color->value} and {$worker->color->value}");
-            }
-            $this->workers[$worker->id] = $worker;
+            $this->add($worker);
         }
     }
 
+    public static function of(Worker... $ws): WorkerGroup {
+        return new WorkerGroup($ws);
+    }
+
+    public function isEmpty(): bool {
+        return count($this->workers) == 0;
+    }
+
     /**
-     * @return WorkerColor|null color, of null if (a) no workers or (b) multiple colors
+     * @return WorkerColor color, NONE if no workers, ANY if multiple colors
      */
-    public function color(): ?WorkerColor {
-        $color = null;
+    public function color(): WorkerColor {
+        // FIXME: return ANY if no workers?
+        $color = WorkerColor::NONE;
         foreach ($this->workers as $worker) {
-            if ($color === null) {
+            if ($color === WorkerColor::NONE) {
                 $color = $worker->color;
             }
             else if ($color != $worker->color) {
                 // FIXME: null means "multiple" ... is that ok?
-                return null;
+                return WorkerColor::ANY;
             }
         }
         return $color;
     }
 
+    public function takeNWorkersOfColor(int $n, WorkerColor $color): WorkerGroup {
+        $result = new WorkerGroup();
+        if ($n <= 0) {
+            return $result;
+        }
+
+        $ids = array_keys($this->workers);
+        Arrays::shuffle($ids);
+
+        while ($n > 0) {
+            $id = array_shift($ids);
+            if ($id === null) {
+                break;
+            }
+            $worker = $this->workers[$id];
+            if ($worker->color == $color || $color == WorkerColor::ANY) {
+                $n--;
+                $result->add($worker);
+            }
+        }
+        foreach ($result->allItems() as $w) {
+            unset($this->workers[$w->id]);
+        }
+        return $result;
+    }
+
+    public function takeWorkerById(int $id): Worker {
+        if (!isset($this->workers[$id])) {
+            throw new InvalidArgumentException("no worker with id {$id}");
+        }
+        $w = $this->workers[$id];
+        unset($this->workers[$id]);
+        return $w;
+    }
+
+    public function workerById(int $id): ?Worker {
+        return isset($this->workers[$id]) ? $this->workers[$id] : null;
+    }
+
+    public function add(Worker $worker): void {
+        if (isset($this->workers[$worker->id])) {
+            throw new InvalidArgumentException("cannot add worker twice to group");
+        }
+        if (!$worker->color->isConcrete()) {
+            throw new InvalidArgumentException("cannot add uncolored worker");
+        }
+        $this->workers[$worker->id] = $worker;
+    }
+
+    /* does not mutate this */
+    public function addGroup(WorkerGroup $other): void {
+        // TODO: take them out of the other one?
+        foreach ($other->workers as $w) {
+            $this->add($w);
+        }
+    }
+
     /** @return array<int,Worker> */
-    public function workers(): array {
+    public function allItems(): array {
         return $this->workers;
     }
 
@@ -79,11 +136,8 @@ class WorkerGroup {
         return count($this->workers);
     }
 
-    /* does not mutate this */
-    public function combineWith(WorkerGroup $other): WorkerGroup {
-        $workers = [];
-        array_push($workers, ... $this->workers);
-        array_push($workers, ... $other->workers);
-        return new WorkerGroup($workers);
+    public function marshal(): mixed
+    {
+        return array_map(fn ($w) => $w->marshal(), array_values($this->workers));
     }
 }

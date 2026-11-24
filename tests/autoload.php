@@ -11,5 +11,12 @@ spl_autoload_register(function ($class) {
             return true;
         }
     }
+    if ($class == "TestBase") {
+        $file = "tests/php/" . $class . '.php';
+        if (file_exists($file)) {
+            require $file;
+            return true;
+        }
+    }
     return false;
 });

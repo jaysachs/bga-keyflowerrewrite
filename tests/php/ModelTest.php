@@ -16,9 +16,11 @@ use Bga\Games\keyflowerrewrite\Model\{
     PersistentStore,
     ProductionResult,
     Resource,
+    ResourceSet,
     ResourceType,
     RowCol,
     Season,
+    SkillSet,
     TilesStock,
     TileType,
     Village,
@@ -81,16 +83,7 @@ class TestStore implements PersistentStore {
     }
 }
 
-final class ModelTest extends TestCase {
-
-    private function assertThrows(Closure $c, string $msg = "should have thrown exception"): void {
-        try {
-            $c();
-            $this->assertTrue(false, $msg);
-        } catch (InvalidArgumentException $e) {
-            $this->assertTrue(true, $msg);
-        }
-    }
+final class ModelTest extends TestBase {
 
     public function testNextSeason(): void {
         $pids = [self::PID1, self::PID2];
@@ -123,8 +116,8 @@ final class ModelTest extends TestCase {
             };
             $this->assertEquals($expectedBoats, array_map(fn ($b) => $b->type, $boats));
             foreach ($boats as $boat) {
-                $this->assertEquals($boat->type->passengerCapacity(), count($boat->passengers()));
-                $this->assertEquals($boat->type->cargoCapacity(), count($boat->cargo()));
+                $this->assertEquals($boat->type->passengerCapacity(), $boat->passengers()->size());
+                $this->assertEquals($boat->type->cargoCapacity(), $boat->cargo()->size());
 
                 // simulate end of season stuff
                 $boat->takeAllCargo();
@@ -185,9 +178,7 @@ final class ModelTest extends TestCase {
 
     private function initializeVillageWorkers(WorkerColor $color, int $num) : WorkerGroup {
         $wg = $this->makeWorkerGroup($color, $num);
-        foreach ($wg->workers() as $worker) {
-            $this->model->village()->addWorker($worker);
-        }
+        $this->model->village()->addWorkerGroup($wg);
         return $wg;
     }
 
@@ -200,37 +191,35 @@ final class ModelTest extends TestCase {
     }
 
     private function makeVillage(int $pid, int $red = 0, int $blue = 0, int $yellow = 0, int $green = 0): Village {
-        $workers = [];
+        $workers = new WorkerGroup();
         for ($i = 0; $i < $red; $i++) {
-            $workers[] = $this->makeWorker(WorkerColor::RED);
+            $workers->add($this->makeWorker(WorkerColor::RED));
         }
         for ($i = 0; $i < $blue; $i++) {
-            $workers[] = $this->makeWorker(WorkerColor::BLUE);
+            $workers->add($this->makeWorker(WorkerColor::BLUE));
         }
         for ($i = 0; $i < $yellow; $i++) {
-            $workers[] = $this->makeWorker(WorkerColor::YELLOW);
+            $workers->add($this->makeWorker(WorkerColor::YELLOW));
         }
         /** @var TileType */
         $home = array_shift($this->homeTiles);
-        return new Village($pid, [ new VillageTile($this->lastTileId++, $home, 1, 0, $pid) ], $workers, [], [], [], false);
+        return new Village($pid, [ new VillageTile($this->lastTileId++, $home, 1, 0, $pid) ], $workers, new SkillSet(), [], [], false);
     }
 
     public function testActivate_boat4b_works(): void {
         $lot1 = $this->addLot(TileType::ALEHOUSE);
-        $lot1->bid(SELF::PID1, new WorkerGroup([$this->makeWorker(WorkerColor::BLUE)]));
+        $lot1->bid(SELF::PID1, WorkerGroup::of($this->makeWorker(WorkerColor::BLUE)));
         $worker = $this->makeWorker(WorkerColor::YELLOW);
         $this->model->allData()->workerStock->takeFromBag(200);
         $this->model->AllData()->workerStock->putInBag($worker);
         $this->model->village()->placeTile(new VillageTile(50, TileType::BOAT4B, RowCol::fromRowCol(1,1), 1, self::PID1));
 
-        $wg = new WorkerGroup([$this->makeWorker(WorkerColor::YELLOW), $this->makeWorker(WorkerColor::RED)]);
-        foreach ($wg->workers() as $w) {
-            $this->model->village()->addWorker($w);
-        }
+        $wg = WorkerGroup::of($this->makeWorker(WorkerColor::YELLOW), $this->makeWorker(WorkerColor::RED));
+        $this->model->village()->addWorkerGroup($wg);
 
         $result = $this->model->activate($lot1->tile_id, [], 0, 1, 1, 0);
 
-        $this->assertEquals(new ActivationResult($lot1, new ProductionResult([$worker], null, null, null), $wg, [], null), $result);
+        $this->assertEquals(new ActivationResult($lot1, new ProductionResult(WorkerGroup::of($worker), new ResourceSet(), new SkillSet(), null), $wg, [], null), $result);
     }
 
     public function testActivate_boat4b_failsIfFirstWorkers(): void {
@@ -240,10 +229,8 @@ final class ModelTest extends TestCase {
         $this->model->allData()->workerStock->putInBag($worker);
         $this->model->village()->placeTile(new VillageTile(50, TileType::BOAT4B, RowCol::fromRowCol(1,1), 1, self::PID1));
 
-        $wg = new WorkerGroup([$this->makeWorker(WorkerColor::YELLOW), $this->makeWorker(WorkerColor::RED)]);
-        foreach ($wg->workers() as $w) {
-            $this->model->village()->addWorker($w);
-        }
+        $wg = WorkerGroup::of($this->makeWorker(WorkerColor::YELLOW), $this->makeWorker(WorkerColor::RED));
+        $this->model->village()->addWorkerGroup($wg);
 
         $this->assertThrows(fn () => $this->model->activate($lot1->tile_id, [], 0, 1, 1, 0));
     }
@@ -252,12 +239,12 @@ final class ModelTest extends TestCase {
         $lot1 = $this->addLot(TileType::KEYWOOD);
         $resource = $this->makeResource(ResourceType::WOOD);
         $this->model->allData()->resourceStock->take(ResourceType::WOOD, 100);
-        $this->model->allData()->resourceStock->put($resource);
+        $this->model->allData()->resourceStock->add($resource);
         $wg = $this->initializeVillageWorkers(WorkerColor::BLUE, 1);
 
         $result = $this->model->activate($lot1->tile_id, [], 1, 0, 0, 0);
 
-        $this->assertEquals(new ActivationResult($lot1, new ProductionResult(null, [$resource], null, null), $wg, [], $this->model->village()->homeTile()), $result);
+        $this->assertEquals(new ActivationResult($lot1, new ProductionResult(new WorkerGroup(), ResourceSet::of($resource), new SkillSet(), null), $wg, [], $this->model->village()->homeTile()), $result);
     }
 
     public function testActivate_resourcesFromOwnVillage(): void {
@@ -265,12 +252,12 @@ final class ModelTest extends TestCase {
         $this->model->village()->placeTile($tile);
         $resource = $this->makeResource(ResourceType::WOOD);
         $this->model->allData()->resourceStock->take(ResourceType::WOOD, 100);
-        $this->model->allData()->resourceStock->put($resource);
+        $this->model->allData()->resourceStock->add($resource);
         $wg = $this->initializeVillageWorkers(WorkerColor::BLUE, 1);
 
         $result = $this->model->activate($tile->tile_id, [], 1, 0, 0, 0);
 
-        $this->assertEquals(new ActivationResult($tile, new ProductionResult(null, [$resource], null, null), $wg, [], $tile), $result);
+        $this->assertEquals(new ActivationResult($tile, new ProductionResult(new WorkerGroup(), ResourceSet::of($resource), new SkillSet(), null), $wg, [], $tile), $result);
     }
 
     public function testActivate_resourcesFromOtherVillage(): void {
@@ -278,12 +265,12 @@ final class ModelTest extends TestCase {
         $this->model->allData()->villages[self::PID2]->placeTile($tile);
         $resource = $this->makeResource(ResourceType::WOOD);
         $this->model->allData()->resourceStock->take(ResourceType::WOOD, 100);
-        $this->model->allData()->resourceStock->put($resource);
+        $this->model->allData()->resourceStock->add($resource);
         $wg = $this->initializeVillageWorkers(WorkerColor::BLUE, 1);
 
         $result = $this->model->activate($tile->tile_id, [], 1, 0, 0, 0);
 
-        $this->assertEquals(new ActivationResult($tile, new ProductionResult(null, [$resource], null, null), $wg, [], $this->model->village()->homeTile()), $result);
+        $this->assertEquals(new ActivationResult($tile, new ProductionResult(new WorkerGroup(), ResourceSet::of($resource), new SkillSet(), null), $wg, [], $this->model->village()->homeTile()), $result);
     }
 
 
@@ -296,12 +283,12 @@ final class ModelTest extends TestCase {
 
         $result = $this->model->activate($lot1->tile_id, [], 1, 0, 0, 0);
 
-        $this->assertEquals(new ActivationResult($lot1, new ProductionResult([$worker], null, null, null), $wg, [], null), $result);
+        $this->assertEquals(new ActivationResult($lot1, new ProductionResult(WorkerGroup::of($worker), new ResourceSet(), new SkillSet(), null), $wg, [], null), $result);
     }
 
     public function testActivate_matchesColor(): void {
         $lot1 = $this->addLot(TileType::ALEHOUSE);
-        $lot1->bid(SELF::PID1, new WorkerGroup([$this->makeWorker(WorkerColor::BLUE)]));
+        $lot1->bid(SELF::PID1, WorkerGroup::of($this->makeWorker(WorkerColor::BLUE)));
         $worker = $this->makeWorker(WorkerColor::YELLOW);
         $this->model->allData()->workerStock->takeFromBag(200);
         $this->model->AllData()->workerStock->putInBag($worker);
@@ -309,12 +296,12 @@ final class ModelTest extends TestCase {
 
         $result = $this->model->activate($lot1->tile_id, [], 1, 0, 0, 0);
 
-        $this->assertEquals(new ActivationResult($lot1, new ProductionResult([$worker], null, null, null), $wg, [], null), $result);
+        $this->assertEquals(new ActivationResult($lot1, new ProductionResult(WorkerGroup::of($worker), new ResourceSet(), new SkillSet(), null), $wg, [], null), $result);
     }
 
     public function testActivate_doesNotMatchBidColor(): void {
         $lot1 = $this->addLot(TileType::ALEHOUSE);
-        $lot1->bid(SELF::PID1, new WorkerGroup([$this->makeWorker(WorkerColor::YELLOW)]));
+        $lot1->bid(SELF::PID1, WorkerGroup::of($this->makeWorker(WorkerColor::YELLOW)));
         $this->initializeVillageWorkers(WorkerColor::BLUE, 1);
 
         $this->assertThrows(fn () => $this->model->activate($lot1->tile_id, [], 1, 0, 0, 0), "color mismatch should fail");
@@ -322,7 +309,7 @@ final class ModelTest extends TestCase {
 
     public function testActivate_doesNotMatchActivationColor(): void {
         $lot1 = $this->addLot(TileType::ALEHOUSE);
-        $lot1->productionActivations()->add(new WorkerGroup([$this->makeWorker(WorkerColor::YELLOW)]));
+        $lot1->productionActivations()->add(WorkerGroup::of($this->makeWorker(WorkerColor::YELLOW)));
         $this->initializeVillageWorkers(WorkerColor::BLUE, 1);
 
         $this->assertThrows(fn () => $this->model->activate($lot1->tile_id, [], 1, 0, 0, 0), "color mismatch should fail");
@@ -339,7 +326,7 @@ final class ModelTest extends TestCase {
 
         $result = $this->model->activate($lot1->tile_id, [], 1, 0, 0, 0, null, $pmt->id);
 
-        $this->assertEquals(new ActivationResult($lot1, new ProductionResult([$reward], null, null, null), $wg, [], null), $result);
+        $this->assertEquals(new ActivationResult($lot1, new ProductionResult(WorkerGroup::of($reward), new ResourceSet(), new SkillSet(), null), $wg, [], null), $result);
     }
 
     public function testActivate_costNotPaid(): void {
@@ -370,7 +357,7 @@ final class ModelTest extends TestCase {
 
     public function testBid_mustMatchActivationColor(): void {
         $lot1 = $this->addLot(TileType::ALEHOUSE);
-        $lot1->productionActivations()->add(new WorkerGroup([$this->makeWorker(WorkerColor::YELLOW)]));
+        $lot1->productionActivations()->add(WorkerGroup::of($this->makeWorker(WorkerColor::YELLOW)));
         $this->initializeVillageWorkers(WorkerColor::BLUE, 1);
 
         $this->assertThrows(fn () => $this->model->bid($lot1->tile_id, [], 1, WorkerColor::BLUE), "color mismatch should fail");
@@ -463,7 +450,7 @@ final class ModelTest extends TestCase {
 
         $result = $this->model->bid($lot1->tile_id, [$lot2->tile_id], 2, WorkerColor::RED);
 
-        $wg = $wg->combineWith($bid1);
+        $wg->addGroup($bid1);
         $this->assertEquals(new BidResult($wg, $lot1->tile_id, [new MovedBid($bid1, $lot2)]), $result);
     }
 

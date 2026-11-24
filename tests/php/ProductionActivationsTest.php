@@ -11,24 +11,15 @@ use Bga\Games\keyflowerrewrite\Model\{
     WorkerGroup,
 };
 
-final class ProductionActivationsTest extends TestCase
+final class ProductionActivationsTest extends TestBase
 {
-    private function assertThrows(Closure $c, string $msg = "should have thrown exception"): void {
-        try {
-            $c();
-            $this->assertTrue(false, $msg);
-        } catch (InvalidArgumentException $e) {
-            $this->assertTrue(true, $msg);
-        }
-    }
-
     public function testEmpty(): void {
         $pa = new ProductionActivations([]);
         $this->assertTrue($pa->isActivatable(), "empty activations should be activatable");
         $this->assertEquals(6, $pa->maxAllowededToActivate());
         $this->assertEquals(1, $pa->minRequiredToActivate());
         $this->assertEquals(0, $pa->totalWorkers());
-        $this->assertEquals(null, $pa->currentColor());
+        $this->assertEquals(WorkerColor::NONE, $pa->currentColor());
         $this->assertEquals([], $pa->activations());
         $this->assertEquals(0, $pa->lastActivationSize());
         $this->assertEquals(null, $pa->mostRecent());
@@ -36,11 +27,11 @@ final class ProductionActivationsTest extends TestCase
 
     private int $lastId = 0;
     private function workerGroup(WorkerColor $color, int $size = 1): WorkerGroup {
-        $ws = [];
+        $wg = new WorkerGroup();
         for ($i = 0; $i < $size; ++$i) {
-            $ws[] = new Worker($this->lastId++, $color);
+            $wg->add(new Worker($this->lastId++, $color));
         }
-        return new WorkerGroup($ws);
+        return $wg;
     }
 
     public function testOneActivation(): void {

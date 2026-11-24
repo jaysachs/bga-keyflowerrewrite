@@ -28,18 +28,41 @@ declare(strict_types=1);
 namespace Bga\Games\keyflowerrewrite\Model;
 
 
-enum WorkerColor: string {
+enum WorkerColor: string implements Marshalable {
     case BLUE = "blue";
     case RED = "red";
     case YELLOW = "yellow";
     case GREEN = "green";
+    case ANY = "any";
+    case NONE = "none";
 
     public function translatedName(): string {
         return match ($this) {
-            WorkerColor::BLUE => clienttranslate("blue"),
-            WorkerColor::RED => clienttranslate("red"),
-            WorkerColor::YELLOW => clienttranslate("yellow"),
-            WorkerColor::GREEN => clienttranslate("green"),
+            self::BLUE => clienttranslate("blue"),
+            self::RED => clienttranslate("red"),
+            self::YELLOW => clienttranslate("yellow"),
+            self::GREEN => clienttranslate("green"),
+            self::ANY => clienttranslate("any"),
+            self::NONE => clienttranslate("none"),
+        };
+    }
+
+    public function isConcrete(): bool {
+        return match ($this) {
+            self::BLUE, self::RED, self::YELLOW, self::GREEN => true,
+            default => false
+        };
+    }
+
+    /** @return list<WorkerColor> */
+    public static function concreteCases(): array {
+        return [self::BLUE, self::RED, self::YELLOW, self::GREEN];
+    }
+
+    public function marshal(): ?string {
+        return match ($this) {
+            self::ANY,self::NONE => null,
+            default => $this->value
         };
     }
 }
