@@ -744,25 +744,23 @@ html {
 }
 
 /* Using a market tile you could also bid on: a switch between the two, under the rule line. One wide
-   button split in two halves, white with the worker buttons' grey border, and the chosen half in their
-   selected blue (one look for choices; BGA's buttons are for actions) */
+   button in the worker buttons' style, light grey, with the chosen half white and outlined in blue like
+   a chosen worker (one look for choices; BGA's buttons are for actions) */
 .kf_pick_modes {
     display: grid;
     grid-template-columns: 1fr 1fr;
     width: 100%;
     max-width: 320px;
-    box-sizing: border-box;
-    border: 2px solid #c8c8c8;
-    border-radius: 6px;
-    background: #fff;
-    overflow: hidden;
+    border-radius: 8px;
+    background: #eef0f3;
 }
 
 .kf_pick_modes button {
-    min-height: 40px;
+    min-height: 44px;
     margin: 0;
     padding: 0 12px;
-    border: 0;
+    border: 2px solid transparent;
+    border-radius: 8px;
     background: transparent;
     color: #333;
     font: inherit;
@@ -772,23 +770,20 @@ html {
     cursor: pointer;
 }
 
-.kf_pick_modes button + button {
-    border-left: 2px solid #c8c8c8;
-}
+/* Square where the halves meet, so the chosen half reads as one side of the switch */
+.kf_pick_modes button:first-child { border-radius: 8px 0 0 8px; }
+.kf_pick_modes button:last-child { border-radius: 0 8px 8px 0; }
 
 .kf_pick_modes button[aria-checked="true"] {
-    background: #e8f0fe;
-    color: #1a5fb4;   /* darker than the border's blue: 5.5:1 on this background (#1a73e8 is 3.9:1) */
-}
-
-.kf_pick_modes button:focus-visible {
-    outline: 2px solid #1a73e8;
-    outline-offset: -4px;
+    border-color: #1d5ea8;
+    box-shadow: inset 0 0 0 1px #1d5ea8;
+    background: #fff;
+    color: #1d5ea8;
 }
 
 @media (hover: hover) {
     .kf_pick_modes button[aria-checked="false"]:hover {
-        color: #1a73e8;
+        border-color: #1d5ea8;
     }
 }
 
@@ -825,9 +820,9 @@ html {
     margin: 0;
     justify-content: center;
     padding: 0 6px;
-    border: 2px solid #c8c8c8;
-    border-radius: 6px;
-    background: #fff;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background: #eef0f3;
     font: inherit;
     font-size: 12px;
     cursor: pointer;
@@ -838,8 +833,9 @@ html {
 }
 
 .kf_pick_worker.kf_on {
-    border-color: #1a73e8;
-    background: #e8f0fe;
+    border-color: #1d5ea8;
+    box-shadow: inset 0 0 0 1px #1d5ea8;
+    background: #fff;
 }
 
 /* A worker from your stock, with the number a tap takes under it. */
@@ -857,7 +853,7 @@ html {
 }
 
 .kf_pick_worker.kf_on .kf_pick_num {
-    color: #1a5fb4;
+    color: #1d5ea8;
 }
 
 /*
@@ -867,12 +863,13 @@ html {
 @media (hover: hover) {
     .kf_pick_one:hover,
     .kf_pick_one:has(~ .kf_pick_one:hover) {
-        border-color: #1a73e8;
+        border-color: #1d5ea8;
     }
 
     .kf_pick_one:hover ~ .kf_pick_one.kf_on {
-        border-color: #c8c8c8;
-        background: #fff;
+        border-color: transparent;
+        box-shadow: none;
+        background: #eef0f3;
         opacity: 0.6;
     }
 }
@@ -1371,6 +1368,12 @@ html {
    6px more between them (14px in all) */
 .desktop_version #overall-content #player_boards {
     row-gap: 0;
+}
+
+/* The status bar in white, as in the mockup: BGA's light grey (#f4f4f4) is almost the choices' grey
+   (#eef0f3), so the switch and the worker buttons disappeared into it */
+#overall-content #page-title {
+    background-color: #fff;
 }
 
 /* Player panels in white, like the status bar and the villages, so the colors stand out */
