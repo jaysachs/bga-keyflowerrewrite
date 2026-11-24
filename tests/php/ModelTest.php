@@ -239,7 +239,7 @@ final class ModelTest extends TestBase {
         $lot1 = $this->addLot(TileType::KEYWOOD);
         $resource = $this->makeResource(ResourceType::WOOD);
         $this->model->allData()->resourceStock->take(ResourceType::WOOD, 100);
-        $this->model->allData()->resourceStock->put($resource);
+        $this->model->allData()->resourceStock->add($resource);
         $wg = $this->initializeVillageWorkers(WorkerColor::BLUE, 1);
 
         $result = $this->model->activate($lot1->tile_id, [], 1, 0, 0, 0);
@@ -252,7 +252,7 @@ final class ModelTest extends TestBase {
         $this->model->village()->placeTile($tile);
         $resource = $this->makeResource(ResourceType::WOOD);
         $this->model->allData()->resourceStock->take(ResourceType::WOOD, 100);
-        $this->model->allData()->resourceStock->put($resource);
+        $this->model->allData()->resourceStock->add($resource);
         $wg = $this->initializeVillageWorkers(WorkerColor::BLUE, 1);
 
         $result = $this->model->activate($tile->tile_id, [], 1, 0, 0, 0);
@@ -265,7 +265,7 @@ final class ModelTest extends TestBase {
         $this->model->allData()->villages[self::PID2]->placeTile($tile);
         $resource = $this->makeResource(ResourceType::WOOD);
         $this->model->allData()->resourceStock->take(ResourceType::WOOD, 100);
-        $this->model->allData()->resourceStock->put($resource);
+        $this->model->allData()->resourceStock->add($resource);
         $wg = $this->initializeVillageWorkers(WorkerColor::BLUE, 1);
 
         $result = $this->model->activate($tile->tile_id, [], 1, 0, 0, 0);

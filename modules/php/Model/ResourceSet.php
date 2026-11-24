@@ -27,67 +27,88 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
+use Bga\Games\keyflowerrewrite\Utils\Arrays;
 use InvalidArgumentException;
 
 class ResourceSet implements Marshalable {
 
-    /** @var array<string,list<Resource>> */
+    /** @var array<int,Resource> */
     private array $resources;
 
     public function __construct() {
-        $this->resources = array_fill_keys(array_map(fn ($t) => $t->value, ResourceType::cases()), []);
+        $this->resources = [];
     }
 
     public static function of(Resource... $res): ResourceSet {
         $result = new ResourceSet();
         foreach ($res as $r) {
-            $result->put($r);
+            $result->add($r);
         }
         return $result;
     }
 
     /** @return list<Resource> */
     public function allItems(): array {
-        $result = [];
-        foreach ($this->resources as $t => $rts) {
-            array_push($result, ... $rts);
+        return array_values($this->resources);
+    }
+
+    public function add(Resource $res): void {
+        if (isset($this->resources[$res->id])) {
+            throw new InvalidArgumentException("cannot add resource twice to set");
         }
-        return $result;
-    }
-
-    private function verifyUniqueIds(): void {
-        $allIds = array_map(fn (Resource $r) => $r->id, array_merge(... array_values($this->resources)));
-        if (count($allIds) != count(array_unique($allIds))) {
-            throw new InvalidArgumentException("duplicate resource IDs");
-        };
-    }
-
-    public function put(Resource $res): void {
-        $this->resources[$res->type->value][] = $res;
-        $this->verifyUniqueIds();
+        $this->resources[$res->id] = $res;
     }
 
 
     public function size(): int {
-        return array_reduce($this->resources, fn ($carry, $rts) => $carry + count($rts), 0);
+        return count($this->resources);
     }
 
     public function isEmpty(): bool {
         return $this->size() == 0;
     }
 
-    public function putAll(ResourceSet $other): void {
-        foreach ($other->resources as $t => $rts) {
-            array_shift($this->resources[$t], ... $rts);
+    public function addAll(ResourceSet $other): void {
+        foreach ($other->resources as $res) {
+            $this->add($res);
         }
-        $this->verifyUniqueIds();
     }
 
-    public function take(ResourceType $rt, int $num = 1): ResourceSet {
-        $items = array_splice($this->resources[$rt->value], 0, $num);
+    public function takeResourceById(int $id): Resource {
+        $res = $this->resourceById($id);
+        if (!$res) {
+            throw new InvalidArgumentException("no resource with id {$id}");
+        }
+        unset($this->resources[$id]);
+        return $res;
+    }
+
+    public function resourceById(int $id): ?Resource {
+        return isset($this->resources[$id]) ? $this->resources[$id] : null;
+    }
+
+    public function take(ResourceType $type, int $n = 1): ResourceSet {
         $result = new ResourceSet();
-        foreach ($items as $resource) {
-            $result->put($resource);
+        if ($n <= 0) {
+            return $result;
+        }
+
+        $ids = array_keys($this->resources);
+        Arrays::shuffle($ids);
+
+        while ($n > 0) {
+            $id = array_shift($ids);
+            if ($id === null) {
+                break;
+            }
+            $r = $this->resources[$id];
+            if ($r->type == $type) {
+                $n--;
+                $result->add($r);
+            }
+        }
+        foreach ($result->allItems() as $r) {
+            unset($this->resources[$r->id]);
         }
         return $result;
     }
@@ -98,7 +119,7 @@ class ResourceSet implements Marshalable {
         foreach (ResourceType::cases() as $rt) {
             $c = $rt == ResourceType::GOLD ? 48 : 24;
             for ($i = 0; $i < $c; ++$i) {
-                $stock->put(new Resource(++$lastId, $rt));
+                $stock->add(new Resource(++$lastId, $rt));
             }
         }
         return $stock;
@@ -107,6 +128,6 @@ class ResourceSet implements Marshalable {
     /** @return array<mixed> */
     public function marshal(): mixed {
 
-        return array_merge(array_map(fn ($rs) => array_map(fn (Resource $r) => $r->marshal(), $rs), $this->resources));
+        return array_merge(array_map(fn (Resource $r) => $r->marshal(), array_values($this->resources)));
     }
 }

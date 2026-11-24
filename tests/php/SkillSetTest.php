@@ -21,6 +21,15 @@ final class SkillSetTest extends TestBase
         $this->assertEquals(null, $ss->skillById(1));
     }
 
+    public function testMarshal(): void {
+        $ss = SkillSet::of(new Skill(3, SkillType::ANVIL), new Skill(5, SkillType::PICKAXE));
+
+        $this->assertEquals(
+            [ [ "id" => 3, "type" => SkillType::ANVIL->value ], [ "id" => 5, "type" => SkillType::PICKAXE->value ] ],
+            $ss->marshal()
+        );
+    }
+
     public function testBasic() : void{
         $ss = new SkillSet();
         $s1 = new Skill(3, SkillType::ANVIL);

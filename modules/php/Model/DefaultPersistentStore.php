@@ -193,7 +193,7 @@ class DefaultPersistentStore implements PersistentStore {
                     $resource = new Resource($id, ResourceType::from($subtype));
                     switch ($loc_type) {
                         case LocType::STOCK:
-                            $result->resourceStock->put($resource);
+                            $result->resourceStock->add($resource);
                             break;
                         case LocType::TILE:
                             $vt = $result->villages[$pid]->tileById($loc_id);

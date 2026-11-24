@@ -137,7 +137,7 @@ class AllGameData {
                 if (!$requested) {
                     throw new InvalidArgumentException("selected resource reward requires a specific type requested");
                 }
-                $resources->putAll($this->resourceStock->take($requested, 1));
+                $resources->addAll($this->resourceStock->take($requested, 1));
                 $requested = null;
                 break;
             case ActivationReward::GOLD:
@@ -178,20 +178,20 @@ class AllGameData {
                 break;
             case ActivationReward::IRON_GOLD:
                 $resources = $this->resourceStock->take(ResourceType::IRON, 1);
-                $resources->putAll($this->resourceStock->take(ResourceType::GOLD, 1));
+                $resources->addAll($this->resourceStock->take(ResourceType::GOLD, 1));
                 break;
             case ActivationReward::WOOD_GOLD:
                 $resources = $this->resourceStock->take(ResourceType::WOOD, 1);
-                $resources->putAll($this->resourceStock->take(ResourceType::GOLD, 1));
+                $resources->addAll($this->resourceStock->take(ResourceType::GOLD, 1));
                 break;
             case ActivationReward::STONE_GOLD:
                 $resources = $this->resourceStock->take(ResourceType::STONE, 1);
-                $resources->putAll($this->resourceStock->take(ResourceType::GOLD, 1));
+                $resources->addAll($this->resourceStock->take(ResourceType::GOLD, 1));
                 break;
             case ActivationReward::RESOURCE_3:
                 $resources = $this->resourceStock->take(ResourceType::WOOD, 1);
-                $resources->putAll($this->resourceStock->take(ResourceType::STONE, 1));
-                $resources->putAll($this->resourceStock->take(ResourceType::IRON, 1));
+                $resources->addAll($this->resourceStock->take(ResourceType::STONE, 1));
+                $resources->addAll($this->resourceStock->take(ResourceType::IRON, 1));
                 break;
             case ActivationReward::SKILL_ANY:
                 $skills->addSet($this->skillPile->takeN(1));

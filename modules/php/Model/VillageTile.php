@@ -42,7 +42,7 @@ class VillageTile {
     public function resources(): ResourceSet { return $this->resources; }
 
     public function addResource(Resource $res): void {
-        $this->resources->put($res);
+        $this->resources->add($res);
     }
 
     public function currentColor(): WorkerColor {

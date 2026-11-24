@@ -34,7 +34,7 @@ class Resource implements Marshalable {
     {
         return [
             "id" => $this->id,
-            "color" => $this->type->value
+            "type" => $this->type->value
         ];
     }
 }

@@ -19,6 +19,18 @@ final class WorkerGroupTest extends TestBase
         $this->assertEquals(null, $wg->workerById(1));
     }
 
+    public function testMarshal(): void {
+        $wg = WorkerGroup::of(
+            new Worker(3, WorkerColor::RED),
+            new Worker(4, WorkerColor::BLUE),
+            new Worker(5, WorkerColor::RED));
+
+        $this->assertEquals(
+            [ [ "id" => 3, "color" => WorkerColor::RED->value ], [ "id" => 4, "color" => WorkerColor::BLUE->value ], [ "id" => 5, "color" => WorkerColor::RED->value ] ],
+            $wg->marshal()
+        );
+    }
+
     public function testBasic() : void{
         $wg = new WorkerGroup();
         $w1 = new Worker(3, WorkerColor::BLUE);
