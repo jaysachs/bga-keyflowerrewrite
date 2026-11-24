@@ -299,6 +299,75 @@ html {
     padding-inline: 12px;
 }
 
+/* Your village and the others' wrappers (village.ts) don't count unless the screen is wide (below) */
+.kf_villages_mine,
+.kf_villages_others {
+    display: contents;
+}
+
+/*
+ * Wide game areas, as in the mockup (and Jay's point that the season's tiles and your village matter
+ * most): the market on the left, your village beside it with the boats under it, the others below,
+ * across. From 1000px of game area (a 1280px screen): three market tiles with their bids across (552px)
+ * and a column of about 450px; from 1152px, four (736px), the column still 400px or more. Tiles stay
+ * 128px; a village wider than its column scrolls sideways in its box. The boats shrink to fit four
+ * across their column. Only when you're playing (spectators keep one column).
+ */
+#game_play_area {
+    container: kf-game / inline-size;
+}
+
+@container kf-game (min-width: 1000px) {
+    #kf_main:has(.kf_villages_mine > .kf_village) {
+        display: grid;
+        grid-template-columns: calc(3 * (var(--kf-tile-w) + 56px)) minmax(0, 1fr);
+        grid-template-rows: auto 1fr auto;
+        grid-template-areas:
+            "market mine"
+            "market dock"
+            "others others";
+        column-gap: 16px;
+        align-items: start;
+    }
+    #kf_main:has(.kf_villages_mine > .kf_village) #kf_market { grid-area: market; }
+    #kf_main:has(.kf_villages_mine > .kf_village) #kf_villages { display: contents; }
+    #kf_main:has(.kf_villages_mine > .kf_village) .kf_villages_mine {
+        display: block;
+        grid-area: mine;
+        min-width: 0;
+        margin-top: 16px;
+        padding-right: 12px;
+    }
+    #kf_main:has(.kf_villages_mine > .kf_village) .kf_villages_mine > .kf_village {
+        width: 100%;
+    }
+    #kf_main:has(.kf_villages_mine > .kf_village) #kf_dock {
+        grid-area: dock;
+        min-width: 0;
+        margin: 16px 0 0;
+        padding-inline: 0 12px;
+    }
+    #kf_main:has(.kf_villages_mine > .kf_village) .kf_boats {
+        container-type: inline-size;
+        --kf-tile-w: min(128px, calc((100cqw - 36px) / 4));
+        --kf-tile-h: calc(var(--kf-tile-w) * 0.875);
+    }
+    #kf_main:has(.kf_villages_mine > .kf_village) .kf_villages_others {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        grid-area: others;
+        margin-top: 24px;
+        padding-inline: 12px;
+    }
+}
+
+@container kf-game (min-width: 1152px) {
+    #kf_main:has(.kf_villages_mine > .kf_village) {
+        grid-template-columns: calc(4 * (var(--kf-tile-w) + 56px)) minmax(0, 1fr);
+    }
+}
+
 /* As in the mockup: no colored edge (the name and its avatar carry the player's color), and its spacing */
 .kf_village {
     min-width: 0;

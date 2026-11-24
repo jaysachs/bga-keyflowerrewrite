@@ -59,11 +59,20 @@ export class VillageComponent extends BaseComponent<any> {
         });
     }
 
+    /**
+     * Yours (when playing) and the others', each in a wrapper: on a wide screen yours goes beside the
+     * market and the others below (the CSS lays it out); narrower, the wrappers don't count and the
+     * villages flow one after the other, yours first.
+     */
     public setup(): HTMLElement {
         const gamedatas = this.bga.gameui.gamedatas;
+        const order = this.playerOrder(gamedatas);
+        const me = this.bga.players.getCurrentPlayerId();
+        const mine = order.includes(me) ? me : null;
+        const div = (pid: number) => this.villageDiv(gamedatas.villages[pid]!, gamedatas.players[pid]!);
         return Html.div({ id: 'kf_villages' },
-            ...this.playerOrder(gamedatas).map(pid => this.villageDiv(gamedatas.villages[pid]!, gamedatas.players[pid]!))
-        );
+            Html.div({ classes: 'kf_villages_mine' }, ...(mine != null ? [div(mine)] : [])),
+            Html.div({ classes: 'kf_villages_others' }, ...order.filter(pid => pid != mine).map(div)));
     }
 
     /** Player ids starting with the current player, if playing, then around the table. */
