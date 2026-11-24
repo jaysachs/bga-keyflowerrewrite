@@ -44,7 +44,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
         this.textFormatter.registerFormatter('tiletype', args => Html.span({ text: this.translationComponent.tileName(args.tiletype) }));
         this.textFormatter.registerFormatter('season', args => this.seasonWithIcon(args.season));
         this.marketComponent = new MarketComponent(bga, this.translationComponent, this.moreAnimations);
-        this.dockComponent = new DockComponent(bga);
+        this.dockComponent = new DockComponent(bga, this.translationComponent);
         this.villageComponent = new VillageComponent(bga, this.translationComponent);
         this.panelsComponent = new PanelsComponent(bga, this.translationComponent, this.tooltipManager);
     }
@@ -110,7 +110,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
     private makeHtml(marketEl: HTMLElement, dockEl: HTMLElement, villagesEl: HTMLElement): HTMLElement {
         return Html.div({ id: 'kf_main',
             classes: this.bga.players.isCurrentPlayerSpectator() ? ['kf_is_spectator'] : []},
-                dockEl, marketEl, villagesEl
+                marketEl, dockEl, villagesEl
         );
     }
 }

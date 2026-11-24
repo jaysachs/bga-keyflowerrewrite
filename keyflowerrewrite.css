@@ -99,6 +99,196 @@ html {
     }
 }
 
+/* The boats, after the market: each boat tile with its passengers on the meeple outlines and its tools
+   on the "?" squares, as on the table (positions in dock.ts). The cargo is sized in % of the tile, so it
+   scales with it: meeples as in the mockup (14px on a 104px tile), tools 11% */
+/* Side margins as in the mockup: the boats and their label 22px from the edges (its 12px, plus the
+   market area's 10px), the villages 12px */
+#kf_dock {
+    margin: 16px 0 24px;
+    padding-inline: 22px;
+}
+
+.kf_dock_title {
+    margin: 0 0 8px;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+/* The label is a button that folds the boats away: a chevron pointing down when open, right when folded.
+   Its own width (BGA stretches buttons here), so only the label is the target */
+.kf_dock_fold {
+    display: inline-flex;
+    width: auto;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    margin: 0;
+    padding: 2px 6px 2px 0;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.kf_chevron {
+    width: 8px;
+    height: 8px;
+    margin: -3px 2px 0;
+    border: solid currentColor;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    transition: transform 0.15s;
+}
+
+.kf_dock_fold[aria-expanded="false"] .kf_chevron {
+    margin-top: 0;
+    transform: rotate(-45deg);
+}
+
+@media (hover: hover) {
+    .kf_dock_fold:hover {
+        text-decoration: underline;
+    }
+}
+
+.kf_boats[hidden] {
+    display: none;
+}
+
+.kf_boats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* Phones: centered, like the market, with the label 12px from the edge */
+@media (max-width: 499px) {
+    .kf_boats {
+        justify-content: center;
+    }
+}
+
+.kf_boat {
+    position: relative;
+    width: var(--kf-tile-w);
+    height: var(--kf-tile-h);
+}
+
+.kf_boat > .kf_tile {
+    position: absolute;
+    inset: 0;
+}
+
+.kf_boat_item {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+/* The cargo layers cover the tile, so positions are % of it */
+.kf_boat_workers,
+.kf_boat_tools {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+/* Where the cargo goes on each boat face (% of the tile), with the art: workers on the white meeple
+   outlines, tools on the "?" squares, in reading order. Measured from tiles-large.jpg (the centres of
+   the white shapes); faces without spaces (the winter sides) have none. New art: change these. */
+.kf_boat_workers > *,
+.kf_boat_tools > * {
+    display: none;
+}
+
+[data-kf-boat="keyflower"] .kf_boat_workers > :nth-child(1) { display: block; left: 39.3%; top: 33.2%; }
+[data-kf-boat="keyflower"] .kf_boat_workers > :nth-child(2) { display: block; left: 52.4%; top: 33.1%; }
+[data-kf-boat="keyflower"] .kf_boat_workers > :nth-child(3) { display: block; left: 39.3%; top: 47.9%; }
+[data-kf-boat="keyflower"] .kf_boat_workers > :nth-child(4) { display: block; left: 52.8%; top: 47.9%; }
+[data-kf-boat="keyflower"] .kf_boat_workers > :nth-child(5) { display: block; left: 39.3%; top: 62.1%; }
+[data-kf-boat="keyflower"] .kf_boat_workers > :nth-child(6) { display: block; left: 52.8%; top: 62.4%; }
+[data-kf-boat="keyflower"] .kf_boat_workers > :nth-child(7) { display: block; left: 39.2%; top: 76.5%; }
+[data-kf-boat="keyflower"] .kf_boat_tools > :nth-child(1) { display: block; left: 52.7%; top: 76.9%; }
+[data-kf-boat="keyflower_u"] .kf_boat_workers > :nth-child(1) { display: block; left: 37.6%; top: 34.2%; }
+[data-kf-boat="keyflower_u"] .kf_boat_workers > :nth-child(2) { display: block; left: 50.8%; top: 34.0%; }
+[data-kf-boat="keyflower_u"] .kf_boat_workers > :nth-child(3) { display: block; left: 44.2%; top: 48.5%; }
+[data-kf-boat="keyflower_u"] .kf_boat_tools > :nth-child(1) { display: block; left: 37.1%; top: 63.6%; }
+[data-kf-boat="keyflower_u"] .kf_boat_tools > :nth-child(2) { display: block; left: 51.6%; top: 63.3%; }
+[data-kf-boat="seabastion"] .kf_boat_workers > :nth-child(1) { display: block; left: 43.3%; top: 30.7%; }
+[data-kf-boat="seabastion"] .kf_boat_workers > :nth-child(2) { display: block; left: 56.4%; top: 30.8%; }
+[data-kf-boat="seabastion"] .kf_boat_workers > :nth-child(3) { display: block; left: 43.3%; top: 45.2%; }
+[data-kf-boat="seabastion"] .kf_boat_workers > :nth-child(4) { display: block; left: 56.8%; top: 45.3%; }
+[data-kf-boat="seabastion"] .kf_boat_workers > :nth-child(5) { display: block; left: 43.3%; top: 59.5%; }
+[data-kf-boat="seabastion"] .kf_boat_workers > :nth-child(6) { display: block; left: 56.7%; top: 59.5%; }
+[data-kf-boat="seabastion"] .kf_boat_tools > :nth-child(1) { display: block; left: 43.6%; top: 74.4%; }
+[data-kf-boat="seabastion"] .kf_boat_tools > :nth-child(2) { display: block; left: 57.2%; top: 74.3%; }
+[data-kf-boat="seabreese"] .kf_boat_workers > :nth-child(1) { display: block; left: 38.9%; top: 35.2%; }
+[data-kf-boat="seabreese"] .kf_boat_workers > :nth-child(2) { display: block; left: 52.0%; top: 35.2%; }
+[data-kf-boat="seabreese"] .kf_boat_workers > :nth-child(3) { display: block; left: 38.8%; top: 49.7%; }
+[data-kf-boat="seabreese"] .kf_boat_workers > :nth-child(4) { display: block; left: 52.4%; top: 49.7%; }
+[data-kf-boat="seabreese"] .kf_boat_workers > :nth-child(5) { display: block; left: 38.8%; top: 64.0%; }
+[data-kf-boat="seabreese"] .kf_boat_workers > :nth-child(6) { display: block; left: 52.3%; top: 64.4%; }
+[data-kf-boat="seabreese"] .kf_boat_tools > :nth-child(1) { display: block; left: 45.4%; top: 79.3%; }
+[data-kf-boat="seabreese_u"] .kf_boat_workers > :nth-child(1) { display: block; left: 36.1%; top: 33.9%; }
+[data-kf-boat="seabreese_u"] .kf_boat_workers > :nth-child(2) { display: block; left: 49.3%; top: 33.9%; }
+[data-kf-boat="seabreese_u"] .kf_boat_workers > :nth-child(3) { display: block; left: 36.1%; top: 48.5%; }
+[data-kf-boat="seabreese_u"] .kf_boat_workers > :nth-child(4) { display: block; left: 49.3%; top: 48.5%; }
+[data-kf-boat="seabreese_u"] .kf_boat_tools > :nth-child(1) { display: block; left: 42.8%; top: 63.6%; }
+[data-kf-boat="flipper"] .kf_boat_workers > :nth-child(1) { display: block; left: 41.1%; top: 27.2%; }
+[data-kf-boat="flipper"] .kf_boat_workers > :nth-child(2) { display: block; left: 34.1%; top: 42.2%; }
+[data-kf-boat="flipper"] .kf_boat_workers > :nth-child(3) { display: block; left: 47.1%; top: 42.0%; }
+[data-kf-boat="flipper"] .kf_boat_workers > :nth-child(4) { display: block; left: 34.1%; top: 56.8%; }
+[data-kf-boat="flipper"] .kf_boat_workers > :nth-child(5) { display: block; left: 47.5%; top: 56.8%; }
+[data-kf-boat="flipper"] .kf_boat_tools > :nth-child(1) { display: block; left: 33.8%; top: 72.6%; }
+[data-kf-boat="flipper"] .kf_boat_tools > :nth-child(2) { display: block; left: 47.9%; top: 72.6%; }
+[data-kf-boat="flipper_u"] .kf_boat_workers > :nth-child(1) { display: block; left: 35.4%; top: 37.9%; }
+[data-kf-boat="flipper_u"] .kf_boat_workers > :nth-child(2) { display: block; left: 48.5%; top: 37.8%; }
+[data-kf-boat="flipper_u"] .kf_boat_tools > :nth-child(1) { display: block; left: 34.8%; top: 52.9%; }
+[data-kf-boat="flipper_u"] .kf_boat_tools > :nth-child(2) { display: block; left: 49.0%; top: 52.8%; }
+[data-kf-boat="invincible"] .kf_boat_workers > :nth-child(1) { display: block; left: 42.4%; top: 30.5%; }
+[data-kf-boat="invincible"] .kf_boat_workers > :nth-child(2) { display: block; left: 55.6%; top: 30.4%; }
+[data-kf-boat="invincible"] .kf_boat_workers > :nth-child(3) { display: block; left: 42.4%; top: 45.1%; }
+[data-kf-boat="invincible"] .kf_boat_workers > :nth-child(4) { display: block; left: 55.9%; top: 45.1%; }
+[data-kf-boat="invincible"] .kf_boat_workers > :nth-child(5) { display: block; left: 49.1%; top: 60.2%; }
+[data-kf-boat="invincible"] .kf_boat_tools > :nth-child(1) { display: block; left: 49.0%; top: 75.3%; }
+[data-kf-boat="invincible_u"] .kf_boat_workers > :nth-child(1) { display: block; left: 40.0%; top: 31.2%; }
+[data-kf-boat="invincible_u"] .kf_boat_workers > :nth-child(2) { display: block; left: 53.2%; top: 31.2%; }
+[data-kf-boat="invincible_u"] .kf_boat_workers > :nth-child(3) { display: block; left: 46.6%; top: 46.0%; }
+[data-kf-boat="invincible_u"] .kf_boat_tools > :nth-child(1) { display: block; left: 47.1%; top: 61.4%; }
+[data-kf-boat="whitewind"] .kf_boat_workers > :nth-child(1) { display: block; left: 39.8%; top: 39.1%; }
+[data-kf-boat="whitewind"] .kf_boat_workers > :nth-child(2) { display: block; left: 52.7%; top: 39.1%; }
+[data-kf-boat="whitewind"] .kf_boat_workers > :nth-child(3) { display: block; left: 39.8%; top: 53.7%; }
+[data-kf-boat="whitewind"] .kf_boat_workers > :nth-child(4) { display: block; left: 53.2%; top: 53.8%; }
+[data-kf-boat="whitewind"] .kf_boat_tools > :nth-child(1) { display: block; left: 39.7%; top: 69.4%; }
+[data-kf-boat="whitewind"] .kf_boat_tools > :nth-child(2) { display: block; left: 53.9%; top: 69.4%; }
+[data-kf-boat="whitewind_u"] .kf_boat_workers > :nth-child(1) { display: block; left: 39.6%; top: 33.0%; }
+[data-kf-boat="whitewind_u"] .kf_boat_workers > :nth-child(2) { display: block; left: 52.7%; top: 33.2%; }
+[data-kf-boat="whitewind_u"] .kf_boat_workers > :nth-child(3) { display: block; left: 39.5%; top: 47.8%; }
+[data-kf-boat="whitewind_u"] .kf_boat_workers > :nth-child(4) { display: block; left: 52.9%; top: 47.8%; }
+[data-kf-boat="whitewind_u"] .kf_boat_tools > :nth-child(1) { display: block; left: 46.3%; top: 63.2%; }
+
+.kf_boat .kf_worker {
+    width: 13.5%;
+    height: auto;
+    aspect-ratio: 1;
+    filter: drop-shadow(0 0 1px #fff) drop-shadow(0 1px 1px rgb(0 0 0 / 0.6));
+}
+
+/* Tools from the game's sprite (2064 x 113, 32px icons), scaled to the box */
+.kf_boat_tool {
+    width: 11%;
+    aspect-ratio: 1;
+    background: url("img/tiles-symbols.png") no-repeat;
+    background-size: 6450% 353.125%;
+    filter: drop-shadow(0 0 1px #fff);
+}
+.kf_boat_tool[data-kf-kind="anvil"] { background-position: 19.783% 18.519%; }
+.kf_boat_tool[data-kf-kind="pickaxe"] { background-position: 23.031% 18.519%; }
+.kf_boat_tool[data-kf-kind="saw"] { background-position: 19.783% 81.481%; }
+
 /* Villages: yours first, then the others in turn order */
 
 #kf_villages {
@@ -106,6 +296,7 @@ html {
     flex-wrap: wrap;
     gap: 16px;
     margin-top: 16px;
+    padding-inline: 12px;
 }
 
 .kf_village {
@@ -116,6 +307,14 @@ html {
     border-left: 4px solid var(--kf-player-color);
     border-radius: 8px;
     padding: 8px 12px 12px;
+}
+
+/* Phones: the villages sharing a row grow to fill it, so their edges line up 12px from the screen's
+   edges like the status bar and the boats' label (as in the mockup) */
+@media (max-width: 499px) {
+    .kf_village {
+        flex-grow: 1;
+    }
 }
 
 /* Each village is as wide as its tiles, so small villages share a row, also on phones. One wider than
