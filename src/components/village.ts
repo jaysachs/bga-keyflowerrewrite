@@ -42,10 +42,11 @@ export class VillageComponent extends BaseComponent<any> {
         return Html.div({
                 id: `kf_village_${village.player_id}`,
                 classes: 'kf_village',
-                attrs: { 'data-kf-player': String(village.player_id) },
+                attrs: { 'data-kf-player': String(village.player_id), role: 'region', 'aria-labelledby': `kf_village_name_${village.player_id}` },
                 style: `--kf-player-color: #${player.color}`,
             },
-            Html.div({ classes: 'kf_village_name', text: player.name }),
+            // A heading, so screen readers can jump from village to village; it names the village's region
+            Html.div({ id: `kf_village_name_${village.player_id}`, classes: 'kf_village_name', text: player.name, attrs: { role: 'heading', 'aria-level': 3 } }),
             // The map scrolls sideways when the village is wider than the screen (phones); the name stays.
             Html.div({ classes: 'kf_village_scroll' },
                 Html.div({
@@ -60,7 +61,7 @@ export class VillageComponent extends BaseComponent<any> {
 
     /** row and col are counted from the village's top-left; data-kf-rowcol keeps the real position. */
     private tileDiv(tile: VillageTile, row: number, col: number): HTMLElement {
-        return Html.div({
+        const div = Html.div({
             id: `kf_tile_${tile.tile_id}`,
             classes: 'kf_tile',
             attrs: {
@@ -71,5 +72,9 @@ export class VillageComponent extends BaseComponent<any> {
             style: [`--kf-row: ${row}`, `--kf-col: ${col}`],
             title: this.translations.tileName(tile.tiletype),
         });
+        // A tap (or Enter or Space) shows the tile's rules (keyflower.ts)
+        Object.entries({ role: 'button', tabindex: '0', 'aria-haspopup': 'dialog', 'aria-label': this.translations.tileName(tile.tiletype) })
+            .forEach(([k, v]) => div.setAttribute(k, v));
+        return div;
     }
 }

@@ -2,6 +2,7 @@ import { AnimationManager } from "../bgalibs/bga-animations";
 import { MarketComponent, workerIcons } from "../components/market";
 import { PanelsComponent } from "../components/panels";
 import { TranslationComponent } from "../components/translation";
+import { TileRulesComponent } from "../components/tilerules";
 import { KFGameDatas, KFPlayer, MarketLot, Worker, WorkerColor } from "../kfdata";
 import { Html } from "../libs/html";
 import { BaseState } from "./base";
@@ -48,7 +49,7 @@ export class PlayerTurnState extends BaseState {
     private readonly onTile = (mt: MarketLot) => this.startPick(mt.id);
 
     constructor(bga: Bga<KFPlayer, KFGameDatas>, animationManager: AnimationManager, private market: MarketComponent,
-        private translations: TranslationComponent, private panels: PanelsComponent) {
+        private translations: TranslationComponent, private panels: PanelsComponent, private tileRules: TileRulesComponent) {
         super(bga, animationManager);
     }
 
@@ -204,6 +205,8 @@ export class PlayerTurnState extends BaseState {
             : fixedColor ? _('Bid on ${tile}: at least ${n} ${color}')
             : _('Bid on ${tile}: at least ${n} of one color');
         this.bga.statusBar.setTitle(title, { tile: name, n: need, color: fixedColor ?? '' });   // the color formatter adds the word and its meeple
+        // The tile's rules, one tap away while choosing (as in the mockup, beside the title)
+        document.getElementById('pagemaintitletext')?.append(' ', this.tileRules.button(mt.tiletype));
         // Every tap redraws the picker; keyboard focus returns to the button that had it.
         const focused = (document.activeElement as HTMLElement | null)?.dataset['kfKey'];
         this.bga.statusBar.removeActionButtons();

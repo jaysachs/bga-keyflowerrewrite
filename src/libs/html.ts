@@ -50,6 +50,18 @@ export class Html {
         return this.makeElem('p', args, ...children);
     }
 
+    public static ul(args: { id?: string | undefined, attrs?: AttrLike, classes?: (string | string[]) }, ...children: Child[]) {
+        return this.makeElem('ul', args, ...children);
+    }
+
+    public static li(args: { id?: string | undefined, text?: string | undefined, attrs?: AttrLike, classes?: (string | string[]) }, ...children: Child[]) {
+        return this.makeElem('li', args, ...children);
+    }
+
+    public static h3(args: { id?: string | undefined, text?: string | undefined, attrs?: AttrLike, classes?: (string | string[]) }, ...children: Child[]) {
+        return this.makeElem('h3', args, ...children);
+    }
+
     public static img(args: { id?: string | undefined, title?: string, attrs?: AttrLike, classes?: (string | string[]), style?: (string | string[]) }) {
         return this.makeElem('img', args) as HTMLImageElement;
     }

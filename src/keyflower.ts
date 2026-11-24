@@ -11,6 +11,7 @@
 import { DockComponent } from "./components/dock";
 import { MarketComponent } from "./components/market";
 import { PanelsComponent } from "./components/panels";
+import { TileRulesComponent } from "./components/tilerules";
 import { TranslationComponent } from "./components/translation";
 import { VillageComponent } from "./components/village";
 import { KFGameDatas, KFPlayer, Season, WorkerColor } from "./kfdata";
@@ -31,6 +32,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
     private dockComponent: DockComponent;
     private villageComponent: VillageComponent;
     private panelsComponent: PanelsComponent;
+    private tileRulesComponent: TileRulesComponent;
 
     constructor(bga: Bga<KFPlayer, KFGameDatas>) {
         super(bga);
@@ -46,7 +48,8 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
         this.marketComponent = new MarketComponent(bga, this.translationComponent, this.moreAnimations);
         this.dockComponent = new DockComponent(bga, this.translationComponent);
         this.villageComponent = new VillageComponent(bga, this.translationComponent);
-        this.panelsComponent = new PanelsComponent(bga, this.translationComponent, this.tooltipManager);
+        this.tileRulesComponent = new TileRulesComponent(this.translationComponent);
+        this.panelsComponent = new PanelsComponent(bga, this.translationComponent, this.tooltipManager, this.tileRulesComponent);
     }
 
     override async setup(gamedatas: KFGameDatas) {
@@ -67,6 +70,32 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
             this.villageComponent.setup());
         this.bga.gameArea.getElement().appendChild(mainElem);
         this.panelsComponent.setup();
+        this.showRulesOnTap(mainElem);
+    }
+
+    /**
+     * Tapping a tile you can't choose right now (in the market, a village or the boats) shows its rules,
+     * as the mockup's tile dialog does; a choosable one (.kf_selectable) does what it did. Enter and
+     * Space do the same on village tiles (market tiles are buttons already).
+     */
+    private showRulesOnTap(main: HTMLElement): void {
+        const tileOf = (e: Event) => {
+            // The tile itself, or the market button or boat it's in (Enter on the button, a tap on cargo)
+            const hit = (e.target as Element | null)?.closest<HTMLElement>('[data-kf-tile], .kf_lot_tile, .kf_boat');
+            const tile = hit?.matches('[data-kf-tile]') ? hit : hit?.querySelector<HTMLElement>('[data-kf-tile]');
+            return tile && main.contains(tile) && !tile.closest('.kf_selectable') && !hit!.classList.contains('kf_selectable') ? tile : null;
+        };
+        main.addEventListener('click', e => {
+            const tile = tileOf(e);
+            if (tile) { this.tileRulesComponent.show(tile.dataset['kfTile']!); }
+        });
+        main.addEventListener('keydown', e => {
+            const tile = tileOf(e);
+            if (tile && tile.getAttribute('role') == 'button' && (e.key == 'Enter' || e.key == ' ')) {
+                e.preventDefault();
+                this.tileRulesComponent.show(tile.dataset['kfTile']!);
+            }
+        });
     }
 
     /**
@@ -103,7 +132,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
     }
 
     private registerStates(): void {
-        this.bga.states.register('PlayerTurn', new PlayerTurnState(this.bga, this.animationManager, this.marketComponent, this.translationComponent, this.panelsComponent));
+        this.bga.states.register('PlayerTurn', new PlayerTurnState(this.bga, this.animationManager, this.marketComponent, this.translationComponent, this.panelsComponent, this.tileRulesComponent));
         this.bga.states.register('SeasonSetup', new SeasonSetupState(this.bga, this.animationManager));
     }
 

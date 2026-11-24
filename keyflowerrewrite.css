@@ -401,6 +401,19 @@ html {
     cursor: default;
 }
 
+/* Every tile responds to a tap: choosable ones are chosen, the others show their rules */
+.kf_lot_tile,
+.kf_village_map .kf_tile[role="button"] {
+    cursor: pointer;
+}
+
+/* Keyboard focus on a village tile: a ring inside the hex (the tile is clipped to it, so an outline
+   wouldn't show) */
+.kf_village_map .kf_tile:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 4px #1d5ea8;
+}
+
 /* The outline follows the hex, since the tile inside is clipped to it */
 .kf_lot_tile.kf_selectable {
     cursor: pointer;
@@ -957,26 +970,39 @@ html {
     background: url("img/drawings/winter.svg") center / contain no-repeat;
 }
 
-/* The dialog: under the title, a line saying only you see them, then the tiles at their size on the
-   board, three across (smaller on phones), with their names */
+/* The dialog: under the title, a line saying only you see them, then each tile at its size on the
+   board, with its name and rules beside it (a smaller tile on phones), divided by thin lines */
+.kf_winter_dialog {
+    max-width: 520px;
+}
+
 .kf_winter_tiles {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 16px 12px;
-    --kf-tile-w: min(128px, calc((100vw - 96px) / 3));
+    flex-direction: column;
+    --kf-tile-w: 128px;
     --kf-tile-h: calc(var(--kf-tile-w) * 0.875);
 }
 
 .kf_winter_tile {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    width: var(--kf-tile-w);
-    font-size: 14px;
-    font-weight: bold;
-    text-align: center;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 0;
+    border-top: 1px solid rgb(0 0 0 / 0.1);
+}
+
+.kf_winter_tile:first-child {
+    padding-top: 0;
+    border-top: 0;
+}
+
+.kf_winter_tile > .kf_tile {
+    flex: none;
+}
+
+.kf_winter_text h3 {
+    margin: 0 0 6px;
+    font-size: 16px;
 }
 
 .kf_winter_note {
@@ -988,33 +1014,125 @@ html {
 /* BGA's standard dialog, with 24px around its content (BGA's is about 12px, with the close button
    tucked into the corner). The close button is BGA's 37px circle, in a box 43px tall: 24px from the top
    and right, on the title's line (as tall as the circle) */
-#popin_kf_winter_dialog {
+#popin_kf_winter_dialog,
+#popin_kf_rules_dialog {
     padding: 24px;
+    background: #fff;   /* not BGA's grey gradient: white, like the status bar and the panels */
 }
 
-#popin_kf_winter_dialog .standard_popin_title {
+#popin_kf_winter_dialog .standard_popin_title,
+#popin_kf_rules_dialog .standard_popin_title {
     margin: 0 0 4px;
     padding-right: 52px;
     line-height: 37px;
 }
 
-#popin_kf_winter_dialog .standard_popin_closeicon {
+#popin_kf_winter_dialog .standard_popin_closeicon,
+#popin_kf_rules_dialog .standard_popin_closeicon {
     top: 21px;
     right: 24px;
 }
 
-/* Phones: 12px on every side, and the tiles a little larger with the room it gives */
-.mobile_version #popin_kf_winter_dialog {
+/* Phones: 12px on every side, and smaller tiles beside the rules */
+.mobile_version #popin_kf_winter_dialog,
+.mobile_version #popin_kf_rules_dialog {
     padding: 12px;
 }
 
-.mobile_version #popin_kf_winter_dialog .standard_popin_closeicon {
+.mobile_version #popin_kf_winter_dialog .standard_popin_closeicon,
+.mobile_version #popin_kf_rules_dialog .standard_popin_closeicon {
     top: 9px;
     right: 12px;
 }
 
 .mobile_version .kf_winter_tiles {
-    --kf-tile-w: min(128px, calc((100vw - 72px) / 3));
+    --kf-tile-w: 88px;
+}
+
+/* A tile's rules (the Rules button's dialog): the tile large, its rules beside it, under it on phones */
+.kf_rules_dialog {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    max-width: 560px;
+    --kf-tile-w: 192px;
+    --kf-tile-h: calc(var(--kf-tile-w) * 0.875);
+}
+
+.kf_rules_dialog > .kf_tile {
+    flex: none;
+}
+
+.mobile_version .kf_rules_dialog {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    --kf-tile-w: 160px;
+}
+
+/* The rules themselves: one item per part (what it does, upgrade, scoring, notes), divided by thin
+   lines, with each resource, tool, worker and points icon after its word, sized to the text */
+.kf_rules {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 14px;
+    line-height: 1.45;
+    text-align: left;
+}
+
+.kf_rules .kf_nowrap {
+    white-space: nowrap;
+}
+
+.kf_rules li + li {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid rgb(0 0 0 / 0.08);
+}
+
+.kf_rules .kf_color .kf_worker,
+.kf_with_icon > span {
+    display: inline-block;
+    width: 1.3em;
+    height: 1.3em;
+    margin-left: 0.15em;
+    vertical-align: -0.3em;
+}
+
+/* Resources from the old game's sprite: iron, stone, wood, gold, points, 24px each */
+.kf_icon_resource {
+    background: url("img/resources.png") 0 0 / 500% 100% no-repeat;
+}
+.kf_icon_resource[data-kf-kind="iron"] { background-position: 0 0; }
+.kf_icon_resource[data-kf-kind="stone"] { background-position: 25% 0; }
+.kf_icon_resource[data-kf-kind="wood"] { background-position: 50% 0; }
+.kf_icon_resource[data-kf-kind="gold"] { background-position: 75% 0; }
+
+/* Tools from the game's sprite, drawn at 32px, scaled to the text */
+.kf_with_icon > .kf_icon_tool {
+    width: 32px;
+    height: 32px;
+    zoom: 0.57;
+    vertical-align: -0.55em;
+    background-image: url("img/tiles-symbols.png");
+}
+.kf_icon_tool[data-kf-kind="anvil"] { background-position: -402px -15px; }
+.kf_icon_tool[data-kf-kind="pickaxe"] { background-position: -468px -15px; }
+.kf_icon_tool[data-kf-kind="saw"] { background-position: -402px -66px; }
+
+/* Points: Daniel's drawing */
+.kf_icon_points {
+    background: url("img/drawings/victory-points.svg") center / contain no-repeat;
+}
+
+/* The Rules button beside the picker's title: BGA's grey button, kept its own size (BGA makes buttons
+   in the status bar's title full width) */
+#pagemaintitletext .kf_rules_button {
+    display: inline-block;
+    width: auto;
+    margin: 0 0 0 8px;
+    vertical-align: middle;
 }
 
 /* Desktop: 8px between the panels, as in the mockup. BGA puts 8px under each panel and its grid adds
