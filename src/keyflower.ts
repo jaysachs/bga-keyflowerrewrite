@@ -71,6 +71,21 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
         this.bga.gameArea.getElement().appendChild(mainElem);
         this.panelsComponent.setup();
         this.showRulesOnTap(mainElem);
+        this.showSeason(gamedatas.season);
+    }
+
+    /**
+     * As in the mockup: the season at the left of the status bar (its icon and name) and a line in its
+     * color along the bar's bottom. The season the page loaded in, like the market's heading.
+     */
+    private showSeason(season: Season): void {
+        const bar = document.getElementById('page-title');
+        if (!bar) { return; }
+        bar.dataset['kfSeason'] = season;
+        bar.querySelector('.kf_status_season')?.remove();
+        bar.prepend(Html.div({ classes: 'kf_status_season' },
+            Html.span({ classes: 'kf_season_icon', attrs: { 'data-kf-season': season, 'aria-hidden': 'true' } }),
+            this.translationComponent.season(season)));
     }
 
     /**

@@ -216,8 +216,8 @@ export class MarketComponent extends BaseComponent<MarketLot> {
             },
             Html.div({ id: `kf_tile_${mt.id}`, classes: 'kf_tile', attrs: { 'data-kf-tile': mt.tiletype }, title: this.translations.tileName(mt.tiletype) }),
             activationRows(mt.activations),
-            // The line around a tile you can choose (thicker once chosen), as in the mockup
-            canClick || this.selected == mt.id ? hexMark(this.selected == mt.id) : undefined,
+            // The line around the tile: on hover and keyboard focus, and thicker once chosen (the CSS shows it)
+            hexMark(this.selected == mt.id),
         );
         tileButton.addEventListener('click', () => {
             if (this.selectable.has(mt.id)) {

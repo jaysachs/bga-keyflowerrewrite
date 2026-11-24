@@ -111,7 +111,7 @@ html {
 
 .kf_dock_title {
     margin: 0 0 8px;
-    font-size: 15px;
+    font-size: 14px;   /* a section heading, like "Spring market" */
     font-weight: bold;
 }
 
@@ -294,19 +294,19 @@ html {
 #kf_villages {
     display: flex;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: 12px;
     margin-top: 16px;
     padding-inline: 12px;
 }
 
+/* As in the mockup: no colored edge (the name and its avatar carry the player's color), and its spacing */
 .kf_village {
     min-width: 0;
     max-width: 100%;
     box-sizing: border-box;
     background: rgba(255, 255, 255, 0.6);
-    border-left: 4px solid var(--kf-player-color);
     border-radius: 8px;
-    padding: 8px 12px 12px;
+    padding: 6px 8px 10px;
 }
 
 /* Phones: the villages sharing a row grow to fill it, so their edges line up 12px from the screen's
@@ -456,6 +456,31 @@ html {
     --kf-mark-w: 6px;
 }
 
+/* Shown on hover (mouse), on keyboard focus (dark, as focus is everywhere) and on the chosen tile only, as
+   in the mockup: most tiles can be chosen on your turn, and the others show their rules, so a line on
+   all of them said little */
+.kf_hexmark:not(.kf_selected) {
+    opacity: 0;
+}
+
+@media (hover: hover) {
+    .kf_lot_tile:hover .kf_hexmark {
+        opacity: 1;
+    }
+}
+
+.kf_lot_tile:focus-visible {
+    outline: none;
+}
+
+.kf_lot_tile:focus-visible .kf_hexmark {
+    opacity: 1;
+}
+
+.kf_lot_tile:focus-visible .kf_hexmark_line {
+    stroke: #1f2328;
+}
+
 .kf_hexmark polygon {
     fill: none;
     stroke-linejoin: round;
@@ -470,6 +495,42 @@ html {
 .kf_hexmark_line {
     stroke: #1d5ea8;
     stroke-width: var(--kf-mark-w);
+}
+
+/* The season in the status bar, as in the mockup: its name and icon at the left (where the bar is wide
+   enough, and not while choosing workers), and a line in its color along the bottom */
+#overall-content #page-title[data-kf-season] {
+    box-shadow: inset 0 -4px 0 var(--kf-season-color);
+}
+#page-title[data-kf-season="spring"] { --kf-season-color: #86a645; }
+#page-title[data-kf-season="summer"] { --kf-season-color: #d3c960; }
+#page-title[data-kf-season="fall"] { --kf-season-color: #b6783f; }
+#page-title[data-kf-season="winter"] { --kf-season-color: #a9cde4; }
+
+.kf_status_season {
+    display: none;
+}
+
+@media (min-width: 1000px) {
+    #page-title:not(.kf_picking) > .kf_status_season {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transform: translateY(-50%);
+        font-size: 14px;
+        font-weight: bold;
+    }
+}
+
+.kf_status_season .kf_season_icon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    margin: 0;
 }
 
 /* "Summer market" over the market, after the season's icon, in line with the "Boats" label */
