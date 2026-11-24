@@ -1006,7 +1006,7 @@ enum TileType: string
                 'scoring' => clienttranslate('Grants 3 ${points} when upgraded.'),
             ],
             TileType::PEDDLAR => [
-                'summary' => clienttranslate('Brings 1 ${green} but ^1 yellow worker^ has to be discarded in exchange.'),
+                'summary' => clienttranslate('Brings 1 ${green} but 1 ${yellow} has to be discarded in exchange.'),
                 'upgrade' => clienttranslate('Can be upgraded for 1 ${gold} to enable bringing 2 ${green}.'),
             ],
             TileType::FARRIER => [
@@ -1039,7 +1039,7 @@ enum TileType: string
                 'summary' => clienttranslate('When upgrading, any type of resource can be used in place of any other type of resource.'),
             ],
             TileType::BOAT4A => [
-                'summary' => clienttranslate('You can counter-bid another player\'s red,yellow or blue (but not green) bid with workers of another color (all your workers in that bid have to be of the same color though).'),
+                'summary' => clienttranslate('You can counter-bid another player\'s ${red}, ${yellow} or ${blue} (but not ${green}) bid with workers of another color (all your workers in that bid have to be of the same color though).'),
             ],
             TileType::BREWER => [
                 'summary' => clienttranslate('Brings 2 ${workers} but 1 ${skill} is consumed in the process.'),
@@ -1052,7 +1052,7 @@ enum TileType: string
                 'scoring' => clienttranslate('Grants 7 ${points} when upgraded.'),
             ],
             TileType::STORE => [
-                'summary' => clienttranslate('Brings 1 ${green} but ^1 blue worker^ has to be discarded in exchange.'),
+                'summary' => clienttranslate('Brings 1 ${green} but 1 ${blue} has to be discarded in exchange.'),
                 'upgrade' => clienttranslate('Can be upgraded for 1 ${gold} to enable bringing 2 ${green}.'),
                 'scoring' => clienttranslate('Grants 3 ${points} when upgraded.'),
             ],
@@ -1066,8 +1066,8 @@ enum TileType: string
                 'scoring' => clienttranslate('Resources scored here cannot be scored elsewhere.'),
             ],
             TileType::BLACKSMITH => [
-                'summary' => clienttranslate('Grants 2 ${points} for each iron assigned to this tile (the resource must be found on this tile).'),
-                'upgrade' => clienttranslate('Can be upgraded for 1 ${anvil} to grant 3 ${points} for iron on this tile.'),
+                'summary' => clienttranslate('Grants 2 ${points} for each ${iron} assigned to this tile (the resource must be found on this tile).'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${anvil} to grant 3 ${points} for ${iron} on this tile.'),
                 'scoring' => clienttranslate('Resources scored here cannot be scored elsewhere.'),
             ],
             TileType::FAIR => [
@@ -1101,14 +1101,14 @@ enum TileType: string
             ],
             TileType::STONEYARD => [
                 'summary' => clienttranslate(''),
-                'scoring' => clienttranslate('Grants 2 ${points} for each stone assigned to this tile (the resource must be found on this tile).'),
-                'upgrade' => clienttranslate('Can be upgraded for 1 ${pickaxe} to grant 3 ${points} for stone on this tile.'),
+                'scoring' => clienttranslate('Grants 2 ${points} for each ${stone} assigned to this tile (the resource must be found on this tile).'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${pickaxe} to grant 3 ${points} for ${stone} on this tile.'),
                 'notes' => clienttranslate('Resources scored here cannot be scored elsewhere.'),
             ],
             TileType::TIMBERYARD => [
                 'summary' => clienttranslate(''),
-                'scoring' => clienttranslate('Grants 2 ${points} for each wood assigned to this tile (the resource must be found on this tile).'),
-                'upgrade' => clienttranslate('Can be upgraded for 1 ${saw} to grant 3 ${points} for wood on this tile.'),
+                'scoring' => clienttranslate('Grants 2 ${points} for each ${wood} assigned to this tile (the resource must be found on this tile).'),
+                'upgrade' => clienttranslate('Can be upgraded for 1 ${saw} to grant 3 ${points} for ${wood} on this tile.'),
                 'notes' => clienttranslate('Resources scored here cannot be scored elsewhere.'),
             ],
             TileType::WAINWRIGHT => [
@@ -1128,17 +1128,17 @@ enum TileType: string
             ],
             TileType::CRAFTSMANSGUILD => [
                 'summary' => clienttranslate(''),
-                'scoring' => clienttranslate('Grants 3 ${points} for each set of 1 red, 1 yellow and 1 blue worker assigned to this tile (workers played on the player\'s village in the last round can be used). '),
+                'scoring' => clienttranslate('Grants 3 ${points} for each set of 1 ${red}, 1 ${yellow} and 1 ${blue} assigned to this tile (workers played on the player\'s village in the last round can be used). '),
                 'notes' => clienttranslate('Workers scored here cannot be scored on another tile.'),
             ],
             TileType::JEWELLER => [
                 'summary' => clienttranslate(''),
-                'scoring' => clienttranslate('Grants 2 ${points} for each 1 gold assigned to this tile (the gold can be found anywhere in the player\'s village). '),
+                'scoring' => clienttranslate('Grants 2 ${points} for each 1 ${gold} assigned to this tile (the gold can be found anywhere in the player\'s village). '),
                 'notes' => clienttranslate('Gold score here cannot also be scored separately or on another tile.'),
             ],
             TileType::KEYGUILD => [
                 'summary' => clienttranslate(''),
-                'scoring' => clienttranslate('Grants 10 ${points} for each set of 5 skills assigned to this tile. '),
+                'scoring' => clienttranslate('Grants 10 ${points} for each set of 5 ${skills} assigned to this tile. '),
                 'notes' => clienttranslate('Skills scored here cannot be scored on another tile.'),
             ],
             TileType::KEYMARKET => [
@@ -1152,7 +1152,7 @@ enum TileType: string
             ],
             TileType::MERCERSGUILD => [
                 'summary' => clienttranslate(''),
-                'scoring' => clienttranslate('Grants 5 ${points} for each set of 1 wood, 1 iron, 1 stone assigned to this tile (the resources can be found anywhere in the player\'s village; gold can be used as substitute). '),
+                'scoring' => clienttranslate('Grants 5 ${points} for each set of 1 ${wood}, 1 ${iron}, 1 ${stone} assigned to this tile (the resources can be found anywhere in the player\'s village; gold can be used as substitute). '),
                 'notes' => clienttranslate('Resources scored here cannot be scored on another tile.'),
             ],
             TileType::SCHOLAR => [
@@ -1336,7 +1336,7 @@ enum TileType: string
             ],
             TileType::BLACKSMITH_U => [
                 'summary' => clienttranslate(''),
-                'scoring' => clienttranslate('Grants 3 ${points} for each iron assigned to this tile (the resource must be found on this tile).'),
+                'scoring' => clienttranslate('Grants 3 ${points} for each ${iron} assigned to this tile (the resource must be found on this tile).'),
                 'notes' => clienttranslate('Resources scored here cannot be scored elsewhere.'),
             ],
             TileType::FAIR_U => [
@@ -1364,12 +1364,12 @@ enum TileType: string
             ],
             TileType::STONEYARD_U => [
                 'summary' => clienttranslate(''),
-                'scoring' => clienttranslate('Grants 3 ${points} for each stone assigned to this tile (the resource must be found on this tile).'),
+                'scoring' => clienttranslate('Grants 3 ${points} for each ${stone} assigned to this tile (the resource must be found on this tile).'),
                 'notes' => clienttranslate('Resources scored here cannot be scored elsewhere.'),
             ],
             TileType::TIMBERYARD_U => [
                 'summary' => clienttranslate(''),
-                'scoring' => clienttranslate('Grants 3 ${points} for each wood assigned to this tile (the resource must be found on this tile).'),
+                'scoring' => clienttranslate('Grants 3 ${points} for each ${wood} assigned to this tile (the resource must be found on this tile).'),
                 'notes' => clienttranslate('Resources scored here cannot be scored elsewhere.'),
             ],
             TileType::WAINWRIGHT_U => [
