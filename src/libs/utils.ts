@@ -3,6 +3,6 @@ export function range(start: number, end: number): number[] {
 }
 
 /** The center of a rectangle, e.g. from getBoundingClientRect(). */
-export function center(r: DOMRect): { x: number, y: number } {
+export function center(r: Pick<DOMRect, 'left' | 'top' | 'width' | 'height'>): { x: number, y: number } {
     return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
 }
