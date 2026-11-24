@@ -527,12 +527,16 @@ html {
     width: var(--kf-tile-w);
     height: var(--kf-tile-h);
     pointer-events: none;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='25,1 75,1 99,50 75,99 25,99 1,50' fill='none' stroke='%231a73e8' stroke-width='2.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
-    filter: drop-shadow(0 0 1px #fff);
+}
+
+/* As on the market (and the mockup): no line on tiles you can use, only on the chosen one, 6px blue
+   #1d5ea8 over a white edge, just inside the hex (the mark is the tile's size) */
+.kf_village_map .kf_tile_mark:not(.kf_selected) {
+    display: none;
 }
 
 .kf_village_map .kf_tile_mark.kf_selected {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='25,1 75,1 99,50 75,99 25,99 1,50' fill='none' stroke='%231a73e8' stroke-width='4.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='26,4 74,4 97,50 74,96 26,96 3,50' fill='none' stroke='%23fff' stroke-width='9' stroke-linejoin='round' vector-effect='non-scaling-stroke'/%3E%3Cpolygon points='26,4 74,4 97,50 74,96 26,96 3,50' fill='none' stroke='%231d5ea8' stroke-width='6' stroke-linejoin='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
 }
 
 /* In a village the rows are a layer of their own over the tile, so they don't turn with it */
