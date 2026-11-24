@@ -69,7 +69,7 @@ class PlayerTurn extends AbstractState {
         return [
             "must_match" => !$hasBoat4b,
             "tile_id" => $tile->tile_id,
-            "color" => $bc === null ? null : $bc->value,
+            "color" => $bc->marshal(),
             "min" => $a->minRequiredToActivate(),
             "max" => $a->maxAllowededToActivate(),
             "cost" => $cost->value,
@@ -113,14 +113,15 @@ class PlayerTurn extends AbstractState {
                     return [
                         "must_match" => !$hasBoat4a  || $bc === WorkerColor::GREEN,
                         "tile_id" => $lot->tile_id,
-                        "color" => $bc === null ? null : $bc->value,
+                        // FIXME: do we need to do this? can/should client adapt to NONE ?
+                        "color" => $bc->marshal(),
                         "min" => $lot->highBid()->size()+1,
                         "moveable" => $lot->hasNonWinningBid($active_player_id),
                         // TODO: determine if this is needed
                         "current_bid" => $bid === null ? null : [
-                            "color" => Marshaller::color($bid->color())   ,
+                            "color" => $bid->color()->marshal(),
                             "num" => $bid->size(),
-                            "workers" => Marshaller::workers($bid->workers()),
+                            "workers" => $bid->marshal(),
                         ]
                     ];
                 },
@@ -157,11 +158,11 @@ class PlayerTurn extends AbstractState {
                 'tile_id' => $tile_id,
                 'tiletype' => $activationResult->tile->type->value,
                 'player_id' => $active_player_id,
-                'workers' => Marshaller::workers($activationResult->activatingWorkerGroup->workers()),
+                'workers' => $activationResult->activatingWorkerGroup->marshal(),
                 'produced' => [
-                    'workers' => Marshaller::workers($activationResult->prodResult->workers),
-                    'resources' => Marshaller::resources($activationResult->prodResult->resources),
-                    'skills' => Marshaller::skills($activationResult->prodResult->skills),
+                    'workers' => $activationResult->prodResult->workers->marshal(),
+                    'resources' => $activationResult->prodResult->resources->marshal(),
+                    'skills' => $activationResult->prodResult->skills->marshal(),
                     'upgrades' => $activationResult->prodResult->upgrades,
                     'dest_tile_id' => $activationResult->destTile?->tile_id
                 ]
@@ -181,8 +182,8 @@ class PlayerTurn extends AbstractState {
                 'bidMoved',
                 '${player_name} moved bid of ${num} ${color} from ${tiletype}',
                 [
-                    'num' => count($mb->bid->workers()),
-                    'color' => Marshaller::color($mb->bid->color()),
+                    'num' => $mb->bid->size(),
+                    'color' => $mb->bid->color()->marshal(),
                     'tile_id' => $mb->sourceTile->tile_id,
                     'tiletype' => $mb->sourceTile->type->value,
                     'player_id' => $active_player_id,
@@ -208,16 +209,12 @@ class PlayerTurn extends AbstractState {
             [
                 'player_id' => $active_player_id,
                 'marketlot_id' => $market_tile_id,
-                'num' => count($bid->workers()),
-                'color' => Marshaller::color($bid->color()),
+                'num' => $bid->size(),
+                'color' => $bid->color()->marshal(),
                 'tiletype' => $model->market()->marketLotById($market_tile_id)->type->value,
                 // the tiles the moved bids (bidMoved, just before) leave, so the client can show the whole bid in one step
                 'moved_from' => array_map(fn ($mb) => $mb->sourceTile->tile_id, $bidResult->movedBids),
-                'bid' => array_map(fn ($w) => [
-                    // FIXME: do we need position too?
-                    'id' => $w->id,
-                    'color' => $w->color->value
-                ], $bid->workers())
+                'bid' => $bid->marshal()
             ]
         );
         return NextPlayer::class;

@@ -27,7 +27,14 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
-
-class Resource {
+class Resource implements Marshalable {
     public function __construct(readonly int $id, readonly ResourceType $type) {}
+
+    public function marshal(): mixed
+    {
+        return [
+            "id" => $this->id,
+            "type" => $this->type->value
+        ];
+    }
 }

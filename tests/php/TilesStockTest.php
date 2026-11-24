@@ -10,18 +10,8 @@ use Bga\Games\keyflowerrewrite\Model\{
     TileType,
 };
 
-final class TilesStockTest extends TestCase
+final class TilesStockTest extends TestBase
 {
-    /**  @param array<mixed> $a */
-    private function assertAllTrue(array $a, \Closure $c, string $msg): void {
-        $this->assertTrue(self::allTrue($a, $c), $msg);
-    }
-
-    /** @param array<mixed> $a */
-    private static function allTrue(array $a, \Closure $c): bool {
-        return array_reduce($a, fn ($carry, $t) => $carry && $c($t), true);
-    }
-
     public function testForNewGame_summerTiles(): void {
         $stock = TilesStock::forNewGame(6);
         /** @var list<TileType> */

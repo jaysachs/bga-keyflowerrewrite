@@ -34,12 +34,12 @@ class AllGameData {
     public function __construct(public readonly array $playerIds, public ?Season $season)
     {
         $this->workerStock = new WorkerStock();
-        $this->skillPile = new SkillPile();
-        $this->resourceStock = new ResourceStock();
+        $this->skillPile = new SkillSet();
+        $this->resourceStock = new ResourceSet();
         $this->tilesStock = new TilesStock();
         $this->villages = [];
         foreach ($this->playerIds as $pid) {
-            $this->villages[$pid] = new Village($pid, [], [], [], [], [], false);
+            $this->villages[$pid] = new Village($pid, [], new WorkerGroup(), new SkillSet(), [], [], false);
         }
 
         $this->market = new Market();
@@ -48,9 +48,9 @@ class AllGameData {
 
     public WorkerStock $workerStock;
 
-    public SkillPile $skillPile;
+    public SkillSet $skillPile;
 
-    public ResourceStock $resourceStock;
+    public ResourceSet $resourceStock;
 
     public TilesStock $tilesStock;
 
@@ -72,8 +72,8 @@ class AllGameData {
 
         $result = new AllGameData($playerIds, null);
         $result->workerStock = WorkerStock::forNewGame();
-        $result->skillPile = SkillPile::forNewGame();
-        $result->resourceStock = ResourceStock::forNewGame();
+        $result->skillPile = SkillSet::forNewGame();
+        $result->resourceStock = ResourceSet::forNewGame();
         $result->tilesStock = TilesStock::forNewGame($numPlayers);
 
         $homes = TileType::initialHomeTiles();
@@ -98,7 +98,7 @@ class AllGameData {
                 $playerId,
                 [new VillageTile(++$lastTileId, $home, RowCol::fromRowCol(0, 0), 1, $playerId)],
                 $workers,
-                [],
+                new SkillSet(),
                 $wts,
                 [],
                 $home == $min);
@@ -120,16 +120,16 @@ class AllGameData {
             $this->workerStock->putInBag($worker);
             $this->villages[$playerId]->takeWorker($worker->id);
         } else if ($skill) {
-            $this->skillPile->put($skill);
+            $this->skillPile->add($skill);
             $this->villages[$playerId]->takeSkill($skill->id);
         }
 
     }
 
     public function takeActivationRewards(ActivationReward $rewardType, ?ResourceType $requested): ProductionResult {
-        $skills = null;
-        $resources = null;
-        $workers = null;
+        $skills = new SkillSet();
+        $resources = new ResourceSet();
+        $workers = new WorkerGroup();
         $upgrades = null;
 
         switch ($rewardType) {
@@ -137,7 +137,7 @@ class AllGameData {
                 if (!$requested) {
                     throw new InvalidArgumentException("selected resource reward requires a specific type requested");
                 }
-                $resources = $this->resourceStock->take($requested, 1);
+                $resources->addAll($this->resourceStock->take($requested, 1));
                 $requested = null;
                 break;
             case ActivationReward::GOLD:
@@ -177,38 +177,30 @@ class AllGameData {
                 $resources = $this->resourceStock->take(ResourceType::STONE, 3);
                 break;
             case ActivationReward::IRON_GOLD:
-                $resources = array_merge(
-                    $resources = $this->resourceStock->take(ResourceType::IRON, 1),
-                    $resources = $this->resourceStock->take(ResourceType::GOLD, 1)
-                );
+                $resources = $this->resourceStock->take(ResourceType::IRON, 1);
+                $resources->addAll($this->resourceStock->take(ResourceType::GOLD, 1));
                 break;
             case ActivationReward::WOOD_GOLD:
-                $resources = array_merge(
-                    $resources = $this->resourceStock->take(ResourceType::WOOD, 1),
-                    $resources = $this->resourceStock->take(ResourceType::GOLD, 1)
-                );
+                $resources = $this->resourceStock->take(ResourceType::WOOD, 1);
+                $resources->addAll($this->resourceStock->take(ResourceType::GOLD, 1));
                 break;
             case ActivationReward::STONE_GOLD:
-                $resources = array_merge(
-                    $resources = $this->resourceStock->take(ResourceType::STONE, 1),
-                    $resources = $this->resourceStock->take(ResourceType::GOLD, 1)
-                );
+                $resources = $this->resourceStock->take(ResourceType::STONE, 1);
+                $resources->addAll($this->resourceStock->take(ResourceType::GOLD, 1));
                 break;
             case ActivationReward::RESOURCE_3:
-                 $resources = array_merge(
-                    $resources = $this->resourceStock->take(ResourceType::WOOD, 1),
-                    $resources = $this->resourceStock->take(ResourceType::STONE, 1),
-                    $resources = $this->resourceStock->take(ResourceType::IRON, 1)
-                );
+                $resources = $this->resourceStock->take(ResourceType::WOOD, 1);
+                $resources->addAll($this->resourceStock->take(ResourceType::STONE, 1));
+                $resources->addAll($this->resourceStock->take(ResourceType::IRON, 1));
                 break;
             case ActivationReward::SKILL_ANY:
-                $skills = $this->skillPile->take(1);
+                $skills->addSet($this->skillPile->takeN(1));
                 break;
             case ActivationReward::SKILL_ANY_2:
-                $skills = $this->skillPile->take(2);
+                $skills->addSet($this->skillPile->takeN(2));
                 break;
             case  ActivationReward::SKILL_ANY_3:
-                $skills = $this->skillPile->take(3);
+                $skills->addSet($this->skillPile->takeN(3));
                 break;
             case ActivationReward::WORKER_ANY:
                 $workers = $this->workerStock->takeFromBag(1);

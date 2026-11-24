@@ -32,31 +32,20 @@ use InvalidArgumentException;
 class Village {
     /**
      * @param array<int,VillageTile> $tiles  key is encoded row/col
-     * @param list<Worker> $workers
-     * @param list<Skill> $skills
      * @param list<StockTile> $winterTiles
      * @param list<StockTile> $wonTiles
      */
     public function __construct(
         public readonly int $playerId,
         private array $tiles,
-        private array $workers,
-        private array $skills,
+        private WorkerGroup $workers,
+        public SkillSet $skills,
         private array $winterTiles,
         private array $wonTiles,
         private bool $hasStartPlayer) {}
 
-    /** @return list<Worker> */
-    public function takeWorkersFromStock(WorkerColor $color, int $num): array {
-        $result = [];
-        $workers = $this->workers;
-        for ($i = 0; $i < $num; ++$i) {
-            $idx = array_find_key($workers, fn ($w) => $w->color == $color);
-            if ($idx !== null) {
-                $result[] = array_splice($workers, $idx, 1)[0];
-            }
-        }
-        return $result;
+    public function takeWorkersFromStock(WorkerColor $color, int $num): WorkerGroup {
+        return $this->workers->takeNWorkersOfColor($num, $color);
     }
 
     /** @return array<int,VillageTile> */
@@ -64,38 +53,33 @@ class Village {
         return $this->tiles;
     }
 
-    /** @return list<Worker> */
-    public function workers(): array {
+    public function workers(): WorkerGroup {
         return $this->workers;
     }
 
+    // FIXME: do we need these 3 forwarders now?
+
+    public function workerById(int $id): ?Worker {
+        return $this->workers->workerById($id);
+    }
     public function addWorker(Worker $worker): void {
-        $this->workers[] = $worker;
+        $this->workers->add($worker);
+    }
+
+    public function addWorkerGroup(WorkerGroup $wg): void {
+        $this->workers->addGroup($wg);
     }
 
     public function takeWorker(int $id): void {
-        $i = array_find_key($this->workers, fn(Worker $w) => $w->id == $id);
-        if ($i === null) {
-            throw new InvalidArgumentException("no worker with id {$id}");
-        }
-        array_splice($this->workers, $i, 1);
-    }
-
-    /** @return list<Skill> */
-    public function skills(): array {
-        return $this->skills;
+        $this->workers->takeWorkerById($id);
     }
 
     public function addSkill(Skill $skill): void {
-        $this->skills[] = $skill;
+        $this->skills->add($skill);
     }
 
     public function takeSkill(int $id): void {
-        $i = array_find_key($this->skills, fn(Skill $s) => $s->id == $id);
-        if ($i === null) {
-            throw new InvalidArgumentException("no skill with id {$id}");
-        }
-        array_splice($this->skills, $i, 1);
+        $this->skills->takeSkillById($id);
     }
 
     /** @return list<StockTile> */
@@ -150,5 +134,37 @@ class Village {
             }
         }
         return false;
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function marshal(bool $allData = false): array {
+        $result = [
+            'tiles' => array_map(
+                fn ($vt) => [
+                    'tile_id' => $vt->tile_id,
+                    'tiletype' => $vt->type->value,
+                    'rowcol' => $vt->rowcol,
+                    'orientation' => $vt->orientation,
+                    'activations' => $vt->productionActivations()->marshal()
+                ],
+                $this->tiles()
+            ),
+            'won_tiles' => array_map(
+                fn ($wt) => [
+                    'tile_id' => $wt->tile_id,
+                    'tiletype' => $wt->type->value,
+                ],
+                $this->wonTiles()
+            ),
+            'player_id' => $this->playerId,
+            'has_start_player' => $this->hasStartPlayer(),
+        ];
+        if ($allData) {
+            $result['workers'] = $this->workers()->marshal();
+            $result['skills'] = $this->skills->marshal();
+        }
+        return $result;
     }
 }

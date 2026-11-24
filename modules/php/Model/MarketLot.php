@@ -51,7 +51,7 @@ class MarketLot {
             throw new InvalidArgumentException("bid must be non-empty");
         }
         if (isset($this->bids[$playerId])) {
-            $this->bids[$playerId] = $this->bids[$playerId]->combineWith($bid);
+            $this->bids[$playerId]->addGroup($bid);
         } else {
             $this->bids[$playerId] = $bid;
         }
@@ -72,7 +72,7 @@ class MarketLot {
         return null;
     }
 
-    public function currentColor(): ?WorkerColor {
+    public function currentColor(): WorkerColor {
         // TODO: take into account any activations.
         // color of lowest bid is the bid color
         $lowest = null;
@@ -87,7 +87,7 @@ class MarketLot {
     /** Returns true if the player has a non-empty bid that is not the high bid */
     public function hasNonWinningBid(int $playerId): bool {
         $bid = $this->bidBy($playerId);
-        if ($bid === null || count($bid->workers()) == 0) {
+        if ($bid === null || $bid->size() == 0) {
             // never bid, or already moved a losing bid
             return false;
         }
@@ -111,7 +111,7 @@ class MarketLot {
             throw new InvalidArgumentException("multiple high bids: {$sz}");
         }
         // return $winner;
-        return $winner === null ? new WorkerGroup([]) : $winner;
+        return $winner === null ? WorkerGroup::of() : $winner;
     }
 
     public function productionActivations(): ProductionActivations { return $this->productionActivations; }

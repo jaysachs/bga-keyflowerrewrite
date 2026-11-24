@@ -28,6 +28,14 @@ declare(strict_types=1);
 namespace Bga\Games\keyflowerrewrite\Model;
 
 
-class Worker {
+class Worker implements Marshalable {
     public function __construct(readonly int $id, readonly WorkerColor $color) {}
+
+    public function marshal(): mixed
+    {
+        return [
+            "id" => $this->id,
+            "color" => $this->color->value
+        ];
+    }
 }

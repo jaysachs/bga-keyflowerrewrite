@@ -9,7 +9,7 @@ use Bga\Games\keyflowerrewrite\Model\{
     TileType,
 };
 
-final class TileTypeTest extends TestCase
+final class TileTypeTest extends TestBase
 {
     public function testStandardBoatsFlippable(): void {
         foreach (TileType::initialStandardBoats(6) as $bt) {

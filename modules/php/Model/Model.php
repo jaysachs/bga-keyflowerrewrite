@@ -150,23 +150,22 @@ class Model {
                 throw new InvalidArgumentException("cannot mix colors in a bid");
             }
             // FIXME: remove from market tile? Or leave empty?
-            $moved[] = new MovedBid(new WorkerGroup($bid->workers()), $movedBidTile);
+            $moved[] = new MovedBid($bid, $movedBidTile);
         }
         if ($numWorkersFromStock <= 0 && count($moved) == 0) {
             throw new InvalidArgumentException("no workers bid from stock, no bids moved");
         }
 
-        $stockWorkers = [];
-        array_push($stockWorkers, ... $this->village()->takeWorkersFromStock(WorkerColor::BLUE, $numBlue));
-        array_push($stockWorkers, ... $this->village()->takeWorkersFromStock(WorkerColor::RED, $numRed));
-        array_push($stockWorkers, ... $this->village()->takeWorkersFromStock(WorkerColor::YELLOW, $numYellow));
-        array_push($stockWorkers, ... $this->village()->takeWorkersFromStock(WorkerColor::GREEN, $numGreen));
-        if (count($stockWorkers) < $numWorkersFromStock) {
+        $group = new WorkerGroup();
+        $group->addGroup($this->village()->takeWorkersFromStock(WorkerColor::BLUE, $numBlue));
+        $group->addGroup($this->village()->takeWorkersFromStock(WorkerColor::RED, $numRed));
+        $group->addGroup($this->village()->takeWorkersFromStock(WorkerColor::YELLOW, $numYellow));
+        $group->addGroup($this->village()->takeWorkersFromStock(WorkerColor::GREEN, $numGreen));
+        if ($group->size() < $numWorkersFromStock) {
             throw new InvalidArgumentException("Insufficent workers from hand");
         }
-        $group = new WorkerGroup($stockWorkers);
         foreach ($moved as $movedBid) {
-            $group = $group->combineWith($movedBid->bid);
+            $group->addGroup($movedBid->bid);
         }
 
         return [
@@ -188,7 +187,7 @@ class Model {
         $lot = $market->marketLotById($market_tile_id);
 
         $currentColor = $lot->currentColor();
-        if ($currentColor !== null && $workerColor != $currentColor) {
+        if ($currentColor->isConcrete() && $workerColor != $currentColor) {
             if (!$hasBoat4a || $currentColor == WorkerColor::GREEN) {
                 throw new InvalidArgumentException("bids must match bid color");
             }
@@ -222,14 +221,14 @@ class Model {
     private function computeActivationCost(mixed $tile, ?int $skill_pmt_id, ?int $worker_pmt_id): ActivationPayment {
         $skill = null;
         if ($skill_pmt_id !== null) {
-            $skill = array_find($this->village()->skills(), fn ($s) => $s->id == $skill_pmt_id);
+            $skill = $this->village()->skills->skillById($skill_pmt_id);
             if (!$skill) {
                 throw new InvalidArgumentException("No skill {$skill_pmt_id} found");
             }
         }
         $worker = null;
         if ($worker_pmt_id !== null) {
-            $worker = array_find($this->village()->workers(), fn ($w) => $w->id == $worker_pmt_id);
+            $worker = $this->village()->workerById($worker_pmt_id);
             if (!$worker) {
                 throw new InvalidArgumentException("No worker {$worker_pmt_id} found");
             }
@@ -342,12 +341,12 @@ class Model {
         $activatingWorkerGroup = $activationInfo["group"];
 
         $currentColor = $t->currentColor();
-        if ($currentColor !== null) {
+        if ($currentColor->isConcrete()) {
             if ($activatingWorkerGroup->color() !== $currentColor && !$hasBoat4b) {
-                throw new InvalidArgumentException("activations must match tile color {$currentColor->value} != {$activatingWorkerGroup->color()?->value}");
+                throw new InvalidArgumentException("activations must match tile color {$currentColor->value} != {$activatingWorkerGroup->color()->value}");
             }
         } else {
-            if ($activatingWorkerGroup->color() === null) {
+            if (!$activatingWorkerGroup->color()->isConcrete()) {
                 throw new InvalidArgumentException("activations on empty tile must have a single color");
             }
         }
@@ -363,7 +362,7 @@ class Model {
         // TODO: consider that AllGameData is not that different from Model ... except that it doesnt' persist.
         //       that's an interesting avenue to explore.
         $destTile = null;
-        if ($result->resources) {
+        if (!$result->resources->isEmpty()) {
             if ($t instanceof VillageTile) {
                 if ($t->playerId == $this->activePlayerId) {
                     $destTile = $t;
@@ -373,17 +372,13 @@ class Model {
             } else {
                 $destTile = $this->village()->homeTile();
             }
-            foreach ($result->resources as $resource) {
+            foreach ($result->resources->allItems() as $resource) {
                 $destTile->addResource($resource);
             }
-        } else if ($result->skills) {
-            foreach ($result->skills as $skill) {
-                $this->village()->addSkill($skill);
-            }
-        } else if ($result->workers) {
-            foreach ($result->workers as $worker) {
-                $this->village()->addWorker($worker);
-            }
+        } else if (!$result->skills->isEmpty()) {
+            $this->village()->skills->addSet($result->skills);
+        } else if (!$result->workers->isEmpty()) {
+            $this->village()->addWorkerGroup($result->workers);
         }
 
         $this->ps->updateActivation(

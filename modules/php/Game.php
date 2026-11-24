@@ -160,13 +160,13 @@ class Game extends \Bga\GameFramework\Table
             if ($village->hasStartPlayer()) {
                 $startPlayerId = $playerId;
             }
-            $sv[$playerId] = Marshaller::village($village, $current_player_id == $playerId);
+            $sv[$playerId] = $village->marshal($current_player_id == $playerId);
         }
         return [
             'season' => $data->season?->value,
             'startPlayerId' => $startPlayerId,
-            'dock' => Marshaller::dock($data->dock),
-            'market' => Marshaller::market($data->market),
+            'dock' => $data->dock->marshal(),
+            'market' => $data->market->marshal(),
             'skillCount' => $data->skillPile->size(),
             'greenCount' => $data->workerStock->greensSize(),
             'bagCount' => $data->workerStock->bagSize(),

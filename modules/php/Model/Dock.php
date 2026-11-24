@@ -29,7 +29,7 @@ namespace Bga\Games\keyflowerrewrite\Model;
 
 use InvalidArgumentException;
 
-class Dock {
+class Dock implements Marshalable{
     // TODO: convert to array<id, DockTile>
     /** @var list<DockTile> $boats */
     private  array $boats;
@@ -63,7 +63,7 @@ class Dock {
         }
     }
 
-    public function replenish(WorkerStock $workerStock, SkillPile $skillPile): void {
+    public function replenish(WorkerStock $workerStock, SkillSet $skillPile): void {
         foreach ($this->boats as $boat) {
             $boat->refill($workerStock, $skillPile);
         }
@@ -88,5 +88,21 @@ class Dock {
             $dock->add(new DockTile(++$lastId, $tt));
         }
         return $dock;
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function marshal(): array {
+        return array_map(
+            fn ($b) => [
+                'id' => $b->id,
+                'boattype' => $b->type->value,
+                // FIXME: need positions
+                'passengers' => $b->passengers()->marshal(),
+                'cargo' => $b->cargo()->marshal()
+            ],
+            $this->boats()
+        );
     }
 }
