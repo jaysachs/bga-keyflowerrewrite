@@ -68,6 +68,9 @@ interface Pick {
     payWith: WorkerColor | SkillType | null;
     /** For a use that produces a resource of your choice. */
     resource: ResourceType | null;
+    /** A use that may mix colors (boat 4b: the server sends must_match false), counted per color in mix. */
+    mixing: boolean;
+    mix: Partial<Record<WorkerColor, number>>;
 }
 
 /**
@@ -291,13 +294,19 @@ export class PlayerTurnState extends BaseState {
     private useColorsFor(tileId: number): WorkerColor[] {
         const info = this.useInfo(tileId);
         if (!info || !this.canPay(info)) { return []; }
-        const colors = info.must_match && info.color ? [info.color] : COLORS;
-        return colors.filter(c =>
-            this.usableStock(info, c) + this.movable(tileId, c).reduce((n, m) => n + m.num, 0) >= info.min);
+        const has = (c: WorkerColor) => this.usableStock(info, c) + this.movable(tileId, c).reduce((n, m) => n + m.num, 0);
+        // Mixing (boat 4b): every color you have counts towards the minimum together
+        if (!info.must_match) { return COLORS.filter(c => has(c) > 0); }
+        const colors = info.color ? [info.color] : COLORS;
+        return colors.filter(c => has(c) >= info.min);
     }
 
     private usable(tileId: number): boolean {
-        return this.useColorsFor(tileId).length > 0;
+        const info = this.useInfo(tileId), colors = this.useColorsFor(tileId);
+        if (info && !info.must_match) {
+            return colors.reduce((n, c) => n + this.usableStock(info, c) + this.movable(tileId, c).reduce((k, m) => k + m.num, 0), 0) >= info.min;
+        }
+        return colors.length > 0;
     }
 
     private needsResource(tileId: number): boolean {
@@ -313,7 +322,7 @@ export class PlayerTurnState extends BaseState {
         const inMarket = !!this.market.tile(tileId);
         const canBid = inMarket && this.colorsFor(tileId).length > 0, canUse = this.usable(tileId);
         if (!canBid && !canUse) { return; }
-        this.pick = { tileId, mode: canBid ? 'bid' : 'use', both: canBid && canUse, color: null, fromStock: 0, moved: [], payWith: null, resource: null };
+        this.pick = { tileId, mode: canBid ? 'bid' : 'use', both: canBid && canUse, color: null, fromStock: 0, moved: [], payWith: null, resource: null, mixing: false, mix: {} };
         this.setMode(this.pick, this.pick.mode);
         this.market.setSelected(inMarket ? tileId : null);
         this.villages.setSelected(inMarket ? null : tileId);
@@ -323,11 +332,24 @@ export class PlayerTurnState extends BaseState {
     /** Switches between bidding and using; the choice starts over, with the only color preselected. */
     private setMode(p: Pick, mode: 'bid' | 'use'): void {
         const colors = mode == 'bid' ? this.colorsFor(p.tileId) : this.useColorsFor(p.tileId);
-        Object.assign(p, { mode, color: colors.length == 1 ? colors[0]! : null, fromStock: 0, moved: [], payWith: null, resource: null });
+        const mixing = mode == 'use' && this.useInfo(p.tileId)?.must_match === false;
+        Object.assign(p, { mode, mixing, color: !mixing && colors.length == 1 ? colors[0]! : null, fromStock: 0, moved: [], payWith: null, resource: null, mix: {} });
     }
 
     private total(p: Pick): number {
-        return p.fromStock + p.moved.reduce((n, id) => n + (this.movable(p.tileId, p.color!).find(m => m.tileId == id)?.num ?? 0), 0);
+        return Object.values(this.colorCounts(p)).reduce((n, k) => n + k, 0);
+    }
+
+    /** The workers a pick places, per color: from your stock, and the outbid groups it moves. */
+    private colorCounts(p: Pick): Partial<Record<WorkerColor, number>> {
+        const counts: Partial<Record<WorkerColor, number>> = p.mixing ? { ...p.mix } : p.color ? { [p.color]: p.fromStock } : {};
+        COLORS.forEach(c => this.movable(p.tileId, c).filter(m => p.moved.includes(m.tileId)).forEach(m => { counts[c] = (counts[c] ?? 0) + m.num; }));
+        return counts;
+    }
+
+    /** "1 red, 1 yellow": the colors a pick places, for the button. */
+    private countsText(p: Pick): string {
+        return COLORS.filter(c => (this.colorCounts(p)[c] ?? 0) > 0).map(c => `${this.colorCounts(p)[c]} ${this.translations.color(c)}`).join(', ');
     }
 
     private setColor(p: Pick, color: WorkerColor): void {
@@ -346,7 +368,7 @@ export class PlayerTurnState extends BaseState {
         const name = this.translations.tileName(type);
         const need = use ? info!.min : this.needed(p.tileId);
         const room = use ? info!.max : Infinity;
-        const total = p.color ? this.total(p) : 0;
+        const total = this.total(p);
         const fixedColor = use ? (info!.must_match ? info!.color : null)
             : this.info(p.tileId)?.current_bid?.color ?? this.info(p.tileId)?.color ?? null;
         const already = use ? 0 : this.info(p.tileId)?.current_bid?.num ?? 0;
@@ -363,7 +385,9 @@ export class PlayerTurnState extends BaseState {
         this.bga.statusBar.removeActionButtons();
         // The rule line: what the move takes, with the color's meeple. Pressing Bid or Use too early shows
         // what's missing here instead, in red (a live region, so it's read out).
-        const ruleText = !use && already && fixedColor ? fill(_('At least ${n} more ${color}'), { n: need, color: this.translations.color(fixedColor) })
+        const ruleText = p.mixing ? (need == 1 ? _('At least 1 worker, any colors. Your boat 4b lets you mix colors here')
+                : fill(_('At least ${n} workers, any colors. Your boat 4b lets you mix colors here'), { n: need }))
+            : !use && already && fixedColor ? fill(_('At least ${n} more ${color}'), { n: need, color: this.translations.color(fixedColor) })
             : fixedColor ? fill(_('At least ${n} ${color}'), { n: need, color: this.translations.color(fixedColor) })
             : fill(_('At least ${n} of one color'), { n: need });
         const msg = Html.p({ id: 'kf_pick_msg', classes: 'kf_pick_rule', attrs: { role: 'status' } },
@@ -379,10 +403,11 @@ export class PlayerTurnState extends BaseState {
         const colors = use ? this.useColorsFor(p.tileId) : this.colorsFor(p.tileId);
         const rows = colors.map(color => {
             const stock = use ? this.usableStock(info!, color, p) : this.stockOf(color);
-            const on = p.color == color;
+            const on = p.mixing || p.color == color;
+            const fromStock = p.mixing ? p.mix[color] ?? 0 : on ? p.fromStock : 0;
             return Html.div({ classes: 'kf_pick_row', attrs: { role: 'group', 'aria-label': this.translations.color(color) } },
                 ...Array.from({ length: Math.max(0, stock) }, (_x, i) => {
-                    const pressed = on && i < p.fromStock;
+                    const pressed = i < fromStock;
                     // The number says what a tap takes: the third worker takes three.
                     const b = Html.button({
                             classes: ['kf_pick_worker', 'kf_pick_one', pressed ? 'kf_on' : ''],
@@ -392,11 +417,10 @@ export class PlayerTurnState extends BaseState {
                         Html.span({ classes: 'kf_pick_num', text: String(i + 1), attrs: { 'aria-hidden': 'true' } }));
                     // Tapping the nth worker takes n; tapping the last one taken again takes one fewer.
                     b.addEventListener('click', () => {
-                        const next = on && p.fromStock == i + 1 ? i : i + 1;
-                        const moved = on ? this.total(p) - p.fromStock : 0;
-                        if (next + moved > room) { this.explain(msg, this.roomText(room)); return; }
-                        this.setColor(p, color);
-                        p.fromStock = next;
+                        const next = fromStock == i + 1 ? i : i + 1;
+                        const others = on ? this.total(p) - fromStock : 0;
+                        if (next + others > room) { this.explain(msg, this.roomText(room)); return; }
+                        if (p.mixing) { p.mix[color] = next; } else { this.setColor(p, color); p.fromStock = next; }
                         this.showPick();
                     });
                     return b;
@@ -412,7 +436,7 @@ export class PlayerTurnState extends BaseState {
                         Html.span({ text: `${_('outbid on')} ${from}` }));
                     b.addEventListener('click', () => {
                         if (!pressed && (on ? this.total(p) : 0) + m.num > room) { this.explain(msg, this.roomText(room)); return; }
-                        this.setColor(p, color);
+                        if (!p.mixing) { this.setColor(p, color); }
                         p.moved = pressed ? p.moved.filter(id => id != m.tileId) : [...p.moved, m.tileId];
                         this.showPick();
                     });
@@ -436,7 +460,7 @@ export class PlayerTurnState extends BaseState {
         const missing = this.missing(p, need, total);
         const verb = use ? _('Use') : _('Bid');
         const go = this.bga.statusBar.addActionButton(
-            missing ? verb : `${verb} ${total} ${this.translations.color(p.color!)}`,
+            missing ? verb : p.mixing ? `${verb} ${this.countsText(p)}` : `${verb} ${total} ${this.translations.color(p.color!)}`,
             () => missing ? this.explain(msg, missing) : this.confirm(), { destination: actions });
         go.setAttribute('aria-describedby', 'kf_pick_msg');
         // Cancel in red and set apart on the right: BGA's guidelines reserve red for cancel, undo and exit
@@ -486,6 +510,10 @@ export class PlayerTurnState extends BaseState {
             if ((info.cost == 'workerany' || info.cost == 'skillany') && !p.payWith) { return _('Choose what to pay with'); }
             if (this.needsResource(p.tileId) && !p.resource) { return _('Choose a resource to take'); }
         }
+        if (p.mixing) {
+            return total >= need ? null : total > 0 ? fill(_('Choose ${n} more'), { n: need - total })
+                : need == 1 ? _('Choose a worker') : fill(_('Choose at least ${n} workers'), { n: need });
+        }
         if (p.color && total >= need) { return null; }
         if (p.color && total > 0) {
             return fill(_('Choose ${n} more ${color}'), { n: need - total, color: this.translations.color(p.color) });
@@ -507,7 +535,7 @@ export class PlayerTurnState extends BaseState {
 
     private confirm(): void {
         const p = this.pick;
-        if (!p || !p.color) { return; }
+        if (!p || (!p.color && !p.mixing)) { return; }
         if (p.mode == 'bid') {
             this.bga.actions.performAction('actBid', {
                 market_tile_id: p.tileId,
@@ -519,7 +547,9 @@ export class PlayerTurnState extends BaseState {
         }
         // A use: workers per color (the server takes several colors for boat 4b), what pays the cost, and the resource taken.
         const info = this.useInfo(p.tileId)!;
-        const args: Record<string, string | number> = { tile_id: p.tileId, moved_bid_ids: p.moved.join(','), [`num_${p.color}`]: p.fromStock };
+        const args: Record<string, string | number> = { tile_id: p.tileId, moved_bid_ids: p.moved.join(',') };
+        // From your stock only: the moved groups' workers come with moved_bid_ids
+        if (p.mixing) { COLORS.forEach(c => { if (p.mix[c]) { args[`num_${c}`] = p.mix[c]!; } }); } else { args[`num_${p.color}`] = p.fromStock; }
         const payColor = this.costWorker(info, p), paySkill = this.costSkill(info, p);
         if (payColor) {
             // A worker of that color beyond the ones placed: the last of them in your stock.
