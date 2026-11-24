@@ -68,4 +68,21 @@ class Arrays
         }
     }
 
+    /**
+     * @template T
+     * @param list<T> $items
+     * @return list<list<T>>
+     */
+    public static function powerset(array $items): array {
+        $item = array_shift($items);
+        if ($item == null) { return [[]]; }
+        $psRest = self::powerset($items);
+        $result = $psRest;
+        foreach ($psRest as $psi) {
+            array_push($psi, $item);
+            $result[] = $psi;
+        }
+        return $result;
+    }
+
 }
