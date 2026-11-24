@@ -94,8 +94,12 @@ export class VillageComponent extends BaseComponent<any> {
                 attrs: { 'data-kf-player': String(village.player_id), role: 'region', 'aria-labelledby': `kf_village_name_${village.player_id}` },
                 style: `--kf-player-color: #${player.color}`,
             },
-            // A heading, so screen readers can jump from village to village; it names the village's region
-            Html.div({ id: `kf_village_name_${village.player_id}`, classes: 'kf_village_name', text: player.name, attrs: { role: 'heading', 'aria-level': 3 } }),
+            // A heading, so screen readers can jump from village to village (it names the village's region),
+            // with the player's avatar, their name, and "(you)" on yours, as in the mockup
+            Html.div({ id: `kf_village_name_${village.player_id}`, classes: 'kf_village_name', attrs: { role: 'heading', 'aria-level': 3 } },
+                Html.img({ classes: 'kf_avatar', attrs: { src: this.bga.players.getPlayerAvatarUrl(village.player_id, 32), alt: '' } }),
+                Html.span({ text: player.name }),
+                village.player_id == this.bga.players.getCurrentPlayerId() ? Html.span({ classes: 'kf_village_you', text: _('(you)') }) : undefined),
             // The map scrolls sideways when the village is wider than the screen (phones); the name stays.
             Html.div({ classes: 'kf_village_scroll' },
                 Html.div({

@@ -324,9 +324,27 @@ html {
 }
 
 .kf_village_name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
     color: var(--kf-player-color);   /* player names in their color, as BGA's guidelines ask (C.3) */
+    font-size: 14px;
     font-weight: bold;
-    margin-bottom: 8px;
+}
+
+/* As in the mockup: the avatar in a ring of the player's color, 26px, and "(you)" in plain grey */
+.kf_village_name .kf_avatar {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    margin: 0;
+    border-width: 3px;
+}
+
+.kf_village_you {
+    color: #57606a;
+    font-weight: normal;
 }
 
 /* Sized to the village's span of rows and columns */
@@ -390,6 +408,8 @@ html {
     position: absolute;
     left: var(--kf-lot-margin);
     top: var(--kf-lot-margin);
+    width: var(--kf-tile-w);    /* the tile's size, so the outline over it (hexmark) matches it */
+    height: var(--kf-tile-h);
 }
 
 .kf_lot_tile {
@@ -417,11 +437,59 @@ html {
 /* The outline follows the hex, since the tile inside is clipped to it */
 .kf_lot_tile.kf_selectable {
     cursor: pointer;
-    filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 2px #1a73e8);
 }
 
-.kf_lot_tile.kf_selected {
-    filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #1a73e8) drop-shadow(0 0 3px #1a73e8);
+/* The line around a tile you can choose, or have chosen (hexmark.ts), as in the mockup: blue over a
+   white edge, on the hex's edge, 3px (6px chosen) at any tile size */
+.kf_hexmark {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    --kf-mark-w: 3px;
+}
+
+.kf_hexmark.kf_selected {
+    --kf-mark-w: 6px;
+}
+
+.kf_hexmark polygon {
+    fill: none;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+}
+
+.kf_hexmark_under {
+    stroke: #fff;
+    stroke-width: calc(var(--kf-mark-w) + 3px);
+}
+
+.kf_hexmark_line {
+    stroke: #1d5ea8;
+    stroke-width: var(--kf-mark-w);
+}
+
+/* "Summer market" over the market, after the season's icon, in line with the "Boats" label */
+.kf_market_title {
+    display: flex;
+    flex-basis: 100%;
+    align-items: center;
+    gap: 6px;
+    min-height: 22px;
+    margin: 0 0 6px;
+    padding-inline: 22px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.kf_market_title .kf_season_icon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    margin: 0;
 }
 
 /* A bid along an edge: centred on the edge's midpoint, pushed outwards, turned along the edge */
