@@ -7,6 +7,34 @@ const RESOURCES: string[] = ['iron', 'stone', 'wood', 'gold'] satisfies Resource
 const SKILLS: string[] = ['anvil', 'pickaxe', 'saw'] satisfies SkillType[];
 
 /**
+ * Makes a BGA dialog, just shown, usable with a screen reader and the keyboard: BGA's popin isn't
+ * announced as a dialog, keeps focus behind it, ignores Escape, and its close icon has no name. It
+ * becomes a modal dialog named by its title, focus moves to its Close button, Escape (or Close)
+ * closes it, and focus goes back where it was.
+ */
+export function accessibleDialog(dialog: PopinDialog, id: string): void {
+    const opener = document.activeElement as HTMLElement | null;
+    const box = document.getElementById(`popin_${id}`);
+    if (!box) { return; }
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-modal', 'true');
+    box.setAttribute('aria-labelledby', `popin_${id}_title`);
+    const close = document.getElementById(`popin_${id}_close`);
+    close?.setAttribute('role', 'button');
+    close?.setAttribute('aria-label', _('Close'));
+    const done = () => {
+        dialog.destroy();
+        if (opener?.isConnected) { opener.focus(); }
+    };
+    dialog.replaceCloseCallback(done);
+    box.addEventListener('keydown', e => {
+        // Escape anywhere in it; Space on Close too (it's a link, which only Enter activates)
+        if (e.key == 'Escape' || (e.key == ' ' && e.target == close)) { e.preventDefault(); done(); }
+    });
+    close?.focus();
+}
+
+/**
  * A tile's rules, from the server's descriptions (`translations.tile_descriptions`): what it does, how
  * it's upgraded, how it scores, and notes, whichever it has, one list item each. The `${…}` names in
  * the text become the word followed by its icon, as in the log ("1 stone", then the stone), so the
@@ -44,6 +72,7 @@ export class TileRulesComponent {
         this.dialog.setTitle(name);
         this.dialog.setContent(content.outerHTML);
         this.dialog.show();
+        accessibleDialog(this.dialog, 'kf_rules_dialog');
     }
 
     /**

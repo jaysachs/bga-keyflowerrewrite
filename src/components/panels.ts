@@ -2,7 +2,7 @@ import { KFGameDatas, KFPlayer, SkillType, WorkerColor } from "../kfdata";
 import { Html } from "../libs/html";
 import { TooltipManager } from "../libs/tooltips";
 import { ACTIVE_PLAYERS_CHANGED } from "../states/base";
-import { TileRulesComponent } from "./tilerules";
+import { accessibleDialog, TileRulesComponent } from "./tilerules";
 import { TranslationComponent } from "./translation";
 
 const WORKER_COLORS: WorkerColor[] = ['red', 'yellow', 'blue', 'green'];
@@ -127,6 +127,7 @@ export class PanelsComponent {
         this.winterDialog.setTitle(_('Your winter tiles'));
         this.winterDialog.setContent(content.outerHTML);
         this.winterDialog.show();
+        accessibleDialog(this.winterDialog, 'kf_winter_dialog');
     }
 
     /** "Your turn"/"Playing" (the CSS shows it on the active player's panel only, and not on phones). */

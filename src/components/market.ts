@@ -47,7 +47,8 @@ export class MarketComponent extends BaseComponent<MarketLot> {
     }
 
     public setup(): HTMLElement {
-        return Html.div({ id: 'kf_market' },
+        // A named region, so screen readers can jump to it
+        return Html.div({ id: 'kf_market', attrs: { role: 'region', 'aria-label': _('Market') } },
             ...this.bga.gameui.gamedatas.market.map(mt => this.lotDiv(mt))
         );
     }
