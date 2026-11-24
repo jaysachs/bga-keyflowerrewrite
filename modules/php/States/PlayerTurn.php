@@ -159,6 +159,8 @@ class PlayerTurn extends AbstractState {
                 'tiletype' => $activationResult->tile->type->value,
                 'player_id' => $active_player_id,
                 'workers' => $activationResult->activatingWorkerGroup->marshal(),
+                // the tiles the moved bids (bidMoved, just before) leave, as in bidMade
+                'moved_from' => array_map(fn ($mb) => $mb->sourceTile->tile_id, $activationResult->movedBids),
                 'produced' => [
                     'workers' => $activationResult->prodResult->workers->marshal(),
                     'resources' => $activationResult->prodResult->resources->marshal(),

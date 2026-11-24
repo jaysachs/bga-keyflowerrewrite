@@ -138,21 +138,21 @@ export class PlayerTurnState extends BaseState {
 
     /**
      * A tile used (in the market or a village): its workers become a new row on the tile, flying from
-     * where they were (an outbid bid they leave, or the player's panel). Your stock loses them and gains
-     * the workers and tools produced; resources go to a tile, which needs the destination tile (to come).
+     * where they were (an outbid bid they leave, or the player's panel). `moved_from` lists the tiles the
+     * moved bids leave, as in bidMade. Your stock loses the workers and gains the workers and tools
+     * produced; resources go to a tile, which needs the destination tile (to come).
      */
     async notif_tileActivated(args: {
-        tile_id: number, player_id: number, workers: Worker[],
+        tile_id: number, player_id: number, workers: Worker[], moved_from: number[],
         produced: { workers: Worker[], resources: Resource[], skills: Skill[], upgrades: number, dest_tile_id: number | null },
     }) {
         const workers = args.workers;
         const produced = { workers: args.produced?.workers ?? [], skills: args.produced?.skills ?? [] };
         const ids = new Set(workers.map(w => w.id));
-        const fromBid = this.bga.gameui.gamedatas.market
-            .find(mt => mt.bids.some(b => b.player_id == args.player_id && b.workers.some(w => ids.has(w.id))));
-        const from = (fromBid && this.market.bidRect(fromBid.id, args.player_id))
+        // Read before the moved bids leave their tiles.
+        const from = args.moved_from.map(id => this.market.bidRect(id, args.player_id)).find(r => r)
             ?? this.panelOrigin(args.player_id, `.kf_worker[data-kf-color="${workers[0]?.color}"]`);
-        this.market.takeFromBids(args.player_id, workers);
+        args.moved_from.forEach(id => this.market.removeBid(id, args.player_id));
         const inMarket = !!this.market.tile(args.tile_id);
         if (inMarket) { this.market.addUse(args.tile_id, workers); } else { this.villages.addUse(args.tile_id, workers); }
         if (from) {
