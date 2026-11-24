@@ -743,30 +743,53 @@ html {
     }
 }
 
-/* Using a market tile you could also bid on: a switch between the two, under the rule line */
+/* Using a market tile you could also bid on: a switch between the two, under the rule line. One wide
+   button split in two halves, white with the worker buttons' grey border, and the chosen half in their
+   selected blue (one look for choices; BGA's buttons are for actions) */
 .kf_pick_modes {
-    display: flex;
-    width: fit-content;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    max-width: 320px;
+    box-sizing: border-box;
+    border: 2px solid #c8c8c8;
+    border-radius: 6px;
+    background: #fff;
+    overflow: hidden;
 }
 
 .kf_pick_modes button {
-    min-height: 36px;
-    padding: 0 14px;
-    border: 1px solid #1f2328;
-    background: #fff;
-    color: #1f2328;
+    min-height: 40px;
+    margin: 0;
+    padding: 0 12px;
+    border: 0;
+    background: transparent;
+    color: #333;
     font: inherit;
+    font-size: 15px;
     font-weight: bold;
     white-space: nowrap;
     cursor: pointer;
 }
 
-.kf_pick_modes button:first-child { border-radius: 8px 0 0 8px; }
-.kf_pick_modes button:last-child { border-radius: 0 8px 8px 0; border-left: 0; }
+.kf_pick_modes button + button {
+    border-left: 2px solid #c8c8c8;
+}
 
 .kf_pick_modes button[aria-checked="true"] {
-    background: #1f2328;
-    color: #fff;
+    background: #e8f0fe;
+    color: #1a5fb4;   /* darker than the border's blue: 5.5:1 on this background (#1a73e8 is 3.9:1) */
+}
+
+.kf_pick_modes button:focus-visible {
+    outline: 2px solid #1a73e8;
+    outline-offset: -4px;
+}
+
+@media (hover: hover) {
+    .kf_pick_modes button[aria-checked="false"]:hover {
+        color: #1a73e8;
+    }
 }
 
 /* A choice a use needs: what to pay with (any worker or tool), or which resource to take */
@@ -834,7 +857,7 @@ html {
 }
 
 .kf_pick_worker.kf_on .kf_pick_num {
-    color: #1a73e8;
+    color: #1a5fb4;
 }
 
 /*

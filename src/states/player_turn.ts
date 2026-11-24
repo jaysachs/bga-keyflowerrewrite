@@ -371,7 +371,7 @@ export class PlayerTurnState extends BaseState {
 
         const modes = p.both ? Html.div({ classes: 'kf_pick_modes', attrs: { role: 'radiogroup', 'aria-label': fill(_('What to do with ${tile}'), { tile: name }) } },
             ...(['bid', 'use'] as const).map(m => {
-                const b = Html.button({ text: m == 'bid' ? _('Bid on it') : _('Use it now'), attrs: { role: 'radio', 'aria-checked': p.mode == m, 'data-kf-key': `mode:${m}` } });
+                const b = Html.button({ text: m == 'bid' ? _('Bid on it') : _('Use it'), attrs: { role: 'radio', 'aria-checked': p.mode == m, 'data-kf-key': `mode:${m}` } });
                 b.addEventListener('click', () => { if (p.mode != m) { this.setMode(p, m); this.showPick(); } });
                 return b;
             })) : undefined;
