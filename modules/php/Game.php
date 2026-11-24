@@ -135,6 +135,7 @@ class Game extends \Bga\GameFramework\Table
             0
         );
 
+        $this->ps->clearPasses();
         $data = AllGameData::newGameDataFor(array_keys($players));
         $this->ps->saveAllData($data);
 
