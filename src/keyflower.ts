@@ -70,6 +70,32 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
             this.villageComponent.setup());
         this.bga.gameArea.getElement().appendChild(mainElem);
         this.panelsComponent.setup();
+        this.showRulesOnTap(mainElem);
+    }
+
+    /**
+     * Tapping a tile you can't choose right now (in the market, a village or the boats) shows its rules,
+     * as the mockup's tile dialog does; a choosable one (.kf_selectable) does what it did. Enter and
+     * Space do the same on village tiles (market tiles are buttons already).
+     */
+    private showRulesOnTap(main: HTMLElement): void {
+        const tileOf = (e: Event) => {
+            // The tile itself, or the market button or boat it's in (Enter on the button, a tap on cargo)
+            const hit = (e.target as Element | null)?.closest<HTMLElement>('[data-kf-tile], .kf_lot_tile, .kf_boat');
+            const tile = hit?.matches('[data-kf-tile]') ? hit : hit?.querySelector<HTMLElement>('[data-kf-tile]');
+            return tile && main.contains(tile) && !tile.closest('.kf_selectable') && !hit!.classList.contains('kf_selectable') ? tile : null;
+        };
+        main.addEventListener('click', e => {
+            const tile = tileOf(e);
+            if (tile) { this.tileRulesComponent.show(tile.dataset['kfTile']!); }
+        });
+        main.addEventListener('keydown', e => {
+            const tile = tileOf(e);
+            if (tile && tile.getAttribute('role') == 'button' && (e.key == 'Enter' || e.key == ' ')) {
+                e.preventDefault();
+                this.tileRulesComponent.show(tile.dataset['kfTile']!);
+            }
+        });
     }
 
     /**

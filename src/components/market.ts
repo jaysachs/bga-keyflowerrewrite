@@ -188,7 +188,8 @@ export class MarketComponent extends BaseComponent<MarketLot> {
                 classes: ['kf_lot_tile', canClick ? 'kf_selectable' : '', this.selected == mt.id ? 'kf_selected' : ''],
                 attrs: {
                     'aria-label': `${this.translations.tileName(mt.tiletype)}. ${this.bidSummary(this.sortedBids(mt))}`,
-                    'aria-disabled': canClick ? null : true,
+                    // Not choosable now, a tap shows the tile's rules instead (keyflower.ts)
+                    'aria-haspopup': canClick ? null : 'dialog',
                     'aria-pressed': this.selected == mt.id ? true : null,
                 },
             },

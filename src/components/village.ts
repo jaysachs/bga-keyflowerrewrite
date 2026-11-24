@@ -60,7 +60,7 @@ export class VillageComponent extends BaseComponent<any> {
 
     /** row and col are counted from the village's top-left; data-kf-rowcol keeps the real position. */
     private tileDiv(tile: VillageTile, row: number, col: number): HTMLElement {
-        return Html.div({
+        const div = Html.div({
             id: `kf_tile_${tile.tile_id}`,
             classes: 'kf_tile',
             attrs: {
@@ -71,5 +71,9 @@ export class VillageComponent extends BaseComponent<any> {
             style: [`--kf-row: ${row}`, `--kf-col: ${col}`],
             title: this.translations.tileName(tile.tiletype),
         });
+        // A tap (or Enter or Space) shows the tile's rules (keyflower.ts)
+        Object.entries({ role: 'button', tabindex: '0', 'aria-haspopup': 'dialog', 'aria-label': this.translations.tileName(tile.tiletype) })
+            .forEach(([k, v]) => div.setAttribute(k, v));
+        return div;
     }
 }
