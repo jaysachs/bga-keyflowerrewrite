@@ -96,6 +96,114 @@ html {
     }
 }
 
+/* The boats, after the market: each boat tile with its passengers on the meeple outlines and its tools
+   on the "?" squares, as on the table (positions in dock.ts). The cargo is sized in % of the tile, so it
+   scales with it: meeples as in the mockup (14px on a 104px tile), tools 11% */
+/* Side margins as in the mockup: the boats and their label 22px from the edges (its 12px, plus the
+   market area's 10px), the villages 12px */
+#kf_dock {
+    margin: 16px 0 24px;
+    padding-inline: 22px;
+}
+
+.kf_dock_title {
+    margin: 0 0 8px;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+/* The label is a button that folds the boats away: a chevron pointing down when open, right when folded.
+   Its own width (BGA stretches buttons here), so only the label is the target */
+.kf_dock_fold {
+    display: inline-flex;
+    width: auto;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    margin: 0;
+    padding: 2px 6px 2px 0;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.kf_chevron {
+    width: 8px;
+    height: 8px;
+    margin: -3px 2px 0;
+    border: solid currentColor;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    transition: transform 0.15s;
+}
+
+.kf_dock_fold[aria-expanded="false"] .kf_chevron {
+    margin-top: 0;
+    transform: rotate(-45deg);
+}
+
+@media (hover: hover) {
+    .kf_dock_fold:hover {
+        text-decoration: underline;
+    }
+}
+
+.kf_boats[hidden] {
+    display: none;
+}
+
+.kf_boats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* Phones: centered, like the market, with the label 12px from the edge */
+@media (max-width: 499px) {
+    .kf_boats {
+        justify-content: center;
+    }
+}
+
+.kf_boat {
+    position: relative;
+    width: var(--kf-tile-w);
+    height: var(--kf-tile-h);
+}
+
+.kf_boat > .kf_tile {
+    position: absolute;
+    inset: 0;
+}
+
+.kf_boat_item {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.kf_boat .kf_worker {
+    width: 13.5%;
+    height: auto;
+    aspect-ratio: 1;
+    filter: drop-shadow(0 0 1px #fff) drop-shadow(0 1px 1px rgb(0 0 0 / 0.6));
+}
+
+/* Tools from the game's sprite (2064 x 113, 32px icons), scaled to the box */
+.kf_boat_tool {
+    width: 11%;
+    aspect-ratio: 1;
+    background: url("img/tiles-symbols.png") no-repeat;
+    background-size: 6450% 353.125%;
+    filter: drop-shadow(0 0 1px #fff);
+}
+.kf_boat_tool[data-kf-kind="anvil"] { background-position: 19.783% 18.519%; }
+.kf_boat_tool[data-kf-kind="pickaxe"] { background-position: 23.031% 18.519%; }
+.kf_boat_tool[data-kf-kind="saw"] { background-position: 19.783% 81.481%; }
+
 /* Villages: yours first, then the others in turn order */
 
 #kf_villages {
@@ -103,6 +211,7 @@ html {
     flex-wrap: wrap;
     gap: 16px;
     margin-top: 16px;
+    padding-inline: 12px;
 }
 
 .kf_village {
@@ -113,6 +222,14 @@ html {
     border-left: 4px solid var(--kf-player-color);
     border-radius: 8px;
     padding: 8px 12px 12px;
+}
+
+/* Phones: the villages sharing a row grow to fill it, so their edges line up 12px from the screen's
+   edges like the status bar and the boats' label (as in the mockup) */
+@media (max-width: 499px) {
+    .kf_village {
+        flex-grow: 1;
+    }
 }
 
 /* Each village is as wide as its tiles, so small villages share a row, also on phones. One wider than
