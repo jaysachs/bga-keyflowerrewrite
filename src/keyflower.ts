@@ -11,6 +11,7 @@
 import { DockComponent } from "./components/dock";
 import { MarketComponent } from "./components/market";
 import { PanelsComponent } from "./components/panels";
+import { TileRulesComponent } from "./components/tilerules";
 import { TranslationComponent } from "./components/translation";
 import { VillageComponent } from "./components/village";
 import { KFGameDatas, KFPlayer, Season, WorkerColor } from "./kfdata";
@@ -31,6 +32,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
     private dockComponent: DockComponent;
     private villageComponent: VillageComponent;
     private panelsComponent: PanelsComponent;
+    private tileRulesComponent: TileRulesComponent;
 
     constructor(bga: Bga<KFPlayer, KFGameDatas>) {
         super(bga);
@@ -46,7 +48,8 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
         this.marketComponent = new MarketComponent(bga, this.translationComponent, this.moreAnimations);
         this.dockComponent = new DockComponent(bga);
         this.villageComponent = new VillageComponent(bga, this.translationComponent);
-        this.panelsComponent = new PanelsComponent(bga, this.translationComponent, this.tooltipManager);
+        this.tileRulesComponent = new TileRulesComponent(this.translationComponent);
+        this.panelsComponent = new PanelsComponent(bga, this.translationComponent, this.tooltipManager, this.tileRulesComponent);
     }
 
     override async setup(gamedatas: KFGameDatas) {
@@ -103,7 +106,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
     }
 
     private registerStates(): void {
-        this.bga.states.register('PlayerTurn', new PlayerTurnState(this.bga, this.animationManager, this.marketComponent, this.translationComponent, this.panelsComponent));
+        this.bga.states.register('PlayerTurn', new PlayerTurnState(this.bga, this.animationManager, this.marketComponent, this.translationComponent, this.panelsComponent, this.tileRulesComponent));
         this.bga.states.register('SeasonSetup', new SeasonSetupState(this.bga, this.animationManager));
     }
 

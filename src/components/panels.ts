@@ -2,6 +2,7 @@ import { KFGameDatas, KFPlayer, SkillType, WorkerColor } from "../kfdata";
 import { Html } from "../libs/html";
 import { TooltipManager } from "../libs/tooltips";
 import { ACTIVE_PLAYERS_CHANGED } from "../states/base";
+import { TileRulesComponent } from "./tilerules";
 import { TranslationComponent } from "./translation";
 
 const WORKER_COLORS: WorkerColor[] = ['red', 'yellow', 'blue', 'green'];
@@ -19,7 +20,7 @@ export class PanelsComponent {
     private winterDialog: PopinDialog | undefined;
 
     public constructor(private bga: Bga<KFPlayer, KFGameDatas>, private translations: TranslationComponent,
-        private tooltips: TooltipManager) {
+        private tooltips: TooltipManager, private tileRules: TileRulesComponent) {
     }
 
     public setup(): void {
@@ -104,7 +105,7 @@ export class PanelsComponent {
         return button;
     }
 
-    /** Your winter tiles, large and with their names. */
+    /** Your winter tiles, each at its size on the board with its name and rules beside it. */
     private showWinterTiles(): void {
         const me = this.bga.players.getCurrentPlayerId();
         const tiles = this.bga.gameui.gamedatas.villages[me]?.winter_tiles ?? [];
@@ -116,7 +117,9 @@ export class PanelsComponent {
                     const name = this.translations.tileName(t.tiletype);
                     return Html.div({ classes: 'kf_winter_tile' },
                         Html.div({ classes: 'kf_tile', attrs: { 'data-kf-tile': t.tiletype, role: 'img', 'aria-label': name } }),
-                        Html.span({ text: name }));
+                        Html.div({ classes: 'kf_winter_text' },
+                            Html.h3({ text: name }),
+                            this.tileRules.list(t.tiletype)));
                 })));
         this.winterDialog?.destroy();
         this.winterDialog = new ebg.popindialog();
