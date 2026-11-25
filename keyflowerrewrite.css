@@ -495,8 +495,8 @@ html {
     stroke-width: var(--kf-mark-w);
 }
 
-/* The season in the status bar, as in the mockup: its name and icon at the left (where the bar is wide
-   enough, and not while choosing workers), and a line in its color along the bottom */
+/* The season in the status bar: a line in its color along the bottom, as in the mockup (its name is in
+   the market's heading) */
 #overall-content #page-title[data-kf-season] {
     box-shadow: inset 0 -4px 0 var(--kf-season-color);
 }
@@ -504,32 +504,6 @@ html {
 #page-title[data-kf-season="summer"] { --kf-season-color: #d3c960; }
 #page-title[data-kf-season="fall"] { --kf-season-color: #b6783f; }
 #page-title[data-kf-season="winter"] { --kf-season-color: #a9cde4; }
-
-.kf_status_season {
-    display: none;
-}
-
-@media (min-width: 1000px) {
-    #page-title:not(.kf_picking) > .kf_status_season {
-        position: absolute;
-        left: 12px;
-        top: 50%;
-        z-index: 1;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        transform: translateY(-50%);
-        font-size: 14px;
-        font-weight: bold;
-    }
-}
-
-.kf_status_season .kf_season_icon {
-    flex: none;
-    width: 18px;
-    height: 18px;
-    margin: 0;
-}
 
 /* "Summer market" over the market, after the season's icon, in line with the "Boats" label */
 .kf_market_title {
