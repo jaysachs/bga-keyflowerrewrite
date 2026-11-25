@@ -25,4 +25,10 @@ describe('splitNames tests', () => {
       { name: 'blue', punct: '' }, { name: 'red', punct: '' }, { text: ' first' },
     ]);
   })
+
+  it('leaves a broken translation as text, and still finds the names in it', () => {
+    assert.deepEqual(splitNames('${${blue} {red}$}$}${}$$'), [
+      { text: '${' }, { name: 'blue', punct: '' }, { text: ' {red}$}$}${}$$' },
+    ]);
+  })
 })
