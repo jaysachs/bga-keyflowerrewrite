@@ -1477,6 +1477,14 @@ html {
 .kf_icon_resource[data-kf-kind="wood"] { background-position: 50% 0; }
 .kf_icon_resource[data-kf-kind="gold"] { background-position: 75% 0; }
 
+/* In the picker's "Take" choices (Workshop): 24px, like the tools beside them */
+.kf_pick_choice .kf_icon_resource {
+    display: inline-block;
+    flex: none;
+    width: 24px;
+    height: 24px;
+}
+
 /* Tools from the game's sprite, drawn at 32px, scaled to the text */
 .kf_with_icon > .kf_icon_tool {
     width: 32px;
