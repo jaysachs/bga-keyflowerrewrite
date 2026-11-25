@@ -47,7 +47,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
         this.textFormatter.registerFormatter('season', args => this.seasonWithIcon(args.season));
         this.marketComponent = new MarketComponent(bga, this.translationComponent, this.moreAnimations);
         this.dockComponent = new DockComponent(bga, this.translationComponent);
-        this.villageComponent = new VillageComponent(bga, this.translationComponent);
+        this.villageComponent = new VillageComponent(bga, this.translationComponent, this.moreAnimations);
         this.tileRulesComponent = new TileRulesComponent(this.translationComponent);
         this.panelsComponent = new PanelsComponent(bga, this.translationComponent, this.tooltipManager, this.tileRulesComponent);
     }
@@ -132,7 +132,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
     }
 
     private registerStates(): void {
-        this.bga.states.register('PlayerTurn', new PlayerTurnState(this.bga, this.animationManager, this.marketComponent, this.translationComponent, this.panelsComponent, this.tileRulesComponent));
+        this.bga.states.register('PlayerTurn', new PlayerTurnState(this.bga, this.animationManager, this.marketComponent, this.villageComponent, this.translationComponent, this.panelsComponent, this.tileRulesComponent));
         this.bga.states.register('SeasonSetup', new SeasonSetupState(this.bga, this.animationManager));
     }
 

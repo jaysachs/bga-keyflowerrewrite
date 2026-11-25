@@ -494,6 +494,67 @@ html {
     color: #1a5fb4;
 }
 
+/*
+ * Workers used on a tile this season (activations.ts), as in the mockup: one row per use, in order,
+ * over the illustration, starting 20% from the left and 42% down. Workers are 21px at game size;
+ * a large use gets smaller workers so its row stays within 62% of the tile's width.
+ */
+.kf_uses {
+    --kf-use-size: calc(var(--kf-tile-w) * 17 / 128 + 4px);
+    position: absolute;
+    left: calc(var(--kf-tile-w) * 0.2);
+    top: calc(var(--kf-tile-h) * 0.42);
+    width: calc(var(--kf-tile-w) * 0.62);
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+}
+
+/* A village tile you can choose (to use it): an outline over it, following its hex (the tile itself is
+   clipped to the hex, so a glow on it would be cut off), as the market's tiles have */
+.kf_village_map .kf_tile.kf_selectable {
+    cursor: pointer;
+}
+
+.kf_village_map .kf_tile.kf_selectable:focus-visible {
+    outline: none;
+}
+
+.kf_village_map .kf_tile_mark {
+    position: absolute;
+    left: calc(var(--kf-col) * var(--kf-col-step) * var(--kf-tile-w));
+    top: calc(var(--kf-row) * var(--kf-row-step) * var(--kf-tile-h));
+    width: var(--kf-tile-w);
+    height: var(--kf-tile-h);
+    pointer-events: none;
+}
+
+/* As on the market (and the mockup): no line on tiles you can use, only on the chosen one, 6px blue
+   #1d5ea8 over a white edge, just inside the hex (the mark is the tile's size) */
+.kf_village_map .kf_tile_mark:not(.kf_selected) {
+    display: none;
+}
+
+.kf_village_map .kf_tile_mark.kf_selected {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='26,4 74,4 97,50 74,96 26,96 3,50' fill='none' stroke='%23fff' stroke-width='9' stroke-linejoin='round' vector-effect='non-scaling-stroke'/%3E%3Cpolygon points='26,4 74,4 97,50 74,96 26,96 3,50' fill='none' stroke='%231d5ea8' stroke-width='6' stroke-linejoin='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+}
+
+/* In a village the rows are a layer of their own over the tile, so they don't turn with it */
+.kf_village_map .kf_uses {
+    left: calc(var(--kf-col) * var(--kf-col-step) * var(--kf-tile-w) + var(--kf-tile-w) * 0.2);
+    top: calc(var(--kf-row) * var(--kf-row-step) * var(--kf-tile-h) + var(--kf-tile-h) * 0.42);
+}
+
+.kf_use {
+    display: flex;
+}
+
+.kf_use .kf_worker {
+    width: min(var(--kf-use-size), calc(var(--kf-tile-w) * 0.62 / var(--n)));
+    height: min(var(--kf-use-size), calc(var(--kf-tile-w) * 0.62 / var(--n)));
+    filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.55));
+}
+
 /* Workers, from the old game's sprite */
 
 .kf_workers {
@@ -547,22 +608,201 @@ html {
 
 /* Choosing a bid in the status bar: a row per color; tap the third worker to take three */
 
-.kf_pick {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-    margin: 6px 0;
+/*
+ * Choosing a bid or a use, laid out as in the mockup's status bar. Stacked on phones: the title, the rule
+ * line, the Bid/Use switch, the workers, then the buttons at the right. From 700px of status bar, three
+ * columns (below). BGA's status bar stays BGA's: its own boxes are only set to
+ * `display: contents` while choosing, so the picker's parts can join its grid.
+ */
+/* The layout follows the status bar's own width, not the window's: BGA's column on the right takes a
+   varying share of the window (the bar is 780px in a 1027px window) */
+#page-title.kf_picking {
+    container: kf-statusbar / inline-size;
 }
 
-/* Phones: one color per line, so a color's workers never share a line with another color's */
-@media (max-width: 499px) {
-    .kf_pick {
-        flex-direction: column;
-        align-items: flex-start;   /* rows start together, so each count sits under the same count */
-        width: fit-content;
-        margin-inline: auto;
+#page-title.kf_picking #maintitlebar_content > div:has(> #pagemaintitletext) {
+    display: grid !important;   /* BGA sets inline-block on it inline */
+    box-sizing: border-box;      /* and width: 100%, which padding would push past the bar's edge */
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 6px 8px;
+    padding: 4px 8px;   /* 12px from the bar's edges on phones, with BGA's 4px there */
+    text-align: left;
+}
+
+/* Tablets and wider: 20px from the bar's edges */
+@container kf-statusbar (min-width: 500px) {
+    #page-title.kf_picking #maintitlebar_content > div:has(> #pagemaintitletext) {
+        padding: 6px 15px 8px;
     }
+}
+
+#page-title.kf_picking #generalactions,
+#page-title.kf_picking .kf_pick {
+    display: contents;
+}
+
+#page-title.kf_picking #gotonexttable_wrap,
+#page-title.kf_picking #undoredo_wrap {
+    display: none;
+}
+
+#page-title.kf_picking #active_player_statusbar { grid-column: 1; grid-row: 1; }
+#page-title.kf_picking #pagemaintitletext { grid-column: 2; grid-row: 1; }
+#page-title.kf_picking .kf_pick_rule { grid-column: 2; grid-row: 2; }
+#page-title.kf_picking .kf_pick_modes { grid-column: 2; grid-row: 3; justify-self: start; }
+#page-title.kf_picking .kf_pick_workers { grid-column: 2; grid-row: 4; }
+#page-title.kf_picking .kf_pick_actions { grid-column: 2; grid-row: 5; justify-self: end; margin-top: 10px; }   /* 16px under the workers, with the rows' 6px */
+
+/* From 700px of status bar: what this is in a column of a set width (270px, so nothing moves from one
+   tile to the next), the workers beside it (each color on one line, the colors wrapping as whole rows),
+   and the buttons stacked in a column of their own at the right, the same width, 16px apart. Their
+   column has a set width too: the labels change as you choose ("Bid 2 yellow"), and an auto width would
+   take room from the workers, so their rows jumped between lines. The right margin keeps the buttons off
+   the bar's edge */
+@container kf-statusbar (min-width: 700px) {
+    #page-title.kf_picking #maintitlebar_content > div:has(> #pagemaintitletext) {
+        grid-template-columns: auto 270px minmax(0, 1fr) 150px;
+        grid-template-rows: auto auto 1fr;
+        align-items: start;
+        gap: 4px 20px;
+    }
+    #page-title.kf_picking .kf_pick_workers {
+        grid-column: 3;
+        grid-row: 1 / 4;
+        align-self: stretch;
+        padding-left: 20px;
+        border-left: 1px solid rgb(0 0 0 / 0.12);
+    }
+    #page-title.kf_picking .kf_pick_actions {
+        grid-column: 4;
+        grid-row: 1 / 4;
+        margin-top: 0;
+        align-self: stretch;
+        justify-self: stretch;
+        grid-auto-flow: row;
+        grid-auto-columns: auto;
+        align-content: center;
+    }
+    #page-title.kf_picking .kf_pick_actions > .bgabutton {
+        width: 100%;
+        box-sizing: border-box;
+        white-space: normal;
+    }
+}
+
+.kf_pick_rule {
+    margin: 0;
+    font-size: 13px;
+    font-weight: normal;
+    line-height: 1.35;
+    color: #57606a;
+}
+
+.kf_pick_rule .kf_worker {
+    width: 1.25em;
+    height: 1.25em;
+    margin-left: 0.15em;
+    vertical-align: -0.3em;
+}
+
+.kf_pick_rule.kf_pick_error {
+    font-weight: bold;
+    color: #b3261e;
+}
+
+/* Bid or Use, and Cancel: the same width, 16px apart (side by side; stacked in a wide status bar) */
+.kf_pick_actions {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 16px;
+}
+
+/* The column gap sets Cancel apart here, so not its own margin too; and not BGA's phone margins (8px
+   above and below), which made Bid shorter than Cancel */
+#generalactions .kf_pick_actions > .bgabutton {
+    margin: 0;
+}
+
+.kf_pick_workers > .kf_pick_label {
+    margin: 0 0 4px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #57606a;
+}
+
+/* Each color's workers side by side; on phones one color per line, starting together, so each count
+   sits under the same count */
+.kf_pick_rows {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+}
+
+@media (max-width: 499px) {
+    .kf_pick_rows {
+        flex-direction: column;
+        gap: 6px;
+    }
+}
+
+/* Using a market tile you could also bid on: a switch between the two, under the rule line. One wide
+   button in the worker buttons' style, light grey, with the chosen half white and outlined in blue like
+   a chosen worker (one look for choices; BGA's buttons are for actions) */
+.kf_pick_modes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    max-width: 320px;
+    border-radius: 8px;
+    background: #eef0f3;
+}
+
+.kf_pick_modes button {
+    min-height: 44px;
+    margin: 0;
+    padding: 0 12px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: #333;
+    font: inherit;
+    font-size: 15px;
+    font-weight: bold;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+/* Square where the halves meet, so the chosen half reads as one side of the switch */
+.kf_pick_modes button:first-child { border-radius: 8px 0 0 8px; }
+.kf_pick_modes button:last-child { border-radius: 0 8px 8px 0; }
+
+.kf_pick_modes button[aria-checked="true"] {
+    border-color: #1d5ea8;
+    box-shadow: inset 0 0 0 1px #1d5ea8;
+    background: #fff;
+    color: #1d5ea8;
+}
+
+@media (hover: hover) {
+    .kf_pick_modes button[aria-checked="false"]:hover {
+        border-color: #1d5ea8;
+    }
+}
+
+/* A choice a use needs: what to pay with (any worker or tool), or which resource to take */
+.kf_pick_choice {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 6px;
+}
+
+.kf_pick_choice > .kf_pick_label {
+    margin-right: 4px;
+    font-weight: bold;
 }
 
 .kf_pick_row {
@@ -584,9 +824,9 @@ html {
     margin: 0;
     justify-content: center;
     padding: 0 6px;
-    border: 2px solid #c8c8c8;
-    border-radius: 6px;
-    background: #fff;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background: #eef0f3;
     font: inherit;
     font-size: 12px;
     cursor: pointer;
@@ -597,8 +837,9 @@ html {
 }
 
 .kf_pick_worker.kf_on {
-    border-color: #1a73e8;
-    background: #e8f0fe;
+    border-color: #1d5ea8;
+    box-shadow: inset 0 0 0 1px #1d5ea8;
+    background: #fff;
 }
 
 /* A worker from your stock, with the number a tap takes under it. */
@@ -616,7 +857,7 @@ html {
 }
 
 .kf_pick_worker.kf_on .kf_pick_num {
-    color: #1a73e8;
+    color: #1d5ea8;
 }
 
 /*
@@ -626,26 +867,18 @@ html {
 @media (hover: hover) {
     .kf_pick_one:hover,
     .kf_pick_one:has(~ .kf_pick_one:hover) {
-        border-color: #1a73e8;
+        border-color: #1d5ea8;
     }
 
     .kf_pick_one:hover ~ .kf_pick_one.kf_on {
-        border-color: #c8c8c8;
-        background: #fff;
+        border-color: transparent;
+        box-shadow: none;
+        background: #eef0f3;
         opacity: 0.6;
     }
 }
 
-.kf_pick_msg {
-    flex-basis: 100%;
-    margin: 0;
-    font-size: 14px;
-    color: #b3261e;
-}
 
-.kf_pick_msg:empty {
-    display: none;
-}
 
 /*
  * Tile art: any element with data-kf-tile="<tile type>" shows that tile's face; upgraded faces
@@ -1139,6 +1372,12 @@ html {
    6px more between them (14px in all) */
 .desktop_version #overall-content #player_boards {
     row-gap: 0;
+}
+
+/* The status bar in white, as in the mockup: BGA's light grey (#f4f4f4) is almost the choices' grey
+   (#eef0f3), so the switch and the worker buttons disappeared into it */
+#overall-content #page-title {
+    background-color: #fff;
 }
 
 /* Player panels in white, like the status bar and the villages, so the colors stand out */

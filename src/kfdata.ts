@@ -9,12 +9,16 @@ export interface Worker {
 }
 export type SkillType = 'pickaxe' | 'saw' | 'anvil';
 export type ResourceType = 'stone' | 'wood' | 'iron' | 'gold';
+export interface Resource {
+    id: number;
+    type: ResourceType;
+}
 export interface Skill {
     id: number;
     type: SkillType;
 }
 
-// sequence x workers, e.g. [ /* first activation */ 0 => [ workers ... ], /* second */ 1 => [ ... ] ]
+/** A tile's uses this season, in the order they were made: the workers placed in each. */
 export type Activations = Worker[][];
 
 export interface VillageTile {
