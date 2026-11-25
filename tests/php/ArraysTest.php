@@ -17,6 +17,7 @@ final class ArraysTest extends TestBase
     }
 
     public function testThree(): void {
-        $this->assertEqualsCanonicalizing([[], [1], [2], [3], [1,2], [1,3], [2,3], [1,2,3]], Arrays::powerset([1,2,3]));
+        $ps = Arrays::powerset([1, 0, 2]);
+        $this->assertEqualsCanonicalizing($ps, [[], [0], [1], [2], [0,1], [0,2], [1,2], [0,1,2]]);
     }
 }
