@@ -588,12 +588,17 @@ html {
 .kf_season_icon[data-kf-season="fall"] { background-image: url("img/drawings/season-autumn.svg"); }
 .kf_season_icon[data-kf-season="winter"] { background-image: url("img/drawings/winter.svg"); }
 
-/* A worker color in the log and the status bar: the word, then its meeple, sized to the text */
-.kf_color .kf_worker {
-    width: 1.25em;
-    height: 1.25em;
-    margin-left: 0.15em;
+/* A game word with its icon (WordsComponent), in the log, the status bar and the tile rules: the icon
+   sized to the text, after the word (before it for seasons) */
+.kf_with_icon > .kf_icon {
+    display: inline-block;
+    width: 1.3em;
+    height: 1.3em;
+    margin: 0 0 0 0.15em;
     vertical-align: -0.3em;
+}
+.kf_season.kf_with_icon > .kf_icon {
+    margin: 0 0.2em 0 0;
 }
 
 .kf_count {
@@ -1322,15 +1327,6 @@ html {
     margin-top: 6px;
     padding-top: 6px;
     border-top: 1px solid rgb(0 0 0 / 0.08);
-}
-
-.kf_rules .kf_color .kf_worker,
-.kf_with_icon > span {
-    display: inline-block;
-    width: 1.3em;
-    height: 1.3em;
-    margin-left: 0.15em;
-    vertical-align: -0.3em;
 }
 
 /* Resources from the old game's sprite: iron, stone, wood, gold, points, 24px each */
