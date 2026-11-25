@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 
 use Bga\Games\keyflowerrewrite\Model\{
     ProductionActivations,
+    TileType,
     Worker,
     WorkerColor,
     WorkerGroup,
@@ -14,9 +15,9 @@ use Bga\Games\keyflowerrewrite\Model\{
 final class ProductionActivationsTest extends TestBase
 {
     public function testEmpty(): void {
-        $pa = new ProductionActivations([]);
+        $pa = new ProductionActivations(TileType::ALEHOUSE, []);
         $this->assertTrue($pa->isActivatable(), "empty activations should be activatable");
-        $this->assertEquals(6, $pa->maxAllowededToActivate());
+        $this->assertEquals(6, $pa->maxAllowedToActivate());
         $this->assertEquals(1, $pa->minRequiredToActivate());
         $this->assertEquals(0, $pa->totalWorkers());
         $this->assertEquals(WorkerColor::NONE, $pa->currentColor());
@@ -36,11 +37,11 @@ final class ProductionActivationsTest extends TestBase
 
     public function testOneActivation(): void {
         $wg = $this->workerGroup(WorkerColor::BLUE);
-        $pa = new ProductionActivations([]);
+        $pa = new ProductionActivations(TileType::ALEHOUSE, []);
         $pa->add($wg);
 
         $this->assertTrue($pa->isActivatable(), "should be activatable");
-        $this->assertEquals(5, $pa->maxAllowededToActivate());
+        $this->assertEquals(5, $pa->maxAllowedToActivate());
         $this->assertEquals(2, $pa->minRequiredToActivate());
         $this->assertEquals(1, $pa->totalWorkers());
         $this->assertEquals(WorkerColor::BLUE, $pa->currentColor());
@@ -54,11 +55,11 @@ final class ProductionActivationsTest extends TestBase
     public function testTwoActivations(): void {
         $wg1 = $this->workerGroup(WorkerColor::BLUE);
         $wg2 = $this->workerGroup(WorkerColor::BLUE, 2);
-        $pa = new ProductionActivations([]);
+        $pa = new ProductionActivations(TileType::ALEHOUSE, []);
         $pa->add($wg1);
         $pa->add($wg2);
         $this->assertTrue($pa->isActivatable(), "should be activatable");
-        $this->assertEquals(3, $pa->maxAllowededToActivate());
+        $this->assertEquals(3, $pa->maxAllowedToActivate());
         $this->assertEquals(3, $pa->minRequiredToActivate());
         $this->assertEquals(3, $pa->totalWorkers());
         $this->assertEquals(WorkerColor::BLUE, $pa->currentColor());
@@ -74,13 +75,13 @@ final class ProductionActivationsTest extends TestBase
         $wg1 = $this->workerGroup(WorkerColor::BLUE);
         $wg2 = $this->workerGroup(WorkerColor::BLUE, 2);
         $wg3 = $this->workerGroup(WorkerColor::BLUE, 3);
-        $pa = new ProductionActivations([]);
+        $pa = new ProductionActivations(TileType::ALEHOUSE, []);
         $pa->add($wg1);
         $pa->add($wg2);
         $pa->add($wg3);
 
         $this->assertFalse($pa->isActivatable(), "should not be activatable");
-        $this->assertEquals(0, $pa->maxAllowededToActivate());
+        $this->assertEquals(0, $pa->maxAllowedToActivate());
         $this->assertEquals(4, $pa->minRequiredToActivate());
         $this->assertEquals(6, $pa->totalWorkers());
         $this->assertEquals(WorkerColor::BLUE, $pa->currentColor());
@@ -96,11 +97,11 @@ final class ProductionActivationsTest extends TestBase
 
     public function testFirstActivation2(): void {
         $wg2 = $this->workerGroup(WorkerColor::BLUE, 2);
-        $pa = new ProductionActivations([]);
+        $pa = new ProductionActivations(TileType::ALEHOUSE, []);
         $pa->add($wg2);
 
         $this->assertTrue($pa->isActivatable(), "should be activatable");
-        $this->assertEquals(4, $pa->maxAllowededToActivate());
+        $this->assertEquals(4, $pa->maxAllowedToActivate());
         $this->assertEquals(3, $pa->minRequiredToActivate());
         $this->assertEquals(2, $pa->totalWorkers());
         $this->assertEquals(WorkerColor::BLUE, $pa->currentColor());
@@ -111,11 +112,11 @@ final class ProductionActivationsTest extends TestBase
 
     public function testFirstActivation4(): void {
         $wg = $this->workerGroup(WorkerColor::BLUE, 4);
-        $pa = new ProductionActivations([]);
+        $pa = new ProductionActivations(TileType::ALEHOUSE, []);
         $pa->add($wg);
 
         $this->assertFalse($pa->isActivatable(), "should not be activatable");
-        $this->assertEquals(2, $pa->maxAllowededToActivate());
+        $this->assertEquals(2, $pa->maxAllowedToActivate());
         $this->assertEquals(5, $pa->minRequiredToActivate());
         $this->assertEquals(4, $pa->totalWorkers());
         $this->assertEquals(WorkerColor::BLUE, $pa->currentColor());

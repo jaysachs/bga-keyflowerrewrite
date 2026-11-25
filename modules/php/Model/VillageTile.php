@@ -36,9 +36,11 @@ class VillageTile {
         public readonly int $orientation,
         // FIXME: this is somewhat redundant; consider removing it.
         public readonly int $playerId,
-        private ResourceSet $resources = new ResourceSet(),
-        private ProductionActivations $productionActivations = new ProductionActivations()) { }
+        private ResourceSet $resources = new ResourceSet()) {
+            $this->productionActivations = new ProductionActivations($type);
+        }
 
+    private ProductionActivations $productionActivations;
     public function resources(): ResourceSet { return $this->resources; }
 
     public function addResource(Resource $res): void {
