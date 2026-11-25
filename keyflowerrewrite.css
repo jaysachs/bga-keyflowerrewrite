@@ -427,11 +427,9 @@ html {
     cursor: pointer;
 }
 
-/* Keyboard focus on a village tile: a ring inside the hex (the tile is clipped to it, so an outline
-   wouldn't show) */
+/* Keyboard focus on a village tile: its outline (below), as on the market */
 .kf_village_map .kf_tile:focus-visible {
     outline: none;
-    box-shadow: inset 0 0 0 4px #1d5ea8;
 }
 
 /* The outline follows the hex, since the tile inside is clipped to it */
@@ -651,6 +649,7 @@ html {
 
 .kf_village_map .kf_tile_mark {
     position: absolute;
+    z-index: 1;   /* over the neighbouring tiles, which the line overlaps */
     left: calc(var(--kf-col) * var(--kf-col-step) * var(--kf-tile-w));
     top: calc(var(--kf-row) * var(--kf-row-step) * var(--kf-tile-h));
     width: var(--kf-tile-w);
@@ -658,14 +657,19 @@ html {
     pointer-events: none;
 }
 
-/* As on the market (and the mockup): no line on tiles you can use, only on the chosen one, 6px blue
-   #1d5ea8 over a white edge, just inside the hex (the mark is the tile's size) */
-.kf_village_map .kf_tile_mark:not(.kf_selected) {
-    display: none;
+/* The same line as on the market (hexmark.ts): on hover, on keyboard focus (dark) and on the chosen tile */
+@media (hover: hover) {
+    .kf_village_map .kf_tile:hover + .kf_tile_mark .kf_hexmark {
+        opacity: 1;
+    }
 }
 
-.kf_village_map .kf_tile_mark.kf_selected {
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='26,4 74,4 97,50 74,96 26,96 3,50' fill='none' stroke='%23fff' stroke-width='9' stroke-linejoin='round' vector-effect='non-scaling-stroke'/%3E%3Cpolygon points='26,4 74,4 97,50 74,96 26,96 3,50' fill='none' stroke='%231d5ea8' stroke-width='6' stroke-linejoin='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+.kf_village_map .kf_tile:focus-visible + .kf_tile_mark .kf_hexmark {
+    opacity: 1;
+}
+
+.kf_village_map .kf_tile:focus-visible + .kf_tile_mark .kf_hexmark_line {
+    stroke: #1f2328;
 }
 
 /* In a village the rows are a layer of their own over the tile, so they don't turn with it */
