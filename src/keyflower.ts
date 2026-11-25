@@ -78,7 +78,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
      * A line in the season's color along the status bar's bottom, as in the mockup. The season is named
      * once, in the market's heading. The season the page loaded in, like that heading.
      */
-    private showSeason(season: Season): void {
+    private showSeason(season: KFGameDatas['season']): void {
         const bar = document.getElementById('page-title');
         if (bar) { bar.dataset['kfSeason'] = season; }
     }
