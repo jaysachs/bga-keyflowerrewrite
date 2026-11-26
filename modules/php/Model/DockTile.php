@@ -30,7 +30,7 @@ namespace Bga\Games\keyflowerrewrite\Model;
 use InvalidArgumentException;
 
 // TODO: Rename to Boat? need to distinguish from summer boats though. Boats & SummerBoats ?
-class DockTile {
+class DockTile implements Marshalable {
     public function __construct(public readonly int $id, public TileType $type, private WorkerGroup $passengers = new WorkerGroup(), private SkillSet $cargo = new SkillSet()) {
         if (!$this->type->isStandardBoat()) {
             throw new InvalidArgumentException("only standard boats permitted at docks {$this->type->value}");
@@ -77,5 +77,16 @@ class DockTile {
             throw new InvalidArgumentException("can't flip {$this->type->value}");
         }
         $this->type = $next;
+    }
+
+    /** @return array<string,mixed> */
+    public function marshal(): array {
+        return [
+            'id' => $this->id,
+            'boattype' => $this->type->marshal(),
+            // FIXME: need positions
+            'passengers' => $this->passengers()->marshal(),
+            'cargo' => $this->cargo()->marshal()
+        ];
     }
 }

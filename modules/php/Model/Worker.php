@@ -35,7 +35,7 @@ class Worker implements Marshalable {
     {
         return [
             "id" => $this->id,
-            "color" => $this->color->value
+            "color" => $this->color->marshal()
         ];
     }
 }

@@ -27,7 +27,15 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
-
-class StockTile {
+class StockTile implements Marshalable {
     public function __construct(public readonly int $tile_id, public readonly TileType $type) {}
+
+    /** @return array<mixed> */
+    public function marshal(): array
+    {
+        return [
+            'tile_id' => $this->tile_id,
+            'tiletype' => $this->type->marshal(),
+        ];
+    }
 }

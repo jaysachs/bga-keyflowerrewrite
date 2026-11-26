@@ -34,7 +34,7 @@ class Skill implements Marshalable {
     {
         return [
             "id" => $this->id,
-            "type" => $this->type->value
+            "type" => $this->type->marshal()
         ];
     }
 }
