@@ -178,7 +178,6 @@ class Village {
         $hasBoat4b = $this->hasTileType(TileType::BOAT4B);
         $pa = $tile->productionActivations();
         if (!$pa->isActivatable()) {
-            Log::error("{$tile->type->value} not activatable");
             return false;
         }
         $currentColor = $tile->currentColor();
@@ -212,11 +211,9 @@ class Village {
                 break;
         }
         if ($requiredSkill !== null && !$this->skills->hasMatching($requiredSkill)) {
-            Log::error("does not have {$requiredSkill->value}");
             return false;
         }
         if ($requiredWorkerColor !== WorkerColor::NONE && !$this->workers->hasMatching($requiredWorkerColor)) {
-            Log::error("does not have {$requiredWorkerColor->value}");
             return false;
         }
         // TODO: keep track that we might need to take a worker.
@@ -230,21 +227,18 @@ class Village {
                 $color = $color->plus($bid->color());
             }
             if (!$color->matches($currentColor)) {
-                Log::error("{$color->value} doesn't match {$currentColor->value}");
                 if (! $hasBoat4b) {
                     continue;
                 }
             }
 
             if ($size > $pa->maxAllowedToActivate()) {
-                Log::error("size too big {$size} {$pa->maxAllowedToActivate()}");
                 continue;
             }
             $stock = WorkerGroup::of(... $this->workers->allItems());
             // if specific color required to pay, remove it here
             if ($requiredWorkerColor->isConcrete()) {
                 if ($stock->takeNWorkersOfColor(1, $requiredWorkerColor)->isEmpty()) {
-                    Log::error("couldn't find {$requiredWorkerColor->value} meeple in stock for payment");
                     continue;
                 }
             }
@@ -252,12 +246,10 @@ class Village {
             // check for "any" worker after grabbing matching
             if ($requiredWorkerColor === WorkerColor::ONE) {
                 if ($matchingStockCount === $stock->size()) {
-                    Log::error("taking ONE worker {$matchingStockCount} {$stock->size()}");
                     $matchingStockCount--;
                 }
             }
             if ($size + $matchingStockCount < $pa->minRequiredToActivate()) {
-                Log::error("not enough meeples: {$size} {$matchingStockCount}, {$pa->minRequiredToActivate()}");
                 continue;
             }
             return true;
