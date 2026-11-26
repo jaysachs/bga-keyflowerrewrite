@@ -68,4 +68,11 @@ enum SkillType: string {
             SkillType::NONE => "",
         };
     }
+
+    public function marshal(): ?string {
+        return match ($this) {
+            self::ANY, self::NONE => null,
+            default => $this->value
+        };
+    }
 }

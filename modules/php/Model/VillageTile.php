@@ -27,8 +27,9 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
+use Override;
 
-class VillageTile {
+class VillageTile implements Marshalable {
     public function __construct(
         public readonly int $tile_id,
         public readonly TileType $type,
@@ -52,4 +53,17 @@ class VillageTile {
     }
 
     public function productionActivations(): ProductionActivations { return $this->productionActivations; }
+
+    /** @return array<string,mixed> */
+    public function marshal(): array
+    {
+        return [
+            'tile_id' => $this->tile_id,
+            'tiletype' => $this->type->marshal(),
+            'rowcol' => $this->rowcol,
+            'orientation' => $this->orientation,
+            'resources' => $this->resources->marshal(),
+            'activations' => $this->productionActivations()->marshal()
+        ];
+    }
 }

@@ -143,23 +143,8 @@ class Village {
      */
     public function marshal(bool $allData = false): array {
         $result = [
-            'tiles' => array_map(
-                fn ($vt) => [
-                    'tile_id' => $vt->tile_id,
-                    'tiletype' => $vt->type->value,
-                    'rowcol' => $vt->rowcol,
-                    'orientation' => $vt->orientation,
-                    'activations' => $vt->productionActivations()->marshal()
-                ],
-                $this->tiles()
-            ),
-            'won_tiles' => array_map(
-                fn ($wt) => [
-                    'tile_id' => $wt->tile_id,
-                    'tiletype' => $wt->type->value,
-                ],
-                $this->wonTiles()
-            ),
+            'tiles' => array_map(fn ($vt) => $vt->marshal(), $this->tiles()),
+            'won_tiles' => array_map(fn ($wt) => $wt->marshal(), $this->wonTiles()),
             'player_id' => $this->playerId,
             'has_start_player' => $this->hasStartPlayer(),
         ];

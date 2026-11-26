@@ -27,9 +27,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
-use InvalidArgumentException;
-
-enum TileType: string
+enum TileType: string implements Marshalable
 {
     case HOME1 = "home1";
     case HOME2 = "home2";
@@ -1381,5 +1379,10 @@ enum TileType: string
                 'scoring' => clienttranslate('Grants 7 ${points}.'),
             ]
         };
+    }
+
+    public function marshal(): string
+    {
+        return $this->value;
     }
 }

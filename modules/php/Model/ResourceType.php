@@ -27,7 +27,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
-enum ResourceType: string {
+enum ResourceType: string implements Marshalable {
     case STONE = "stone";
     case WOOD = "wood";
     case IRON = "iron";
@@ -40,5 +40,9 @@ enum ResourceType: string {
             ResourceType::IRON => clienttranslate("iron"),
             ResourceType::GOLD => clienttranslate("gold"),
         };
+    }
+
+    public function marshal(): string {
+        return $this->value;
     }
 }
