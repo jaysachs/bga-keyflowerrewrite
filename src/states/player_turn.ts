@@ -4,9 +4,10 @@ import { PanelsComponent } from "../components/panels";
 import { TranslationComponent } from "../components/translation";
 import { TileRulesComponent } from "../components/tilerules";
 import { VillageComponent } from "../components/village";
-import { KFGameDatas, KFPlayer, MarketLot, ResourceType, Resource, Skill, SkillType, VillageTile, Worker, WorkerColor } from "../kfdata";
+import { KFGameDatas, KFPlayer, MarketLot, ResourceType, Resource, Skill, SkillType, Village, VillageTile, Worker, WorkerColor } from "../kfdata";
 import { Child, Html } from "../libs/html";
 import { BaseState } from "./base";
+import { playingPlayerId } from "../libs/players";
 
 /** What the active player may bid on one market tile (PlayerTurn args, in market order). */
 interface BidInfo {
@@ -114,7 +115,7 @@ export class PlayerTurnState extends BaseState {
     async notif_bidMade(args: { player_id: number, marketlot_id: number, bid: Worker[], moved_from: number[] }) {
         // Your bid is now on the tile: stop showing it as pending, or it's counted twice
         // until the turn moves on.
-        if (args.player_id == this.bga.players.getCurrentPlayerId()) {
+        if (args.player_id == playingPlayerId(this.bga)) {
             this.market.setPending(null);
         }
         // The bid flies to its tile from where a moved group was drawn, or, with workers from
@@ -216,8 +217,14 @@ export class PlayerTurnState extends BaseState {
 
     // --- what you have ---
 
+    /** Your village's data (with your stock and tools, sent only to you), when you play. */
+    private myVillage(): Village | undefined {
+        const me = playingPlayerId(this.bga);
+        return me == null ? undefined : this.bga.gameui.gamedatas.villages[me];
+    }
+
     private stock(): Worker[] {
-        return this.bga.gameui.gamedatas.villages[this.bga.players.getCurrentPlayerId()]?.workers ?? [];
+        return this.myVillage()?.workers ?? [];
     }
 
     private stockOf(color: WorkerColor): number {
@@ -225,7 +232,7 @@ export class PlayerTurnState extends BaseState {
     }
 
     private skills(): Skill[] {
-        return this.bga.gameui.gamedatas.villages[this.bga.players.getCurrentPlayerId()]?.skills ?? [];
+        return this.myVillage()?.skills ?? [];
     }
 
     private info(tileId: number): BidInfo | undefined {
@@ -241,7 +248,7 @@ export class PlayerTurnState extends BaseState {
      * the one on this tile itself to use it (the rules allow it; the designer confirmed, see #63).
      */
     private movable(tileId: number, color: WorkerColor, use: boolean = false): { tileId: number, num: number }[] {
-        const me = this.bga.players.getCurrentPlayerId();
+        const me = playingPlayerId(this.bga);
         return this.bga.gameui.gamedatas.market
             .filter(mt => (use || mt.id != tileId) && this.info(mt.id)?.moveable)
             .map(mt => ({ tileId: mt.id, workers: mt.bids.find(b => b.player_id == me)?.workers ?? [] }))
