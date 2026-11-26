@@ -111,7 +111,7 @@ html {
 
 .kf_dock_title {
     margin: 0 0 8px;
-    font-size: 15px;
+    font-size: 14px;   /* a section heading, like "Spring market" */
     font-weight: bold;
 }
 
@@ -294,19 +294,88 @@ html {
 #kf_villages {
     display: flex;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: 12px;
     margin-top: 16px;
     padding-inline: 12px;
 }
 
+/* Your village and the others' wrappers (village.ts) don't count unless the screen is wide (below) */
+.kf_villages_mine,
+.kf_villages_others {
+    display: contents;
+}
+
+/*
+ * Wide game areas, as in the mockup (and Jay's point that the season's tiles and your village matter
+ * most): the market on the left, your village beside it with the boats under it, the others below,
+ * across. From 1000px of game area (a 1280px screen): three market tiles with their bids across (552px)
+ * and a column of about 450px; from 1152px, four (736px), the column still 400px or more. Tiles stay
+ * 128px; a village wider than its column scrolls sideways in its box. The boats shrink to fit four
+ * across their column. Only when you're playing (spectators keep one column).
+ */
+#game_play_area {
+    container: kf-game / inline-size;
+}
+
+@container kf-game (min-width: 1000px) {
+    #kf_main:has(.kf_villages_mine > .kf_village) {
+        display: grid;
+        grid-template-columns: calc(3 * (var(--kf-tile-w) + 56px)) minmax(0, 1fr);
+        grid-template-rows: auto 1fr auto;
+        grid-template-areas:
+            "market mine"
+            "market dock"
+            "others others";
+        column-gap: 16px;
+        align-items: start;
+    }
+    #kf_main:has(.kf_villages_mine > .kf_village) #kf_market { grid-area: market; }
+    #kf_main:has(.kf_villages_mine > .kf_village) #kf_villages { display: contents; }
+    #kf_main:has(.kf_villages_mine > .kf_village) .kf_villages_mine {
+        display: block;
+        grid-area: mine;
+        min-width: 0;
+        margin-top: 16px;
+        padding-right: 12px;
+    }
+    #kf_main:has(.kf_villages_mine > .kf_village) .kf_villages_mine > .kf_village {
+        width: 100%;
+    }
+    #kf_main:has(.kf_villages_mine > .kf_village) #kf_dock {
+        grid-area: dock;
+        min-width: 0;
+        margin: 16px 0 0;
+        padding-inline: 0 12px;
+    }
+    #kf_main:has(.kf_villages_mine > .kf_village) .kf_boats {
+        container-type: inline-size;
+        --kf-tile-w: min(128px, calc((100cqw - 36px) / 4));
+        --kf-tile-h: calc(var(--kf-tile-w) * 0.875);
+    }
+    #kf_main:has(.kf_villages_mine > .kf_village) .kf_villages_others {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        grid-area: others;
+        margin-top: 24px;
+        padding-inline: 12px;
+    }
+}
+
+@container kf-game (min-width: 1152px) {
+    #kf_main:has(.kf_villages_mine > .kf_village) {
+        grid-template-columns: calc(4 * (var(--kf-tile-w) + 56px)) minmax(0, 1fr);
+    }
+}
+
+/* As in the mockup: no colored edge (the name and its avatar carry the player's color), and its spacing */
 .kf_village {
     min-width: 0;
     max-width: 100%;
     box-sizing: border-box;
     background: rgba(255, 255, 255, 0.6);
-    border-left: 4px solid var(--kf-player-color);
     border-radius: 8px;
-    padding: 8px 12px 12px;
+    padding: 6px 8px 10px;
 }
 
 /* Phones: the villages sharing a row grow to fill it, so their edges line up 12px from the screen's
@@ -324,9 +393,27 @@ html {
 }
 
 .kf_village_name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
     color: var(--kf-player-color);   /* player names in their color, as BGA's guidelines ask (C.3) */
+    font-size: 14px;
     font-weight: bold;
-    margin-bottom: 8px;
+}
+
+/* As in the mockup: the avatar in a ring of the player's color, 26px, and "(you)" in plain grey */
+.kf_village_name .kf_avatar {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    margin: 0;
+    border-width: 3px;
+}
+
+.kf_village_you {
+    color: #57606a;
+    font-weight: normal;
 }
 
 /* Sized to the village's span of rows and columns */
@@ -390,6 +477,8 @@ html {
     position: absolute;
     left: var(--kf-lot-margin);
     top: var(--kf-lot-margin);
+    width: var(--kf-tile-w);    /* the tile's size, so the outline over it (hexmark) matches it */
+    height: var(--kf-tile-h);
 }
 
 .kf_lot_tile {
@@ -407,21 +496,102 @@ html {
     cursor: pointer;
 }
 
-/* Keyboard focus on a village tile: a ring inside the hex (the tile is clipped to it, so an outline
-   wouldn't show) */
+/* Keyboard focus on a village tile: its outline (below), as on the market */
 .kf_village_map .kf_tile:focus-visible {
     outline: none;
-    box-shadow: inset 0 0 0 4px #1d5ea8;
 }
 
 /* The outline follows the hex, since the tile inside is clipped to it */
 .kf_lot_tile.kf_selectable {
     cursor: pointer;
-    filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 2px #1a73e8);
 }
 
-.kf_lot_tile.kf_selected {
-    filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #1a73e8) drop-shadow(0 0 3px #1a73e8);
+/* The line around a tile you can choose, or have chosen (hexmark.ts), as in the mockup: blue over a
+   white edge, on the hex's edge, 3px (6px chosen) at any tile size */
+.kf_hexmark {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    --kf-mark-w: 3px;
+}
+
+.kf_hexmark.kf_selected {
+    --kf-mark-w: 6px;
+}
+
+/* Shown on hover (mouse), on keyboard focus (dark, as focus is everywhere) and on the chosen tile only, as
+   in the mockup: most tiles can be chosen on your turn, and the others show their rules, so a line on
+   all of them said little */
+.kf_hexmark:not(.kf_selected) {
+    opacity: 0;
+}
+
+@media (hover: hover) {
+    .kf_lot_tile:hover .kf_hexmark {
+        opacity: 1;
+    }
+}
+
+.kf_lot_tile:focus-visible {
+    outline: none;
+}
+
+.kf_lot_tile:focus-visible .kf_hexmark {
+    opacity: 1;
+}
+
+.kf_lot_tile:focus-visible .kf_hexmark_line {
+    stroke: #1f2328;
+}
+
+.kf_hexmark polygon {
+    fill: none;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+}
+
+.kf_hexmark_under {
+    stroke: #fff;
+    stroke-width: calc(var(--kf-mark-w) + 3px);
+}
+
+.kf_hexmark_line {
+    stroke: #1d5ea8;
+    stroke-width: var(--kf-mark-w);
+}
+
+/* The season in the status bar: a line in its color along the bottom, as in the mockup (its name is in
+   the market's heading) */
+#overall-content #page-title[data-kf-season] {
+    box-shadow: inset 0 -4px 0 var(--kf-season-color);
+}
+#page-title[data-kf-season="spring"] { --kf-season-color: #86a645; }
+#page-title[data-kf-season="summer"] { --kf-season-color: #d3c960; }
+#page-title[data-kf-season="fall"] { --kf-season-color: #b6783f; }
+#page-title[data-kf-season="winter"] { --kf-season-color: #a9cde4; }
+
+/* "Summer market" over the market, after the season's icon, in line with the "Boats" label */
+.kf_market_title {
+    display: flex;
+    flex-basis: 100%;
+    align-items: center;
+    gap: 6px;
+    min-height: 22px;
+    margin: 0 0 6px;
+    padding-inline: 22px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.kf_market_title .kf_season_icon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    margin: 0;
 }
 
 /* A bid along an edge: centred on the edge's midpoint, pushed outwards, turned along the edge */
@@ -522,6 +692,7 @@ html {
 
 .kf_village_map .kf_tile_mark {
     position: absolute;
+    z-index: 1;   /* over the neighbouring tiles, which the line overlaps */
     left: calc(var(--kf-col) * var(--kf-col-step) * var(--kf-tile-w));
     top: calc(var(--kf-row) * var(--kf-row-step) * var(--kf-tile-h));
     width: var(--kf-tile-w);
@@ -529,14 +700,19 @@ html {
     pointer-events: none;
 }
 
-/* As on the market (and the mockup): no line on tiles you can use, only on the chosen one, 6px blue
-   #1d5ea8 over a white edge, just inside the hex (the mark is the tile's size) */
-.kf_village_map .kf_tile_mark:not(.kf_selected) {
-    display: none;
+/* The same line as on the market (hexmark.ts): on hover, on keyboard focus (dark) and on the chosen tile */
+@media (hover: hover) {
+    .kf_village_map .kf_tile:hover + .kf_tile_mark .kf_hexmark {
+        opacity: 1;
+    }
 }
 
-.kf_village_map .kf_tile_mark.kf_selected {
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='26,4 74,4 97,50 74,96 26,96 3,50' fill='none' stroke='%23fff' stroke-width='9' stroke-linejoin='round' vector-effect='non-scaling-stroke'/%3E%3Cpolygon points='26,4 74,4 97,50 74,96 26,96 3,50' fill='none' stroke='%231d5ea8' stroke-width='6' stroke-linejoin='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+.kf_village_map .kf_tile:focus-visible + .kf_tile_mark .kf_hexmark {
+    opacity: 1;
+}
+
+.kf_village_map .kf_tile:focus-visible + .kf_tile_mark .kf_hexmark_line {
+    stroke: #1f2328;
 }
 
 /* In a village the rows are a layer of their own over the tile, so they don't turn with it */
@@ -1288,12 +1464,14 @@ html {
 }
 
 /* A tile's rules (the Rules button's dialog): the tile large, its rules beside it, under it on phones */
+/* The tile at its art's full resolution (256px wide in tiles-large.jpg): sharp on standard screens,
+   and larger would only blur it. Sharper or larger needs higher-resolution art */
 .kf_rules_dialog {
     display: flex;
     align-items: flex-start;
     gap: 20px;
-    max-width: 560px;
-    --kf-tile-w: 192px;
+    max-width: 640px;
+    --kf-tile-w: 256px;
     --kf-tile-h: calc(var(--kf-tile-w) * 0.875);
 }
 
@@ -1305,7 +1483,7 @@ html {
     flex-direction: column;
     align-items: center;
     gap: 16px;
-    --kf-tile-w: 160px;
+    --kf-tile-w: min(256px, calc(100vw - 48px));   /* as wide as the dialog allows, up to the art's 256px */
 }
 
 /* The rules themselves: one item per part (what it does, upgrade, scoring, notes), divided by thin
@@ -1337,6 +1515,14 @@ html {
 .kf_icon_resource[data-kf-kind="stone"] { background-position: 25% 0; }
 .kf_icon_resource[data-kf-kind="wood"] { background-position: 50% 0; }
 .kf_icon_resource[data-kf-kind="gold"] { background-position: 75% 0; }
+
+/* In the picker's "Take" choices (Workshop): 24px, like the tools beside them */
+.kf_pick_choice .kf_icon_resource {
+    display: inline-block;
+    flex: none;
+    width: 24px;
+    height: 24px;
+}
 
 /* Tools from the game's sprite, drawn at 32px, scaled to the text */
 .kf_with_icon > .kf_icon_tool {

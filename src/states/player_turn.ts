@@ -561,7 +561,7 @@ export class PlayerTurnState extends BaseState {
                 p.payWith, v => { p.payWith = v as SkillType; });
         }
         if (this.needsResource(p.tileId)) {
-            row(_('Take'), BASIC_RESOURCES.map(r => ({ key: `res:${r}`, value: r, content: [this.translations.resource(r)], label: fill(_('Take 1 ${resource}'), { resource: this.translations.resource(r) }) })),
+            row(_('Take'), BASIC_RESOURCES.map(r => ({ key: `res:${r}`, value: r, content: [Html.span({ classes: 'kf_icon_resource', attrs: { 'data-kf-kind': r, 'aria-hidden': 'true' } }), this.translations.resource(r)], label: fill(_('Take 1 ${resource}'), { resource: this.translations.resource(r) }) })),
                 p.resource, v => { p.resource = v as ResourceType; });
         }
         return out;

@@ -1,6 +1,7 @@
 import { KFGameDatas, KFPlayer, MarketLot, Worker, WorkerColor } from "../kfdata";
 import { BaseComponent } from "../libs/basecomponent";
 import { Html } from "../libs/html";
+import { hexMark } from "../libs/hexmark";
 import { MoreAnimations } from "../libs/more-animations";
 import { activationRows, activationSummary } from "./activations";
 import { TranslationComponent } from "./translation";
@@ -48,10 +49,19 @@ export class MarketComponent extends BaseComponent<MarketLot> {
     }
 
     public setup(): HTMLElement {
-        // A named region, so screen readers can jump to it
-        return Html.div({ id: 'kf_market', attrs: { role: 'region', 'aria-label': _('Market') } },
+        // A named region (by its heading), so screen readers can jump to it
+        return Html.div({ id: 'kf_market', attrs: { role: 'region', 'aria-labelledby': 'kf_market_title' } },
+            this.titleDiv(),
             ...this.bga.gameui.gamedatas.market.map(mt => this.lotDiv(mt))
         );
+    }
+
+    /** "Summer market", after the season's icon, as in the mockup (the season the page loaded in). */
+    private titleDiv(): HTMLElement {
+        const season = this.bga.gameui.gamedatas.season;
+        return Html.div({ id: 'kf_market_title', classes: 'kf_market_title', attrs: { role: 'heading', 'aria-level': 2 } },
+            Html.span({ classes: 'kf_season_icon', attrs: { 'data-kf-season': season, 'aria-hidden': 'true' } }),
+            _('${season} market').replace('${season}', this.translations.season(season)));
     }
 
     public tile(tileId: number): MarketLot | undefined {
@@ -206,6 +216,8 @@ export class MarketComponent extends BaseComponent<MarketLot> {
             },
             Html.div({ id: `kf_tile_${mt.id}`, classes: 'kf_tile', attrs: { 'data-kf-tile': mt.tiletype }, title: this.translations.tileName(mt.tiletype) }),
             activationRows(mt.activations),
+            // The line around the tile: on hover and keyboard focus, and thicker once chosen (the CSS shows it)
+            hexMark(this.selected == mt.id),
         );
         tileButton.addEventListener('click', () => {
             if (this.selectable.has(mt.id)) {

@@ -1,6 +1,7 @@
 import { KFGameDatas, KFPlayer, Village, VillageTile, Worker } from "../kfdata";
 import { BaseComponent } from "../libs/basecomponent";
 import { Html } from "../libs/html";
+import { hexMark } from "../libs/hexmark";
 import { MoreAnimations } from "../libs/more-animations";
 import { RowCol } from "../rowcol";
 import { activationRows, activationSummary } from "./activations";
@@ -34,11 +35,10 @@ export class VillageComponent extends BaseComponent<any> {
     }
 
     /**
-     * Tiles that can be chosen act as buttons, and get an outline in a layer of its own over them (the
-     * tile itself is clipped to its hex, which would cut a glow off), like the market's tiles.
+     * Tiles that can be chosen act as buttons and say whether they're chosen; the chosen one keeps its
+     * outline (in a layer of its own over the tile, which is clipped to its hex), as on the market.
      */
     private refreshMarks(): void {
-        document.querySelectorAll('.kf_village_map .kf_tile_mark').forEach(m => m.remove());
         Object.values(this.bga.gameui.gamedatas.villages).flatMap(v => v.tiles).forEach(t => {
             const el = document.getElementById(`kf_tile_${t.tile_id}`);
             if (!el) { return; }
@@ -55,21 +55,24 @@ export class VillageComponent extends BaseComponent<any> {
                 el.removeAttribute('aria-pressed');
                 el.setAttribute('aria-haspopup', 'dialog');
             }
-            if (can || chosen) {
-                el.after(Html.div({
-                    classes: ['kf_tile_mark', chosen ? 'kf_selected' : ''],
-                    attrs: { 'aria-hidden': 'true' },
-                    style: [`--kf-row: ${el.style.getPropertyValue('--kf-row')}`, `--kf-col: ${el.style.getPropertyValue('--kf-col')}`],
-                }));
-            }
+            document.querySelector(`#kf_mark_${t.tile_id} .kf_hexmark`)?.classList.toggle('kf_selected', chosen);
         });
     }
 
+    /**
+     * Yours (when playing) and the others', each in a wrapper: on a wide screen yours goes beside the
+     * market and the others below (the CSS lays it out); narrower, the wrappers don't count and the
+     * villages flow one after the other, yours first.
+     */
     public setup(): HTMLElement {
         const gamedatas = this.bga.gameui.gamedatas;
+        const order = this.playerOrder(gamedatas);
+        const me = this.bga.players.getCurrentPlayerId();
+        const mine = order.includes(me) ? me : null;
+        const div = (pid: number) => this.villageDiv(gamedatas.villages[pid]!, gamedatas.players[pid]!);
         return Html.div({ id: 'kf_villages' },
-            ...this.playerOrder(gamedatas).map(pid => this.villageDiv(gamedatas.villages[pid]!, gamedatas.players[pid]!))
-        );
+            Html.div({ classes: 'kf_villages_mine' }, ...(mine != null ? [div(mine)] : [])),
+            Html.div({ classes: 'kf_villages_others' }, ...order.filter(pid => pid != mine).map(div)));
     }
 
     /** Player ids starting with the current player, if playing, then around the table. */
@@ -94,8 +97,12 @@ export class VillageComponent extends BaseComponent<any> {
                 attrs: { 'data-kf-player': String(village.player_id), role: 'region', 'aria-labelledby': `kf_village_name_${village.player_id}` },
                 style: `--kf-player-color: #${player.color}`,
             },
-            // A heading, so screen readers can jump from village to village; it names the village's region
-            Html.div({ id: `kf_village_name_${village.player_id}`, classes: 'kf_village_name', text: player.name, attrs: { role: 'heading', 'aria-level': 3 } }),
+            // A heading, so screen readers can jump from village to village (it names the village's region),
+            // with the player's avatar, their name, and "(you)" on yours, as in the mockup
+            Html.div({ id: `kf_village_name_${village.player_id}`, classes: 'kf_village_name', attrs: { role: 'heading', 'aria-level': 3 } },
+                Html.img({ classes: 'kf_avatar', attrs: { src: this.bga.players.getPlayerAvatarUrl(village.player_id, 32), alt: '' } }),
+                Html.span({ text: player.name }),
+                village.player_id == this.bga.players.getCurrentPlayerId() ? Html.span({ classes: 'kf_village_you', text: _('(you)') }) : undefined),
             // The map scrolls sideways when the village is wider than the screen (phones); the name stays.
             Html.div({ classes: 'kf_village_scroll' },
                 Html.div({
@@ -113,12 +120,15 @@ export class VillageComponent extends BaseComponent<any> {
      * so they stay upright while the tile turns to its orientation.
      */
     private tileDivs(tile: VillageTile, row: number, col: number): HTMLElement[] {
+        // The outline, right after the tile (the CSS shows it on hover and focus of the tile before it)
+        const mark = Html.div({ id: `kf_mark_${tile.tile_id}`, classes: 'kf_tile_mark', attrs: { 'aria-hidden': 'true' },
+            style: [`--kf-row: ${row}`, `--kf-col: ${col}`] }, hexMark(false));
         const uses = activationRows(tile.activations);
         if (uses) {
             uses.id = `kf_uses_${tile.tile_id}`;
             uses.style.cssText = `--kf-row: ${row}; --kf-col: ${col}`;
         }
-        return uses ? [this.tileDiv(tile, row, col), uses] : [this.tileDiv(tile, row, col)];
+        return uses ? [this.tileDiv(tile, row, col), mark, uses] : [this.tileDiv(tile, row, col), mark];
     }
 
     /** The village tile with this id, in anyone's village. */
@@ -136,7 +146,7 @@ export class VillageComponent extends BaseComponent<any> {
         uses.id = `kf_uses_${tileId}`;
         uses.style.cssText = `--kf-row: ${tileEl.style.getPropertyValue('--kf-row')}; --kf-col: ${tileEl.style.getPropertyValue('--kf-col')}`;
         const old = document.getElementById(uses.id);
-        if (old) { old.replaceWith(uses); } else { tileEl.after(uses); }
+        if (old) { old.replaceWith(uses); } else { (document.getElementById(`kf_mark_${tileId}`) ?? tileEl).after(uses); }
     }
 
     /** Animates the newest use on a village tile from where its workers came from. */

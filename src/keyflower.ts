@@ -65,6 +65,16 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
         this.bga.gameArea.getElement().appendChild(mainElem);
         this.panelsComponent.setup();
         this.showRulesOnTap(mainElem);
+        this.showSeason(gamedatas.season);
+    }
+
+    /**
+     * A line in the season's color along the status bar's bottom, as in the mockup. The season is named
+     * once, in the market's heading. The season the page loaded in, like that heading.
+     */
+    private showSeason(season: KFGameDatas['season']): void {
+        const bar = document.getElementById('page-title');
+        if (bar) { bar.dataset['kfSeason'] = season; }
     }
 
     /**
