@@ -100,8 +100,8 @@ class PlayerTurn extends AbstractState {
                 $activationInfo[] = $ai;
             }
         }
-        foreach ($model->allData()->villages as $village) {
-            foreach ($village->tiles() as $tile) {
+        foreach ($model->allData()->villages as $v) {
+            foreach ($v->tiles() as $tile) {
                 $ai = $this->activateableInfo($village, $moveableBids, $tile, $hasBoat4b);
                 if ($ai) {
                     $activationInfo[] = $ai;

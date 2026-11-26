@@ -172,7 +172,7 @@ class Village {
 
     /**
      * @param VillageTile|MarketLot $tile
-     * @param array<int,WorkerGroup> $moveableBids  keyed by tile_id, though not used at present
+     * @param list<WorkerGroup> $moveableBids  keyed by tile_id, though not used at present
      */
     public function canActivate(mixed $tile, array $moveableBids): bool {
         $hasBoat4b = $this->hasTileType(TileType::BOAT4B);
@@ -218,7 +218,7 @@ class Village {
         }
         // TODO: keep track that we might need to take a worker.
 
-        $bidCombos = Arrays::powerset(array_values($moveableBids));
+        $bidCombos = Arrays::powerset($moveableBids);
         foreach ($bidCombos as $bidCombo) {
             $size = 0;
             $color = WorkerColor::NONE;
