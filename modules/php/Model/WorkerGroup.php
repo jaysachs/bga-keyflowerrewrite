@@ -56,16 +56,9 @@ class WorkerGroup implements Marshalable {
      * @return WorkerColor color, NONE if no workers, ANY if multiple colors
      */
     public function color(): WorkerColor {
-        // FIXME: return ANY if no workers?
         $color = WorkerColor::NONE;
         foreach ($this->workers as $worker) {
-            if ($color === WorkerColor::NONE) {
-                $color = $worker->color;
-            }
-            else if ($color != $worker->color) {
-                // FIXME: null means "multiple" ... is that ok?
-                return WorkerColor::ANY;
-            }
+            $color = $color->plus($worker->color);
         }
         return $color;
     }
@@ -85,7 +78,7 @@ class WorkerGroup implements Marshalable {
                 break;
             }
             $worker = $this->workers[$id];
-            if ($worker->color == $color || $color == WorkerColor::ANY) {
+            if ($worker->color->matches($color)) {
                 $n--;
                 $result->add($worker);
             }
@@ -94,6 +87,14 @@ class WorkerGroup implements Marshalable {
             unset($this->workers[$w->id]);
         }
         return $result;
+    }
+
+    public function matching(WorkerColor $color): WorkerGroup {
+        return WorkerGroup::of(... array_filter($this->workers, fn ($w) => $color->matches($w->color)));
+    }
+
+    public function hasMatching(WorkerColor $color): bool {
+        return array_find($this->workers, fn ($w) => $w->color->matches($color)) !== null;
     }
 
     public function takeWorkerById(int $id): Worker {
@@ -119,9 +120,7 @@ class WorkerGroup implements Marshalable {
         $this->workers[$worker->id] = $worker;
     }
 
-    /* does not mutate this */
     public function addGroup(WorkerGroup $other): void {
-        // TODO: take them out of the other one?
         foreach ($other->workers as $w) {
             $this->add($w);
         }

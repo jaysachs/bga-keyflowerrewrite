@@ -32,12 +32,40 @@ enum SkillType: string {
     case ANVIL = "anvil";
     case PICKAXE = "pickaxe";
     case SAW = "saw";
+    case ANY = "any";
+    case NONE = "none";
 
-   public function translatedName(): string {
+    public function isConcrete(): bool {
+        return match ($this) {
+            self::ANY, self::NONE => false,
+            default => true
+        };
+    }
+
+    /** @return list<SkillType> */
+    public static function concreteCases(): array {
+        return array_values(array_filter(self::cases(), fn (SkillType $s) => $s->isConcrete()));
+    }
+
+    // "satisfies"
+    public function matches(SkillType $other): bool {
+        // FIXME: think about the right semantics for ANY and NONE
+        if (!$this->isConcrete()) {
+            return false;
+        }
+        if ($other === self::ANY || $other == self::NONE) {
+            return true;
+        }
+        return $this === $other;
+    }
+
+    public function translatedName(): string {
         return match ($this) {
             SkillType::ANVIL => clienttranslate("anvil"),
             SkillType::PICKAXE => clienttranslate("pickaxe"),
             SkillType::SAW => clienttranslate("saw"),
+            SkillType::ANY => "",
+            SkillType::NONE => "",
         };
     }
 }

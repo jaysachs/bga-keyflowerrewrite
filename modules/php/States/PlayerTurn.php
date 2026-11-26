@@ -39,8 +39,10 @@ use Bga\Games\keyflowerrewrite\Model\MovedBid;
 use Bga\Games\keyflowerrewrite\Model\ProductionActivations;
 use Bga\Games\keyflowerrewrite\Model\ResourceType;
 use Bga\Games\keyflowerrewrite\Model\TileType;
+use Bga\Games\keyflowerrewrite\Model\Village;
 use Bga\Games\keyflowerrewrite\Model\VillageTile;
 use Bga\Games\keyflowerrewrite\Model\WorkerColor;
+use Bga\Games\keyflowerrewrite\Model\WorkerGroup;
 
 class PlayerTurn extends AbstractState {
     public function __construct(Game $game)
@@ -56,23 +58,21 @@ class PlayerTurn extends AbstractState {
 
     /**
      * @param VillageTile|MarketLot $tile
+     * @param list<WorkerGroup> $moveableBids
      * @return array<string,mixed>
      */
-    private function activateableInfo( mixed $tile, bool $hasBoat4b): ?array {
-        $bc = $tile->currentColor();
-        $a = $tile->productionActivations();
-        if ($tile->type->activationReward() == ActivationReward::NONE || !$a->isActivatable()) {
+    private function activateableInfo(Village $village, array $moveableBids, mixed $tile, bool $hasBoat4b): ?array {
+        if (!$village->canActivate($tile, $moveableBids)) {
             return null;
         }
-        $cost = $tile->type->activationCost();
-        // FIXME: filter out if player can't afford the cost?
+        $a = $tile->productionActivations();
         return [
             "must_match" => !$hasBoat4b,
             "tile_id" => $tile->tile_id,
-            "color" => $bc->marshal(),
+            "color" => $tile->currentColor()->marshal(),
             "min" => $a->minRequiredToActivate(),
-            "max" => $a->maxAllowededToActivate(),
-            "cost" => $cost->value,
+            "max" => $a->maxAllowedToActivate(),
+            "cost" => $tile->type->activationCost()->value,
         ];
     }
 
@@ -86,20 +86,23 @@ class PlayerTurn extends AbstractState {
             (4) TODO: also include the color/size of the player's current bid?
         */
         $model = $this->createModel($active_player_id);
-        $hasBoat4a = $model->village()->hasTileType(TileType::BOAT4A);
-        $hasBoat4b = $model->village()->hasTileType(TileType::BOAT4B);
+        $village = $model->village();
+        $hasBoat4a = $village->hasTileType(TileType::BOAT4A);
+        $hasBoat4b = $village->hasTileType(TileType::BOAT4B);
+        /** @var list<WorkerGroup> */
+        $moveableBids = $model->market()->losingBidsFor($active_player_id);
 
         /** @var array<array<string,mixed>> */
         $activationInfo = [];
         foreach ($model->market()->lots() as $tile) {
-            $ai = $this->activateableInfo($tile, $hasBoat4b);
+            $ai = $this->activateableInfo($village, $moveableBids, $tile, $hasBoat4b);
             if ($ai) {
                 $activationInfo[] = $ai;
             }
         }
-        foreach ($model->allData()->villages as $pid => $village) {
-            foreach ($village->tiles() as $tile) {
-                $ai = $this->activateableInfo($tile, $hasBoat4b);
+        foreach ($model->allData()->villages as $v) {
+            foreach ($v->tiles() as $tile) {
+                $ai = $this->activateableInfo($village, $moveableBids, $tile, $hasBoat4b);
                 if ($ai) {
                     $activationInfo[] = $ai;
                 }

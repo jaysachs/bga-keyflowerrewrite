@@ -33,7 +33,8 @@ enum WorkerColor: string implements Marshalable {
     case RED = "red";
     case YELLOW = "yellow";
     case GREEN = "green";
-    case ANY = "any";
+    case ONE = "one";
+    case MANY = "many";
     case NONE = "none";
 
     public function translatedName(): string {
@@ -42,26 +43,67 @@ enum WorkerColor: string implements Marshalable {
             self::RED => clienttranslate("red"),
             self::YELLOW => clienttranslate("yellow"),
             self::GREEN => clienttranslate("green"),
-            self::ANY => clienttranslate("any"),
+            self::ONE => clienttranslate("one"),
+            self::MANY => clienttranslate("many"),
             self::NONE => clienttranslate("none"),
         };
     }
 
     public function isConcrete(): bool {
         return match ($this) {
-            self::BLUE, self::RED, self::YELLOW, self::GREEN => true,
-            default => false
+            self::ONE, self::MANY, self::NONE => false,
+            default => true
         };
     }
 
     /** @return list<WorkerColor> */
     public static function concreteCases(): array {
-        return [self::BLUE, self::RED, self::YELLOW, self::GREEN];
+        return array_values(array_filter(self::cases(), fn (WorkerColor $s) => $s->isConcrete()));
+    }
+
+    // "satisfies"
+    public function matches(WorkerColor $other): bool {
+        // FIXME: think about the right semantics for ANY and NONE
+        if ($this === self::NONE) {
+            return true;
+        }
+        if (!$this->isConcrete()) {
+            return false;
+        }
+        if ($other === self::ONE || $other === self::NONE) {
+            return true;
+        }
+        return $this === $other;
+    }
+
+    // FIXME: not clear how to handle non-concrete ones
+    public function plus(WorkerColor $other): WorkerColor {
+        if ($this->isConcrete()) {
+            if ($other === $this) {
+                return $this;
+            }
+            if ($other->isConcrete()) {
+                return WorkerColor::MANY;
+            }
+            if ($other === WorkerColor::ONE || $other === WorkerColor::NONE) {
+                return $this;
+            }
+            // if ($other == WorkerColor::MANY) {
+            return $other;
+        }
+        if ($this === WorkerColor::NONE) {
+            return $other;
+        }
+        if ($this == WorkerColor::MANY) {
+            return $this;
+        }
+        // $this == WorkerColor::ONE
+        return $other;
     }
 
     public function marshal(): ?string {
         return match ($this) {
-            self::ANY,self::NONE => null,
+            self::ONE, self::MANY,self::NONE => null,
             default => $this->value
         };
     }

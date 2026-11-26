@@ -87,6 +87,19 @@ class Market implements Marshalable {
         return $this->lots;
     }
 
+    /** @return list<WorkerGroup> */
+    public function losingBidsFor(int $playerId): array {
+        $result = [];
+        foreach ($this->lots as $lot) {
+            if ($lot->hasNonWinningBid($playerId)) {
+                /** @var WorkerGroup */
+                $bid = $lot->bidBy($playerId);
+                $result[] = $bid;
+            }
+        }
+        return $result;
+    }
+
     /**
      * @return array<array<string,mixed>>
      */

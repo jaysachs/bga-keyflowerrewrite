@@ -73,6 +73,10 @@ class SkillSet implements Marshalable {
         return $ss;
     }
 
+    public function hasMatching(SkillType $type): bool {
+        return array_find($this->skills, fn ($sk) => $type->matches($sk->type)) !== null;
+    }
+
     public static function of(Skill... $ws): SkillSet {
         return new SkillSet($ws);
     }

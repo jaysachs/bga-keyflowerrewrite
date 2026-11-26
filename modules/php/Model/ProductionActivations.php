@@ -33,7 +33,7 @@ class ProductionActivations implements Marshalable {
     private const MAX_WORKERS = 6;
 
     /** @param list<WorkerGroup>  $activations */
-    public function __construct(private array $activations = []) { }
+    public function __construct(private TileType $tile_type, private array $activations = []) { }
 
     /** @return list<WorkerGroup> */
     public function activations(): array { return $this->activations; }
@@ -71,14 +71,15 @@ class ProductionActivations implements Marshalable {
     }
 
     public function isActivatable(): bool {
-        return $this->maxAllowededToActivate() >= $this->minRequiredToActivate();
+        return $this->tile_type->activationReward() !== ActivationReward::NONE
+            && $this->maxAllowedToActivate() >= $this->minRequiredToActivate();
     }
 
     public function minRequiredToActivate(): int {
         return ($this->mostRecent()?->size() ?? 0) + 1;
     }
 
-    public function maxAllowededToActivate(): int {
+    public function maxAllowedToActivate(): int {
         return self::MAX_WORKERS - $this->totalWorkers();
     }
 

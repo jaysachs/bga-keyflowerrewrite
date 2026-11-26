@@ -57,35 +57,24 @@ class WorkerStock {
         for ($i = 0; $i < 20; ++$i) {
             $result->greens->add(new Worker(++$lastId, WorkerColor::GREEN));
         }
-        $result->validate();
         return $result;
-    }
-
-    private function validate(): void {
-        $allIds = array_merge(
-            array_map(fn (Worker $w) => $w->id, $this->greens->allItems()),
-            array_map(fn (Worker $w) => $w->id, $this->bag->allItems()));
-        if (count($allIds) != count(array_unique($allIds))) {
-            throw new InvalidArgumentException("duplicate worker added");
-        };
-        foreach ($this->greens->allItems() as $green) {
-            if ($green->color != WorkerColor::GREEN) {
-                throw new InvalidArgumentException("green workers should be green but found {$green->color->value}");
-            }
-        }
     }
 
     public function putGreen(Worker $worker): void {
         if ($worker->color != WorkerColor::GREEN) {
             throw new InvalidArgumentException("Only green workers go in green supply");
         }
+        if ($this->bag->workerById($worker->id)) {
+            throw new InvalidArgumentException("Worker {$worker->id} already in bag");
+        }
         $this->greens->add($worker);
-        $this->validate();
     }
 
     public function putInBag(Worker $worker): void {
+        if ($this->greens->workerById($worker->id)) {
+            throw new InvalidArgumentException("Worker {$worker->id} already in greens");
+        }
         $this->bag->add($worker);
-        $this->validate();
     }
 
     public function takeGreens(int $n): WorkerGroup {
@@ -93,7 +82,7 @@ class WorkerStock {
     }
 
     public function takeFromBag(int $n): WorkerGroup {
-        return $this->bag->takeNWorkersOfColor($n, WorkerColor::ANY);
+        return $this->bag->takeNWorkersOfColor($n, WorkerColor::ONE);
     }
 
     public function bagSize(): int {

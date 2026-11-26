@@ -27,6 +27,8 @@ declare(strict_types=1);
 
 namespace Bga\Games\keyflowerrewrite\Model;
 
+use Bga\Games\keyflowerrewrite\Utils\Arrays;
+use Bga\Games\keyflowerrewrite\Utils\Log;
 use InvalidArgumentException;
 
 class Village {
@@ -166,5 +168,92 @@ class Village {
             $result['skills'] = $this->skills->marshal();
         }
         return $result;
+    }
+
+    /**
+     * @param VillageTile|MarketLot $tile
+     * @param list<WorkerGroup> $moveableBids  keyed by tile_id, though not used at present
+     */
+    public function canActivate(mixed $tile, array $moveableBids): bool {
+        $hasBoat4b = $this->hasTileType(TileType::BOAT4B);
+        $pa = $tile->productionActivations();
+        if (!$pa->isActivatable()) {
+            return false;
+        }
+        $currentColor = $tile->currentColor();
+        $cost = $tile->type->activationCost();
+        $requiredWorkerColor = WorkerColor::NONE;
+        $requiredSkill = null;
+        switch ($cost) {
+            case ActivationCost::SKILL_ANVIL:
+                $requiredSkill = SkillType::ANVIL;
+                break;
+            case ActivationCost::SKILL_SAW:
+                $requiredSkill = SkillType::SAW;
+                break;
+            case ActivationCost::SKILL_PICKAXE:
+                $requiredSkill = SkillType::PICKAXE;
+                break;
+            case ActivationCost::SKILL_ANY:
+                $requiredSkill = SkillType::ANY;
+                break;
+            case ActivationCost::WORKER_BLUE:
+                $requiredWorkerColor = WorkerColor::BLUE;
+                break;
+            case ActivationCost::WORKER_RED:
+                $requiredWorkerColor = WorkerColor::RED;
+                break;
+            case ActivationCost::WORKER_YELLOW:
+                $requiredWorkerColor = WorkerColor::YELLOW;
+                break;
+            case ActivationCost::WORKER_ANY:
+                $requiredWorkerColor = WorkerColor::ONE;
+                break;
+        }
+        if ($requiredSkill !== null && !$this->skills->hasMatching($requiredSkill)) {
+            return false;
+        }
+        if ($requiredWorkerColor !== WorkerColor::NONE && !$this->workers->hasMatching($requiredWorkerColor)) {
+            return false;
+        }
+        // TODO: keep track that we might need to take a worker.
+
+        $bidCombos = Arrays::powerset($moveableBids);
+        foreach ($bidCombos as $bidCombo) {
+            $size = 0;
+            $color = WorkerColor::NONE;
+            foreach ($bidCombo as $bid) {
+                $size += $bid->size();
+                $color = $color->plus($bid->color());
+            }
+            if (!$color->matches($currentColor)) {
+                if (! $hasBoat4b) {
+                    continue;
+                }
+            }
+
+            if ($size > $pa->maxAllowedToActivate()) {
+                continue;
+            }
+            $stock = WorkerGroup::of(... $this->workers->allItems());
+            // if specific color required to pay, remove it here
+            if ($requiredWorkerColor->isConcrete()) {
+                if ($stock->takeNWorkersOfColor(1, $requiredWorkerColor)->isEmpty()) {
+                    continue;
+                }
+            }
+            $matchingStockCount = $stock->matching($currentColor)->size();
+            // check for "any" worker after grabbing matching
+            if ($requiredWorkerColor === WorkerColor::ONE) {
+                if ($matchingStockCount === $stock->size()) {
+                    $matchingStockCount--;
+                }
+            }
+            if ($size + $matchingStockCount < $pa->minRequiredToActivate()) {
+                continue;
+            }
+            return true;
+        }
+        return false;
     }
 }

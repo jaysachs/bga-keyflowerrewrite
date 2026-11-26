@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use PHPUnit\Framework\TestCase;
-
 use Bga\Games\keyflowerrewrite\Model\{
     ActivationPayment,
     ActivationResult,
@@ -21,7 +19,6 @@ use Bga\Games\keyflowerrewrite\Model\{
     RowCol,
     Season,
     SkillSet,
-    TilesStock,
     TileType,
     Village,
     VillageTile,
@@ -29,7 +26,6 @@ use Bga\Games\keyflowerrewrite\Model\{
     WorkerColor,
     WorkerGroup
 };
-use Bga\Games\keyflowerrewrite\Utils\Log;
 
 class TestStore implements PersistentStore {
     public int $passes = 0;

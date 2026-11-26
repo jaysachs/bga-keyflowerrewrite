@@ -36,12 +36,13 @@ class MarketLot {
     public function __construct(
         public readonly int $tile_id,
         public TileType $type,
-        private array $bids = [],
-        private ProductionActivations $productionActivations = new ProductionActivations()) {
+        private array $bids = []) {
+        $this->productionActivations = new ProductionActivations($type);
         // validate we have no bids, or a single high bid.
         $this->highBid();
     }
 
+    private ProductionActivations $productionActivations;
     public static function fromStock(StockTile $st): MarketLot {
         return new MarketLot($st->tile_id, $st->type);
     }
