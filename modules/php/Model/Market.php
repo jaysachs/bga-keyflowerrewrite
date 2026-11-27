@@ -30,7 +30,7 @@ namespace Bga\Games\keyflowerrewrite\Model;
 use InvalidArgumentException;
 
 class Market implements Marshalable {
-    /** @var array<int,MarketLot> */
+    /** @var list<MarketLot> */
     private array $lots = [];
     public function __construct() {
         $this->validate();
@@ -77,9 +77,20 @@ class Market implements Marshalable {
         $this->validate();
     }
 
-    public function removeUnbidLots(): void {
-        // FIXME: do we remove all unbid tiles winter? do we pass in session to tell if we remove the turnOrder tiles?
-        $this->lots = array_filter($this->lots, fn (MarketLot $lot) => $lot->type->isTurnOrder() || $lot->highBid()->size() > 0);
+    /** @return list<MarketLot> lot ids discarded */
+    public function removeUnbidLots(): array {
+        $result = [];
+        $keep = [];
+        foreach ($this->lots as $lot) {
+            if ($lot->type->isTurnOrder() || $lot->highBid()->size() > 0) {
+                $keep[] = $lot;
+            }
+            else {
+                $result[] = $lot;
+            }
+        }
+        $this->lots = $keep;
+        return $result;
     }
 
     /** @return array<int,MarketLot>  keyed by position */

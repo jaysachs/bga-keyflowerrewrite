@@ -394,6 +394,101 @@ class Model {
         return new ActivationResult($t, $result, $activatingWorkerGroup, $activationInfo["movedBids"], $destTile);
     }
 
+
+        /** @return array<int,list<int>> lot_id x player_ids */
+    private function returnLosingBids(): array {
+        /** @var array<int,list<int>> lot_id x player_ids */
+        $result = [];
+        foreach ($this->market()->lots() as $lot) {
+            $pids = [];
+            $losingBids = $lot->removeLosingBids();
+            foreach ($losingBids as $pid => $bid) {
+                $pids[] = $pid;
+                $this->allData()->villages[$pid]->addWorkerGroup($bid);
+            }
+            $result[$lot->tile_id] = $pids;
+        }
+        return $result;
+    }
+
+    /** @return list<MarketLot> discarded lot IDs */
+    private function discardUnbidLots(): array {
+        $lots = $this->market()->removeUnbidLots();
+        foreach ($lots as $lot) {
+            $pa = $lot->productionActivations();
+            foreach ($pa->activations() as $activation) {
+                $this->allData()->workerStock->putAllInBag($activation);
+            }
+        }
+        return $lots;
+    }
+
+    /**
+     * returns:
+     *   awarded: array<int,int> lot_id x player_id of awarded tiles
+     *      -- that's sufficient for client to return winning bids to bag
+     *      -- and to know which player got each tile
+     *      -- and to know which player to give all workers on the tile
+     *  @return array<int,int>
+     */
+    private function awardWonTiles(): array {
+        $result = [];
+        foreach ($this->market()->lots() as $lot) {
+            if ($lot->type->isTurnOrder()) {
+                continue;
+            }
+            $winningPlayerId = $lot->winningPlayerId();
+            $result[$lot->tile_id] = $winningPlayerId;
+            $winningBid = $lot->highBid();
+            $this->allData()->workerStock->putAllInBag($winningBid);
+            $village = $this->allData()->villages[$winningPlayerId];
+            $village->addWonTile(new StockTile($lot->tile_id, $lot->type));
+            $pa = $lot->productionActivations();
+            foreach ($pa->activations() as $activation) {
+                $village->addWorkerGroup($activation->takeNWorkersOfColor(100, WorkerColor::MANY));
+            }
+            $lot->removeAllBids();
+        }
+        return $result;
+    }
+
+    /**
+     * @return array<int,list<int>> playerId x village tile IDs with workers to reclaim
+     */
+    private function collectVillageWorkers(): array {
+        $result = [];
+        foreach ($this->allData()->villages as $pid => $village) {
+            $result[$pid] = [];
+            foreach ($village->tiles() as $tile) {
+                $pa = $tile->productionActivations();
+                foreach ($pa->activations() as $activation) {
+                    $village->addWorkerGroup($activation->takeNWorkersOfColor(100, WorkerColor::MANY));
+                }
+                if (count($pa->activations()) > 0) {
+                    $result[$pid][] = $tile->tile_id;
+                }
+            }
+        }
+        return $result;
+    }
+
+
+    /** @return array{losingBids:array<int,list<int>>,discardedLots:list<MarketLot>,awardedLots:array<int,int>,collectedWorkers:array<int,list<int>>} */
+    public function endSeason(): array {
+        $losingBids = $this->returnLosingBids();
+        $discardedLots = $this->discardUnbidLots();
+        $awardedLots = $this->awardWonTiles();
+        $collectedWorkers = $this->collectVillageWorkers();
+        // FIXME: optimize this!
+        $this->ps->saveAllData($this->allData());
+        return [
+            "losingBids" => $losingBids,
+            "discardedLots" => $discardedLots,
+            "awardedLots" => $awardedLots,
+            "collectedWorkers" => $collectedWorkers
+        ];
+    }
+
     public function passTurn(): void {
         $this->ps->incPasses();
     }

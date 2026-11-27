@@ -70,6 +70,12 @@ class WorkerStock {
         $this->greens->add($worker);
     }
 
+    public function putAllInBag(WorkerGroup $wg): void {
+        foreach ($wg->allItems() as $worker) {
+            $this->putInBag($worker);
+        }
+    }
+
     public function putInBag(Worker $worker): void {
         if ($this->greens->workerById($worker->id)) {
             throw new InvalidArgumentException("Worker {$worker->id} already in greens");
