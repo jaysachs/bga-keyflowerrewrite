@@ -94,12 +94,6 @@ class TurnOrderAndUnloadBoats extends AbstractState
             return SelectBoat::class;
         }
 
-        // return ExpandVillages::class;
-
-        if ($model->season() == Season::WINTER) {
-            // return AllocatePiecesForScoring::class;
-            return 99;
-        }
-        return SeasonSetup::class;
+        return ExpandVillages::class;
     }
 }

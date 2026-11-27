@@ -37,7 +37,7 @@ class SelectBoat extends AbstractState {
     {
         parent::__construct(
             game: $game,
-            id: 27,
+            id: 26,
             type: StateType::ACTIVE_PLAYER,
             description: clienttranslate('${actplayer} must select a boat'),
             descriptionMyTurn: clienttranslate('${you} must select a boat'),
@@ -62,6 +62,11 @@ class SelectBoat extends AbstractState {
     public function actSelectBoat(
         int $active_player_id,
         int $tile_id): mixed {
+
+        // put cargo and passengers from boat into village
+
+        // notify all players
+        //    do we need to include cargo and passengers? client already knows those, and where they go ...
 
         return TurnOrderAndUnloadBoats::class;
     }
