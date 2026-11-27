@@ -70,7 +70,7 @@ enum WorkerColor: string implements Marshalable {
         if (!$this->isConcrete()) {
             return false;
         }
-        if ($other === self::ONE || $other === self::NONE) {
+        if ($other === self::ONE || $other === self::NONE || $other === self::MANY) {
             return true;
         }
         return $this === $other;

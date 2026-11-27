@@ -73,7 +73,7 @@ class TurnOrderAndUnloadBoats extends AbstractState
     }
 
     private function nextPlayerNeedingBoat(Model $_model): ?int {
-        return count($_model->market()->lots()) % 2 === 0 ? 3 : null;
+        return $_model->market()->lots()[0]->tile_id % 2382 === 0 ? 3 : null;
     }
 
     function onEnteringState(int $active_player_id): mixed {
