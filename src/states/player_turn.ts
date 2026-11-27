@@ -247,10 +247,10 @@ export class PlayerTurnState extends BaseState {
      * Your outbid bids, in a color, which could move onto this tile: on other tiles to bid, and also
      * the one on this tile itself to use it (the rules allow it; the designer confirmed, see #63).
      */
-    private movable(tileId: number, color: WorkerColor, use: boolean = false): { tileId: number, num: number }[] {
+    private movable(tileId: number, color: WorkerColor, action: 'bid' | 'use'): { tileId: number, num: number }[] {
         const me = playingPlayerId(this.bga);
         return this.bga.gameui.gamedatas.market
-            .filter(mt => (use || mt.id != tileId) && this.info(mt.id)?.moveable)
+            .filter(mt => (action == 'use' || mt.id != tileId) && this.info(mt.id)?.moveable)
             .map(mt => ({ tileId: mt.id, workers: mt.bids.find(b => b.player_id == me)?.workers ?? [] }))
             .filter(m => m.workers.length > 0 && m.workers[0]!.color == color)
             .map(m => ({ tileId: m.tileId, num: m.workers.length }));
@@ -269,7 +269,7 @@ export class PlayerTurnState extends BaseState {
         const fixedColor = info.current_bid?.color ?? info.color;
         const colors: WorkerColor[] = fixedColor ? [fixedColor] : COLORS;
         return colors.filter(c =>
-            this.stockOf(c) + this.movable(tileId, c).reduce((n, m) => n + m.num, 0) >= this.needed(tileId));
+            this.stockOf(c) + this.movable(tileId, c, 'bid').reduce((n, m) => n + m.num, 0) >= this.needed(tileId));
     }
 
     // --- using a tile ---
@@ -310,7 +310,7 @@ export class PlayerTurnState extends BaseState {
     private useColorsFor(tileId: number): WorkerColor[] {
         const info = this.useInfo(tileId);
         if (!info || !this.canPay(info)) { return []; }
-        const has = (c: WorkerColor) => this.usableStock(info, c) + this.movable(tileId, c, true).reduce((n, m) => n + m.num, 0);
+        const has = (c: WorkerColor) => this.usableStock(info, c) + this.movable(tileId, c, 'use').reduce((n, m) => n + m.num, 0);
         // Mixing (boat 4b): every color you have counts towards the minimum together
         if (!info.must_match) { return COLORS.filter(c => has(c) > 0); }
         const colors = info.color ? [info.color] : COLORS;
@@ -320,7 +320,7 @@ export class PlayerTurnState extends BaseState {
     private usable(tileId: number): boolean {
         const info = this.useInfo(tileId), colors = this.useColorsFor(tileId);
         if (info && !info.must_match) {
-            return colors.reduce((n, c) => n + this.usableStock(info, c) + this.movable(tileId, c, true).reduce((k, m) => k + m.num, 0), 0) >= info.min;
+            return colors.reduce((n, c) => n + this.usableStock(info, c) + this.movable(tileId, c, 'use').reduce((k, m) => k + m.num, 0), 0) >= info.min;
         }
         return colors.length > 0;
     }
@@ -371,7 +371,7 @@ export class PlayerTurnState extends BaseState {
     /** The workers a pick places, per color: from your stock, and the outbid groups it moves. */
     private colorCounts(p: Pick): Partial<Record<WorkerColor, number>> {
         const counts: Partial<Record<WorkerColor, number>> = p.mixing ? { ...p.mix } : p.color ? { [p.color]: p.fromStock } : {};
-        COLORS.forEach(c => this.movable(p.tileId, c, p.mode == 'use').filter(m => p.moved.includes(m.tileId)).forEach(m => { counts[c] = (counts[c] ?? 0) + m.num; }));
+        COLORS.forEach(c => this.movable(p.tileId, c, p.mode).filter(m => p.moved.includes(m.tileId)).forEach(m => { counts[c] = (counts[c] ?? 0) + m.num; }));
         return counts;
     }
 
@@ -461,7 +461,7 @@ export class PlayerTurnState extends BaseState {
                     });
                     return b;
                 }),
-                ...this.movable(p.tileId, color, use).map(m => {
+                ...this.movable(p.tileId, color, p.mode).map(m => {
                     const pressed = on && p.moved.includes(m.tileId);
                     // Your outbid bid on the tile you're using says so, rather than naming it again
                     const from = m.tileId == p.tileId ? null : this.translations.tileName(this.market.tile(m.tileId)!.tiletype);
