@@ -1,4 +1,4 @@
-import { KFGameDatas, KFPlayer, ResourceType, Season, SkillType, TileType, WorkerColor } from "../kfdata";
+import type { KFGameDatas, ResourceType, Season, SkillType, TileType, WorkerColor } from "../kfdata";
 import { TileDescription, TILE_DESCRIPTIONS } from "./tiledescs";
 
 /**
@@ -9,12 +9,10 @@ import { TileDescription, TILE_DESCRIPTIONS } from "./tiledescs";
  */
 export class TranslationComponent {
 
-    private translations: typeof this.bga.gameui.gamedatas.translations;
+    private translations: KFGameDatas['translations'];
 
-    public constructor(private bga: Bga<KFPlayer, KFGameDatas>) {}
-
-    public setup(): void {
-        this.translations = this.bga.gameui.gamedatas.translations;
+    public setup(translations: KFGameDatas['translations']): void {
+        this.translations = translations;
     }
 
     public tileDescription(tiletype: TileType): TileDescription {

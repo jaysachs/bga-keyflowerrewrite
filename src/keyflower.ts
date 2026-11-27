@@ -37,7 +37,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
     constructor(bga: Bga<KFPlayer, KFGameDatas>) {
         super(bga);
 
-        this.translationComponent = new TranslationComponent(bga);
+        this.translationComponent = new TranslationComponent();
         this.wordsComponent = new WordsComponent(this.translationComponent);
         this.wordsComponent.registerFormatters(this.textFormatter);
         this.marketComponent = new MarketComponent(bga, this.translationComponent, this.moreAnimations);
@@ -58,7 +58,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
             onEnd: () => this.logManager.processLogs()
         });
 
-        this.translationComponent.setup();
+        this.translationComponent.setup(gamedatas.translations);
         const mainElem = this.makeHtml(
             this.marketComponent.setup(),
             this.dockComponent.setup(),
