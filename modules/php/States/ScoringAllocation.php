@@ -63,4 +63,9 @@ class ScoringAllocation extends AbstractState
 
         $this->gamestate?->setPlayerNonMultiactive($active_player_id, FinalScoring::class);
     }
+
+    public function zombie(int $player_id): mixed {
+        $this->gamestate?->setPlayerNonMultiactive($player_id, FinalScoring::class);
+        return null;
+    }
 }

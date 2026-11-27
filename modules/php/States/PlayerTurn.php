@@ -239,7 +239,7 @@ class PlayerTurn extends AbstractState {
     }
 
     public function zombie(int $playerId): mixed {
-        return 99;
+        return NextPlayer::class;
     }
 
 }
