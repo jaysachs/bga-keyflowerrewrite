@@ -52,47 +52,17 @@ class SelectBoat extends AbstractState {
     public function getArgs(int $active_player_id): array {
         $model = $this->createModel($active_player_id);
         return [
-            'available_boat_ids' => array_map(
-                fn ($t) => $t->id,
-                array_filter(
-                    $model->dock()->boats(),
-                    fn (DockTile $t) => ! ($t->passengers()->isEmpty() && $t->cargo()->isEmpty())
-                )
-            )
+            'available_boat_ids' => $model->availableBoatIds()
         ];
     }
 
     public function onEnteringState(int $active_player_id): mixed {
         $model = $this->createModel($active_player_id);
-        if (count($model->dock()->boats()) === 1) {
-            $boat_id = $model->dock()->boats()[0]->id;
-            return $this->actSelectBoat($active_player_id, $boat_id);
+        $available = $model->availableBoatIds();
+        if (count($available) === 1) {
+            return $this->actSelectBoat($active_player_id, $available[0]);
         }
         return null;
-    }
-
-    /** @return array{boat:DockTile,cargo:SkillSet,passengers:WorkerGroup} */
-    private function selectBoat(Model $model, int $boat_id): array {
-        $boat = $model->dock()->boatById($boat_id);
-        if ($boat === null) {
-            throw new InvalidArgumentException("no boat {$boat_id}");
-        }
-        // FIXME: is this check sufficient or do we need explicit tracking of selected boats?
-        if ($boat->cargo()->isEmpty() && $boat->passengers()->isEmpty()) {
-            throw new InvalidArgumentException("boat {$boat->type->value} already selected");
-        }
-        $cargo = $boat->takeAllCargo();
-        $passengers = $boat->takeAllPassengers();
-        $model->village()->workers()->addGroup($passengers);
-        $model->village()->skills->addSet($cargo);
-
-        $model->hackSaveAll();
-
-        return [
-            "boat" => $boat,
-            "cargo" => $cargo,
-            "passengers" => $passengers
-        ];
     }
 
     #[PossibleAction]
@@ -100,11 +70,10 @@ class SelectBoat extends AbstractState {
 
         $model = $this->createModel($active_player_id);
 
-        $data = $this->selectBoat($model, $tile_id);
-        // put cargo and passengers from boat into village
+        $data = $model->selectBoat($tile_id);
 
         $boat = $data["boat"];
-        $this->notify->all('boatSelected', 'Player {$player_name} selected boat {$tile}', [
+        $this->notify->all('boatSelected', 'Player ${player_name} selected boat ${tile}', [
             'player_id' => $active_player_id,
             'boat_id' => $boat->id,
             'tile' => $boat->type->marshal(),
@@ -116,7 +85,9 @@ class SelectBoat extends AbstractState {
     }
 
     public function zombie(int $playerId): mixed {
-        return TurnOrderAndUnloadBoats::class;
+        $model = $this->createModel($playerId);
+        $available = $model->availableBoatIds();
+        return $this->actSelectBoat($playerId, $available[0]);
     }
 
 }

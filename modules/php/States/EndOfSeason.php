@@ -78,7 +78,6 @@ class EndOfSeason extends AbstractState
             ], array_keys($collectedWorkers), $collectedWorkers)
         ]);
 
-        $this->globals->set("PlayersNeedingBoats", array_map(fn ($p) => intval($p['player_id']), $this->game->loadPlayersBasicInfos()));
         return TurnOrderAndUnloadBoats::class;
     }
 }

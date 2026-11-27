@@ -46,49 +46,19 @@ class TurnOrderAndUnloadBoats extends AbstractState
         );
     }
 
-    /** @return array{winningPlayerId:int,needsBoat:bool,lotId:int}|null */
-    function processNextTurnOrderTile(Model $model): ?array {
-        $wonTurnOrderTiles = array_filter(
-            $model->market()->lots(),
-            fn (MarketLot $lot) => $lot->type->isTurnOrder() && !$lot->highBid()->isEmpty());
-        if (count($wonTurnOrderTiles) == 0) {
-            return null;
-        }
-        // FIXME: verify this sort is right precedence
-        usort($wonTurnOrderTiles, fn ($t1, $t2) => strcmp($t1->type->value, $t2->type->value));
-        $lot = array_shift($wonTurnOrderTiles);
-        $winningBid = $lot->highBid();
-        $winningPlayerId = $lot->winningPlayerId();
-        $model->allData()->workerStock->putAllInBag($winningBid);
-        $lot->removeAllBids();
-        if ($lot->type->awardsStartPlayer()) {
-           // $model->awardStartPlayerTo($winningPlayerId);
-        }
-        return [
-            "winningPlayerId" => $winningPlayerId,
-            // "startPlayerTo" => ...
-            "lotId" => $lot->tile_id,
-            "needsBoat" => true,
-        ];
-    }
-
     function onEnteringState(int $active_player_id): mixed {
         $model = $this->createModel(0);
-        $stuff = $this->processNextTurnOrderTile($model);
+        $stuff = $model->processNextTurnOrderTile();
         if ($stuff !== null) {
             // notify
             if ($stuff["needsBoat"]) {
                 $this->gamestate?->changeActivePlayer($stuff["winningPlayerId"]);
                 return SelectBoat::class;
             }
-            $stuff = $this->processNextTurnOrderTile($model);
+            $stuff = $model->processNextTurnOrderTile();
         }
-
-        /** @var list<int> */
-        $needBoats = $this->globals->get("PlayersNeedingBoats");
-        $nextPlayerNeedingBoat = array_shift($needBoats);
+        $nextPlayerNeedingBoat = $model->nextPlayerNeedingBoat();
         if ($nextPlayerNeedingBoat !== null) {
-            $this->globals->set("PlayersNeedingBoats", $needBoats);
             $this->gamestate?->changeActivePlayer($nextPlayerNeedingBoat);
             return SelectBoat::class;
         }

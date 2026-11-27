@@ -70,6 +70,7 @@ class DefaultPersistentStore implements PersistentStore {
 
     private const GLOBAL_SEASON = 'season';
     private const GLOBAL_PASSES = 'passes';
+    private const GLOBAL_PLAYERS_NEEDING_BOATS = 'needboat';
 
     public function readAllData(): AllGameData {
         $playerIds = array_map(fn ($p) => intval($p), $this->db->getSingleFieldList('SELECT player_id FROM player'));
@@ -448,5 +449,15 @@ class DefaultPersistentStore implements PersistentStore {
     public function numPasses(): int {
         /** @phpstan-ignore argument.type */
         return intval($this->globals->get(self::GLOBAL_PASSES));
+    }
+
+    /** @param list<int> $playerIds */
+    public function setPlayersNeedingBoats(array $playerIds): void {
+        $this->globals->set(self::GLOBAL_PLAYERS_NEEDING_BOATS, $playerIds);
+    }
+    /** @return list<int> $playerIds */
+    public function getPlayersNeedingBoats(): array {
+        /** @phpstan-ignore return.type */
+        return $this->globals->get(self::GLOBAL_PLAYERS_NEEDING_BOATS, []);
     }
 }
