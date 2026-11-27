@@ -1,4 +1,5 @@
-import { KFGameDatas, KFPlayer, ResourceType, Season, SkillType, TileDescription, TileType, WorkerColor } from "../kfdata";
+import { KFGameDatas, KFPlayer, ResourceType, Season, SkillType, TileType, WorkerColor } from "../kfdata";
+import { TileDescription, TILE_DESCRIPTIONS } from "./tiledescs";
 
 /**
  * Names in the player's language, from the server's tables (`gamedatas.translations`). It has no
@@ -17,7 +18,7 @@ export class TranslationComponent {
     }
 
     public tileDescription(tiletype: TileType): TileDescription {
-        const desc = this.translations.tile_descriptions[tiletype];
+        const desc = TILE_DESCRIPTIONS[tiletype];
         return {
             summary: this.translated(desc?.summary) ,
             upgrade: this.translated(desc?.upgrade),

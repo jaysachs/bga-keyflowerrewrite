@@ -173,10 +173,6 @@ class Game extends \Bga\GameFramework\Table
             'bagCount' => $data->workerStock->bagSize(),
             'villages' => $sv,
             'translations' => [
-                'tile_descriptions' => array_combine(
-                    array_map(fn ($t) => $t->value, TileType::cases()),
-                    array_map(fn ($t) => $t->description(), TileType::cases())
-                ),
                 'tiles' => array_combine(
                     array_map(fn ($t) => $t->value, TileType::cases()),
                     array_map(fn ($t) => $t->translatedName(), TileType::cases())
