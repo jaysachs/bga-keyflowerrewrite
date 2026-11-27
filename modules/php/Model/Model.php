@@ -449,6 +449,7 @@ class Model {
             }
             $lot->removeAllBids();
         }
+        $this->market()->removeLots(array_keys($result));
         return $result;
     }
 

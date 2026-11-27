@@ -31,6 +31,9 @@ use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\keyflowerrewrite\Game;
 use Bga\Games\keyflowerrewrite\Model\DockTile;
+use Bga\Games\keyflowerrewrite\Model\SkillType;
+use Bga\Games\keyflowerrewrite\Model\TileType;
+use Bga\Games\keyflowerrewrite\Model\WorkerColor;
 
 class SelectBoat extends AbstractState {
     public function __construct(Game $game)
@@ -58,6 +61,15 @@ class SelectBoat extends AbstractState {
         ];
     }
 
+    public function onEnteringState(int $active_player_id): mixed {
+        $model = $this->createModel($active_player_id);
+        if (count($model->dock()->boats()) === 1) {
+            $boat_id = $model->dock()->boats()[0]->id;
+            return $this->actSelectBoat($active_player_id, $boat_id);
+        }
+        return null;
+    }
+
     #[PossibleAction]
     public function actSelectBoat(
         int $active_player_id,
@@ -65,8 +77,13 @@ class SelectBoat extends AbstractState {
 
         // put cargo and passengers from boat into village
 
-        // notify all players
-        //    do we need to include cargo and passengers? client already knows those, and where they go ...
+        $this->notify->all('boatSelected', 'Player {$player_name} selected boat {$tile}', [
+            'player_id' => $active_player_id,
+            // examples:
+            'tile' => TileType::ALEHOUSE->marshal(),
+            'cargo' => [ SkillType::ANVIL->marshal(), SkillType::PICKAXE->marshal() ],
+            'passengers' => [ WorkerColor::RED->marshal() ]
+        ]);
 
         return TurnOrderAndUnloadBoats::class;
     }

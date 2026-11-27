@@ -68,6 +68,17 @@ class Market implements Marshalable {
         $this->validate();
     }
 
+    /** @param list<int> $ids to remove */
+    public function removeLots(array $ids): void {
+        foreach ($ids as $id) {
+            $i = array_find_key($this->lots, fn ($lot) => $lot->tile_id === $id);
+            if ($i === null) {
+                throw new InvalidArgumentException("No lot {$id} in market");
+            }
+            array_splice($this->lots, $i, 1);
+        }
+    }
+
     public function lotByTileId(int $id): ?MarketLot {
         return array_find($this->lots, fn ($t) => $t->tile_id == $id);
     }

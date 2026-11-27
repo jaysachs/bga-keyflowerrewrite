@@ -30,7 +30,6 @@ namespace Bga\Games\keyflowerrewrite\States;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\GameFramework\StateType;
 use Bga\Games\keyflowerrewrite\Game;
-use Bga\Games\keyflowerrewrite\Model\Season;
 
 class ScoringAllocation extends AbstractState
 {

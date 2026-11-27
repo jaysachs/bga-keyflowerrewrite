@@ -65,7 +65,7 @@ class EndOfSeason extends AbstractState
             'awarded_tiles' => array_map(fn ($lotId, $playerId) => [
                 'lot_id' => $lotId,
                 'player_id' => $playerId
-            ], $awardedLots, array_keys($awardedLots))
+            ], array_keys($awardedLots), $awardedLots)
         ]);
 
         $collectedWorkers = $endSeasonData["collectedWorkers"];

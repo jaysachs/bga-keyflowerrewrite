@@ -47,6 +47,7 @@ class ExpandVillages extends AbstractState
     }
 
     function onEnteringState(): void {
+        // TODO: skip players who did not win tiles
         $this->gamestate?->setAllPlayersMultiactive();
     }
 
