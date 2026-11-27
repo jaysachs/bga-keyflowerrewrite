@@ -29,6 +29,8 @@ namespace Bga\Games\keyflowerrewrite\States;
 
 use Bga\GameFramework\StateType;
 use Bga\Games\keyflowerrewrite\Game;
+use Bga\Games\keyflowerrewrite\Model\MarketLot;
+use Bga\Games\keyflowerrewrite\Model\Model;
 use Bga\Games\keyflowerrewrite\Model\Season;
 
 class TurnOrderAndUnloadBoats extends AbstractState
@@ -37,34 +39,60 @@ class TurnOrderAndUnloadBoats extends AbstractState
     {
         parent::__construct(
             game: $game,
-            id: 24,
+            id: 25,
             type: StateType::GAME,
             description: clienttranslate('Turn order and boats'),
             updateGameProgression: false,
         );
     }
 
+    /** @return array{winningPlayerId:int,needsBoat:bool,lotId:int}|null */
+    function processNextTurnOrderTile(Model $model): ?array {
+        $wonTurnOrderTiles = array_filter(
+            $model->market()->lots(),
+            fn (MarketLot $lot) => $lot->type->isTurnOrder() && !$lot->highBid()->isEmpty());
+        if (count($wonTurnOrderTiles) == 0) {
+            return null;
+        }
+        // FIXME: verify this sort is right precedence
+        usort($wonTurnOrderTiles, fn ($t1, $t2) => strcmp($t1->type->value, $t2->type->value));
+        $lot = array_shift($wonTurnOrderTiles);
+        $winningBid = $lot->highBid();
+        $winningPlayerId = $lot->winningPlayerId();
+        $model->allData()->workerStock->putAllInBag($winningBid);
+        $lot->removeAllBids();
+        if ($lot->type->awardsStartPlayer()) {
+           // $model->awardStartPlayerTo($winningPlayerId);
+        }
+        return [
+            "winningPlayerId" => $winningPlayerId,
+            // "startPlayerTo" => ...
+            "lotId" => $lot->tile_id,
+            "needsBoat" => true,
+        ];
+    }
+
+    private function nextPlayerNeedingBoat(Model $_model): ?int {
+        return count($_model->market()->lots()) % 2 === 0 ? 3 : null;
+    }
+
     function onEnteringState(int $active_player_id): mixed {
+        // Probably want a global to keep track of which players have selected a boat.
         $model = $this->createModel(0);
-        // while ($anyRemainingTurnOrderTilesWithWinningBids) {
-            /*
-                choose the highest precedence tile
-                move the winning bid workers to the bag (technically the rules do this at the end ... does that matter?)
-                    in Winter, award the turn order tile to the player (this is out of order with rules but does it matter?)
-                Give the start player token if the tile offers that as a reward.
-                if the winning player has NOT made a boat selection:
-                    set the active player
-                    transition to ChooseBoat state
-            */
-        // }
-
-        // if ($model->allData()->dock->hasUndeliveredBoats()) {
-            /*
-                choose the next player who did not select a boat in clockwise order from start player
-                transition to ChooseBoat
-            */
-        // }
-
+        $stuff = $this->processNextTurnOrderTile($model);
+        if ($stuff !== null) {
+            // notify
+            if ($stuff["needsBoat"]) {
+                $this->gamestate?->changeActivePlayer($stuff["winningPlayerId"]);
+                return SelectBoat::class;
+            }
+            $stuff = $this->processNextTurnOrderTile($model);
+        }
+        $nextPlayerNeedingBoat = $this->nextPlayerNeedingBoat($model);
+        if ($nextPlayerNeedingBoat !== null) {
+            $this->gamestate?->changeActivePlayer($nextPlayerNeedingBoat);
+            return SelectBoat::class;
+        }
 
         // return ExpandVillages::class;
 
