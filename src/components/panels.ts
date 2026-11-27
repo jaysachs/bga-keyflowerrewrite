@@ -4,6 +4,7 @@ import { TooltipManager } from "../libs/tooltips";
 import { ACTIVE_PLAYERS_CHANGED } from "../states/base";
 import { accessibleDialog, TileRulesComponent } from "./tilerules";
 import { TranslationComponent } from "./translation";
+import { playingPlayerId } from "../libs/players";
 
 const WORKER_COLORS: WorkerColor[] = ['red', 'yellow', 'blue', 'green'];
 const SKILLS: SkillType[] = ['anvil', 'pickaxe', 'saw'];
@@ -25,7 +26,7 @@ export class PanelsComponent {
 
     public setup(): void {
         const gamedatas = this.bga.gameui.gamedatas;
-        const me = this.bga.players.getCurrentPlayerId();
+        const me = playingPlayerId(this.bga);
         // The players' ids are the keys; the player objects don't always carry them.
         Object.entries(gamedatas.players).forEach(([key, player]) => {
             const id = Number(key);
@@ -76,9 +77,9 @@ export class PanelsComponent {
      * your bids, which take workers from your stock.
      */
     public updatePrivateRow(): void {
-        const me = this.bga.players.getCurrentPlayerId();
-        const village = this.bga.gameui.gamedatas.villages[me];
-        if (!village?.workers) { return; }   // spectators
+        const me = playingPlayerId(this.bga);
+        const village = me == null ? undefined : this.bga.gameui.gamedatas.villages[me];
+        if (me == null || !village?.workers) { return; }   // spectators
         const panelEl = this.bga.playerPanels.getElement(me);
         let row = panelEl.querySelector<HTMLElement>('.kf_private');
         if (!row) {
@@ -107,8 +108,8 @@ export class PanelsComponent {
 
     /** Your winter tiles, each at its size on the board with its name and rules beside it. */
     private showWinterTiles(): void {
-        const me = this.bga.players.getCurrentPlayerId();
-        const tiles = this.bga.gameui.gamedatas.villages[me]?.winter_tiles ?? [];
+        const me = playingPlayerId(this.bga);
+        const tiles = (me == null ? undefined : this.bga.gameui.gamedatas.villages[me])?.winter_tiles ?? [];
         // Under the title, what they are first, then the tiles
         const content = Html.div({ classes: 'kf_winter_dialog' },
             Html.p({ classes: 'kf_winter_note', text: _('Only you can see them.') }),

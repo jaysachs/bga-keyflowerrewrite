@@ -22,6 +22,7 @@ import { activePlayersChanged } from "./states/base";
 import { PlayerTurnState } from "./states/player_turn";
 import { SeasonSetupState } from "./states/season_setup";
 import { IDS, View } from "./view";
+import { playingPlayerId } from "./libs/players";
 
 export class Game extends BaseGame<KFPlayer, KFGameDatas> {
 
@@ -117,7 +118,7 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
 
     private makeHtml(marketEl: HTMLElement, dockEl: HTMLElement, villagesEl: HTMLElement): HTMLElement {
         return Html.div({ id: 'kf_main',
-            classes: this.bga.players.isCurrentPlayerSpectator() ? ['kf_is_spectator'] : []},
+            classes: playingPlayerId(this.bga) == null ? ['kf_is_spectator'] : []},
                 marketEl, dockEl, villagesEl
         );
     }
