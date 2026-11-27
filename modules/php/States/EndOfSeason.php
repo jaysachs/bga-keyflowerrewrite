@@ -29,7 +29,6 @@ namespace Bga\Games\keyflowerrewrite\States;
 
 use Bga\GameFramework\StateType;
 use Bga\Games\keyflowerrewrite\Game;
-use Bga\Games\keyflowerrewrite\Utils\Log;
 
 class EndOfSeason extends AbstractState
 {

@@ -29,9 +29,6 @@ namespace Bga\Games\keyflowerrewrite\States;
 
 use Bga\GameFramework\StateType;
 use Bga\Games\keyflowerrewrite\Game;
-use Bga\Games\keyflowerrewrite\Model\MarketLot;
-use Bga\Games\keyflowerrewrite\Model\Model;
-use Bga\Games\keyflowerrewrite\Model\Season;
 
 class TurnOrderAndUnloadBoats extends AbstractState
 {

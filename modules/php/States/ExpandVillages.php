@@ -72,10 +72,7 @@ class ExpandVillages extends AbstractState
     }
 
     public function zombie(int $player_id): mixed {
-        $model = $this->createModel($player_id);
-        $nextState = $model->season() == Season::WINTER ? ScoringAllocation::class : SeasonSetup::class;
-        $this->gamestate?->setPlayerNonMultiactive($player_id, $nextState);
+        $this->actConfirm($player_id);
         return null;
     }
-
 }
