@@ -5,6 +5,7 @@ import { hexMark } from "../libs/hexmark";
 import { MoreAnimations } from "../libs/more-animations";
 import { activationRows, activationSummary } from "./activations";
 import { TranslationComponent } from "./translation";
+import { playingPlayerId, seatOrder } from "../libs/players";
 
 /** One bid as shown on a tile. */
 interface ShownBid {
@@ -175,16 +176,14 @@ export class MarketComponent extends BaseComponent<MarketLot> {
      * Edges are numbered clockwise from the top: 0 top, 1 upper right … 3 bottom … 5 upper left.
      */
     private seatEdges(): Map<number, number> {
-        const order = this.bga.gameui.gamedatas.playerorder.map(Number);
-        const i = order.indexOf(this.bga.players.getCurrentPlayerId());
-        const seats = i < 0 ? order : [...order.slice(i), ...order.slice(0, i)];
+        const seats = seatOrder(this.bga);
         const edges = SEAT_EDGES[seats.length] ?? SEAT_EDGES[6]!;
         return new Map(seats.map((pid, k) => [pid, edges[k]!]));
     }
 
     /** What to show for each bid on a tile, including the one being chosen. */
     private shownBids(mt: MarketLot): ShownBid[] {
-        const me = this.bga.players.getCurrentPlayerId();
+        const me = playingPlayerId(this.bga);
         const pending = this.pending?.tileId == mt.id ? this.pending : null;
         const moving = this.pending?.movedFrom.includes(mt.id) ?? false;
         const bids = this.sortedBids(mt);

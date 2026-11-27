@@ -4,9 +4,10 @@ import { PanelsComponent } from "../components/panels";
 import { TranslationComponent } from "../components/translation";
 import { TileRulesComponent } from "../components/tilerules";
 import { VillageComponent } from "../components/village";
-import { KFGameDatas, KFPlayer, MarketLot, ResourceType, Resource, Skill, SkillType, VillageTile, Worker, WorkerColor } from "../kfdata";
+import { KFGameDatas, KFPlayer, MarketLot, ResourceType, Resource, Skill, SkillType, Village, VillageTile, Worker, WorkerColor } from "../kfdata";
 import { Child, Html } from "../libs/html";
 import { BaseState } from "./base";
+import { playingPlayerId } from "../libs/players";
 
 /** What the active player may bid on one market tile (PlayerTurn args, in market order). */
 interface BidInfo {
@@ -114,7 +115,7 @@ export class PlayerTurnState extends BaseState {
     async notif_bidMade(args: { player_id: number, marketlot_id: number, bid: Worker[], moved_from: number[] }) {
         // Your bid is now on the tile: stop showing it as pending, or it's counted twice
         // until the turn moves on.
-        if (args.player_id == this.bga.players.getCurrentPlayerId()) {
+        if (args.player_id == playingPlayerId(this.bga)) {
             this.market.setPending(null);
         }
         // The bid flies to its tile from where a moved group was drawn, or, with workers from
@@ -216,8 +217,14 @@ export class PlayerTurnState extends BaseState {
 
     // --- what you have ---
 
+    /** Your village's data (with your stock and tools, sent only to you), when you play. */
+    private myVillage(): Village | undefined {
+        const me = playingPlayerId(this.bga);
+        return me == null ? undefined : this.bga.gameui.gamedatas.villages[me];
+    }
+
     private stock(): Worker[] {
-        return this.bga.gameui.gamedatas.villages[this.bga.players.getCurrentPlayerId()]?.workers ?? [];
+        return this.myVillage()?.workers ?? [];
     }
 
     private stockOf(color: WorkerColor): number {
@@ -225,7 +232,7 @@ export class PlayerTurnState extends BaseState {
     }
 
     private skills(): Skill[] {
-        return this.bga.gameui.gamedatas.villages[this.bga.players.getCurrentPlayerId()]?.skills ?? [];
+        return this.myVillage()?.skills ?? [];
     }
 
     private info(tileId: number): BidInfo | undefined {
@@ -236,11 +243,14 @@ export class PlayerTurnState extends BaseState {
         return this.args?.activation_info?.find(a => a.tile_id == tileId);
     }
 
-    /** Your outbid bids on other tiles, in a color, which could move onto this one. */
-    private movable(tileId: number, color: WorkerColor): { tileId: number, num: number }[] {
-        const me = this.bga.players.getCurrentPlayerId();
+    /**
+     * Your outbid bids, in a color, which could move onto this tile: on other tiles to bid, and also
+     * the one on this tile itself to use it (the rules allow it; the designer confirmed, see #63).
+     */
+    private movable(tileId: number, color: WorkerColor, action: 'bid' | 'use'): { tileId: number, num: number }[] {
+        const me = playingPlayerId(this.bga);
         return this.bga.gameui.gamedatas.market
-            .filter(mt => mt.id != tileId && this.info(mt.id)?.moveable)
+            .filter(mt => (action == 'use' || mt.id != tileId) && this.info(mt.id)?.moveable)
             .map(mt => ({ tileId: mt.id, workers: mt.bids.find(b => b.player_id == me)?.workers ?? [] }))
             .filter(m => m.workers.length > 0 && m.workers[0]!.color == color)
             .map(m => ({ tileId: m.tileId, num: m.workers.length }));
@@ -259,7 +269,7 @@ export class PlayerTurnState extends BaseState {
         const fixedColor = info.current_bid?.color ?? info.color;
         const colors: WorkerColor[] = fixedColor ? [fixedColor] : COLORS;
         return colors.filter(c =>
-            this.stockOf(c) + this.movable(tileId, c).reduce((n, m) => n + m.num, 0) >= this.needed(tileId));
+            this.stockOf(c) + this.movable(tileId, c, 'bid').reduce((n, m) => n + m.num, 0) >= this.needed(tileId));
     }
 
     // --- using a tile ---
@@ -300,7 +310,7 @@ export class PlayerTurnState extends BaseState {
     private useColorsFor(tileId: number): WorkerColor[] {
         const info = this.useInfo(tileId);
         if (!info || !this.canPay(info)) { return []; }
-        const has = (c: WorkerColor) => this.usableStock(info, c) + this.movable(tileId, c).reduce((n, m) => n + m.num, 0);
+        const has = (c: WorkerColor) => this.usableStock(info, c) + this.movable(tileId, c, 'use').reduce((n, m) => n + m.num, 0);
         // Mixing (boat 4b): every color you have counts towards the minimum together
         if (!info.must_match) { return COLORS.filter(c => has(c) > 0); }
         const colors = info.color ? [info.color] : COLORS;
@@ -310,7 +320,7 @@ export class PlayerTurnState extends BaseState {
     private usable(tileId: number): boolean {
         const info = this.useInfo(tileId), colors = this.useColorsFor(tileId);
         if (info && !info.must_match) {
-            return colors.reduce((n, c) => n + this.usableStock(info, c) + this.movable(tileId, c).reduce((k, m) => k + m.num, 0), 0) >= info.min;
+            return colors.reduce((n, c) => n + this.usableStock(info, c) + this.movable(tileId, c, 'use').reduce((k, m) => k + m.num, 0), 0) >= info.min;
         }
         return colors.length > 0;
     }
@@ -361,7 +371,7 @@ export class PlayerTurnState extends BaseState {
     /** The workers a pick places, per color: from your stock, and the outbid groups it moves. */
     private colorCounts(p: Pick): Partial<Record<WorkerColor, number>> {
         const counts: Partial<Record<WorkerColor, number>> = p.mixing ? { ...p.mix } : p.color ? { [p.color]: p.fromStock } : {};
-        COLORS.forEach(c => this.movable(p.tileId, c).filter(m => p.moved.includes(m.tileId)).forEach(m => { counts[c] = (counts[c] ?? 0) + m.num; }));
+        COLORS.forEach(c => this.movable(p.tileId, c, p.mode).filter(m => p.moved.includes(m.tileId)).forEach(m => { counts[c] = (counts[c] ?? 0) + m.num; }));
         return counts;
     }
 
@@ -451,15 +461,17 @@ export class PlayerTurnState extends BaseState {
                     });
                     return b;
                 }),
-                ...this.movable(p.tileId, color).map(m => {
+                ...this.movable(p.tileId, color, p.mode).map(m => {
                     const pressed = on && p.moved.includes(m.tileId);
-                    const from = this.translations.tileName(this.market.tile(m.tileId)!.tiletype);
+                    // Your outbid bid on the tile you're using says so, rather than naming it again
+                    const from = m.tileId == p.tileId ? null : this.translations.tileName(this.market.tile(m.tileId)!.tiletype);
+                    const where = from ? `${_('outbid on')} ${from}` : _('outbid here');
                     const b = Html.button({
                             classes: ['kf_pick_worker', 'kf_pick_group', pressed ? 'kf_on' : ''],
-                            attrs: { 'aria-pressed': pressed, 'aria-label': `${m.num} ${this.translations.color(color)}, ${_('outbid on')} ${from}`, 'data-kf-key': `from:${m.tileId}` },
+                            attrs: { 'aria-pressed': pressed, 'aria-label': `${m.num} ${this.translations.color(color)}, ${where}`, 'data-kf-key': `from:${m.tileId}` },
                         },
                         workerIcons(color, m.num),
-                        Html.span({ text: `${_('outbid on')} ${from}` }));
+                        Html.span({ text: where }));
                     b.addEventListener('click', () => {
                         if (!pressed && (on ? this.total(p) : 0) + m.num > room) { this.explain(msg, this.roomText(room)); return; }
                         if (!p.mixing) { this.setColor(p, color); }

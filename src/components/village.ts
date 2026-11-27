@@ -6,6 +6,7 @@ import { MoreAnimations } from "../libs/more-animations";
 import { RowCol } from "../rowcol";
 import { activationRows, activationSummary } from "./activations";
 import { TranslationComponent } from "./translation";
+import { playingPlayerId, seatOrder } from "../libs/players";
 
 /**
  * All players' villages, yours first, then the others in turn order.
@@ -66,21 +67,12 @@ export class VillageComponent extends BaseComponent<any> {
      */
     public setup(): HTMLElement {
         const gamedatas = this.bga.gameui.gamedatas;
-        const order = this.playerOrder(gamedatas);
-        const me = this.bga.players.getCurrentPlayerId();
-        const mine = order.includes(me) ? me : null;
+        const order = seatOrder(this.bga);
+        const mine = playingPlayerId(this.bga);
         const div = (pid: number) => this.villageDiv(gamedatas.villages[pid]!, gamedatas.players[pid]!);
         return Html.div({ id: 'kf_villages' },
             Html.div({ classes: 'kf_villages_mine' }, ...(mine != null ? [div(mine)] : [])),
             Html.div({ classes: 'kf_villages_others' }, ...order.filter(pid => pid != mine).map(div)));
-    }
-
-    /** Player ids starting with the current player, if playing, then around the table. */
-    private playerOrder(gamedatas: KFGameDatas): number[] {
-        const order = gamedatas.playerorder.map(Number);
-        const me = this.bga.players.getCurrentPlayerId();
-        const i = order.indexOf(me);
-        return i < 0 ? order : [...order.slice(i), ...order.slice(0, i)];
     }
 
     private villageDiv(village: Village, player: KFPlayer): HTMLElement {
@@ -102,7 +94,7 @@ export class VillageComponent extends BaseComponent<any> {
             Html.div({ id: `kf_village_name_${village.player_id}`, classes: 'kf_village_name', attrs: { role: 'heading', 'aria-level': 3 } },
                 Html.img({ classes: 'kf_avatar', attrs: { src: this.bga.players.getPlayerAvatarUrl(village.player_id, 32), alt: '' } }),
                 Html.span({ text: player.name }),
-                village.player_id == this.bga.players.getCurrentPlayerId() ? Html.span({ classes: 'kf_village_you', text: _('(you)') }) : undefined),
+                village.player_id == playingPlayerId(this.bga) ? Html.span({ classes: 'kf_village_you', text: _('(you)') }) : undefined),
             // The map scrolls sideways when the village is wider than the screen (phones); the name stays.
             Html.div({ classes: 'kf_village_scroll' },
                 Html.div({
