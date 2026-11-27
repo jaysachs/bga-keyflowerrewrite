@@ -57,12 +57,15 @@ export class TileRulesComponent {
         return b;
     }
 
-    /** The tile large, with its name as the title and its rules beside it (under it on phones). */
-    public show(tiletype: TileType): void {
+    /**
+     * The tile large, with its name as the title and its rules beside it (under it on phones). `note` is
+     * a line about this tile in particular, under the rules: what's on it, for a village tile.
+     */
+    public show(tiletype: TileType, note: string = ''): void {
         const name = this.translations.tileName(tiletype);
         const content = Html.div({ classes: 'kf_rules_dialog' },
             Html.div({ classes: 'kf_tile', attrs: { 'data-kf-tile': tiletype, role: 'img', 'aria-label': name } }),
-            this.list(tiletype));
+            note ? Html.div({}, this.list(tiletype), Html.p({ classes: 'kf_rules_note', text: note })) : this.list(tiletype));
         this.dialog?.destroy();
         this.dialog = new ebg.popindialog();
         this.dialog.create('kf_rules_dialog');

@@ -141,7 +141,8 @@ export class PlayerTurnState extends BaseState {
      * A tile used (in the market or a village): its workers become a new row on the tile, flying from
      * where they were (an outbid bid they leave, or the player's panel). `moved_from` lists the tiles the
      * moved bids leave, as in bidMade. Your stock loses the workers and gains the workers and tools
-     * produced; resources go to a tile, which needs the destination tile (to come).
+     * produced; resources go onto the destination tile (the tile itself, or Home for a market tile), flying
+     * from the tile that was used.
      */
     async notif_tileActivated(args: {
         tile_id: number, player_id: number, workers: Worker[], moved_from: number[],
@@ -158,6 +159,11 @@ export class PlayerTurnState extends BaseState {
         if (inMarket) { this.market.addUse(args.tile_id, workers); } else { this.villages.addUse(args.tile_id, workers); }
         if (from) {
             await (inMarket ? this.market.flyUse(args.tile_id, from) : this.villages.flyUse(args.tile_id, from));
+        }
+        const dest = args.produced?.dest_tile_id, resources = args.produced?.resources ?? [];
+        if (dest != null && resources.length) {
+            const used = dest == args.tile_id ? undefined : document.getElementById(`kf_tile_${args.tile_id}`)?.getBoundingClientRect();
+            await this.villages.addResources(dest, resources, used);
         }
         // Your stock is only sent to you.
         const village = this.bga.gameui.gamedatas.villages[args.player_id];

@@ -1,4 +1,4 @@
-import { KFGameDatas, KFPlayer, Village, VillageTile, Worker } from "../kfdata";
+import { KFGameDatas, KFPlayer, Resource, ResourceType, Village, VillageTile, Worker } from "../kfdata";
 import { BaseComponent } from "../libs/basecomponent";
 import { Html } from "../libs/html";
 import { hexMark } from "../libs/hexmark";
@@ -7,6 +7,7 @@ import { RowCol } from "../rowcol";
 import { activationRows, activationSummary } from "./activations";
 import { TranslationComponent } from "./translation";
 import { playingPlayerId, seatOrder } from "../libs/players";
+import { resourceCounts } from "../libs/resources";
 
 /**
  * All players' villages, yours first, then the others in turn order.
@@ -48,7 +49,7 @@ export class VillageComponent extends BaseComponent<any> {
             // Every tile is a button: a choosable one is chosen, the others show their rules (keyflower.ts)
             el.setAttribute('role', 'button');
             el.tabIndex = 0;
-            el.setAttribute('aria-label', [this.translations.tileName(t.tiletype), activationSummary(t.activations)].filter(x => x).join('. '));
+            el.setAttribute('aria-label', this.tileLabel(t));
             if (can) {
                 el.setAttribute('aria-pressed', String(chosen));
                 el.removeAttribute('aria-haspopup');
@@ -120,7 +121,56 @@ export class VillageComponent extends BaseComponent<any> {
             uses.id = `kf_uses_${tile.tile_id}`;
             uses.style.cssText = `--kf-row: ${row}; --kf-col: ${col}`;
         }
-        return uses ? [this.tileDiv(tile, row, col), mark, uses] : [this.tileDiv(tile, row, col), mark];
+        const resources = this.resourcesDiv(tile, row, col);
+        return [this.tileDiv(tile, row, col), mark, ...(uses ? [uses] : []), ...(resources ? [resources] : [])];
+    }
+
+    /** The tile's name, its uses this season and what's on it, for screen readers. */
+    private tileLabel(tile: VillageTile): string {
+        return [this.translations.tileName(tile.tiletype), activationSummary(tile.activations), this.resourceText(tile.tile_id)].filter(x => x).join('. ');
+    }
+
+    /** "On this tile: 2 wood, 1 stone", or empty when there's nothing on it. */
+    public resourceText(tileId: number): string {
+        const counts = resourceCounts(this.tile(tileId)?.resources);
+        return counts.length
+            ? _('On this tile: ${resources}').replace('${resources}', counts.map(([r, n]) => `${n} ${this.translations.resource(r)}`).join(', '))
+            : '';
+    }
+
+    /**
+     * What's on the tile, as in the mockup: one pill per kind, wood, stone, iron, gold, with its count,
+     * in rows of two near the tile's bottom. A layer of its own, like the uses, so it doesn't turn with the tile.
+     */
+    private resourcesDiv(tile: VillageTile, row: number, col: number): HTMLElement | undefined {
+        const counts = resourceCounts(tile.resources);
+        if (!counts.length) { return undefined; }
+        const pill = ([r, n]: [ResourceType, number]) => Html.span({ classes: 'kf_res_pill', attrs: { 'data-kf-kind': r } },
+            Html.span({ classes: ['kf_icon', 'kf_icon_resource'], attrs: { 'data-kf-kind': r } }), Html.span({ text: String(n) }));
+        const rows = counts.length > 2 ? [counts.slice(0, -2), counts.slice(-2)] : [counts];
+        return Html.div({ id: `kf_res_${tile.tile_id}`, classes: 'kf_tile_res', attrs: { 'aria-hidden': 'true' }, style: [`--kf-row: ${row}`, `--kf-col: ${col}`] },
+            ...rows.map(r => Html.div({ classes: 'kf_res_row' }, ...r.map(pill))));
+    }
+
+    /**
+     * Adds resources to a village tile (tileActivated's destination): redraws its pills, and flies the
+     * pills of the kinds that got more from `from` (the tile that was used), unless that's the tile itself.
+     */
+    public async addResources(tileId: number, resources: Resource[], from?: DOMRect): Promise<void> {
+        const tile = this.tile(tileId);
+        const tileEl = document.getElementById(`kf_tile_${tileId}`);
+        if (!tile || !tileEl) { console.error(`addResources: no village tile ${tileId}`); return; }
+        if (!resources.length) { return; }
+        tile.resources = [...(tile.resources ?? []), ...resources];
+        const div = this.resourcesDiv(tile, Number(tileEl.style.getPropertyValue('--kf-row')), Number(tileEl.style.getPropertyValue('--kf-col')))!;
+        const old = document.getElementById(div.id);
+        if (old) { old.replaceWith(div); } else { (document.getElementById(`kf_uses_${tileId}`) ?? document.getElementById(`kf_mark_${tileId}`) ?? tileEl).after(div); }
+        tileEl.setAttribute('aria-label', this.tileLabel(tile));
+        const kinds = new Set(resources.map(r => r.type));
+        if (from) {
+            await Promise.all(Array.from(div.querySelectorAll<HTMLElement>('.kf_res_pill')).filter(p => kinds.has(p.dataset['kfKind'] as ResourceType))
+                .map(p => this.animations.animateMove(p, from)));
+        }
     }
 
     /** The village tile with this id, in anyone's village. */
@@ -162,7 +212,7 @@ export class VillageComponent extends BaseComponent<any> {
         });
         // A button from the start: until it can be chosen, a tap shows its rules (keyflower.ts)
         Object.entries({ role: 'button', tabindex: '0', 'aria-haspopup': 'dialog',
-            'aria-label': [this.translations.tileName(tile.tiletype), activationSummary(tile.activations)].filter(x => x).join('. ') })
+            'aria-label': this.tileLabel(tile) })
             .forEach(([k, v]) => el.setAttribute(k, v));
         const choose = () => { if (this.selectable.has(tile.tile_id)) { this.dispatch(tile); } };
         el.addEventListener('click', choose);

@@ -92,15 +92,21 @@ export class Game extends BaseGame<KFPlayer, KFGameDatas> {
         };
         main.addEventListener('click', e => {
             const tile = tileOf(e);
-            if (tile) { this.tileRulesComponent.show(tile.dataset['kfTile']!); }
+            if (tile) { this.tileRulesComponent.show(tile.dataset['kfTile']!, this.tileNote(tile)); }
         });
         main.addEventListener('keydown', e => {
             const tile = tileOf(e);
             if (tile && tile.getAttribute('role') == 'button' && (e.key == 'Enter' || e.key == ' ')) {
                 e.preventDefault();
-                this.tileRulesComponent.show(tile.dataset['kfTile']!);
+                this.tileRulesComponent.show(tile.dataset['kfTile']!, this.tileNote(tile));
             }
         });
+    }
+
+    /** What's on a village tile, for its rules dialog ("On this tile: 2 wood"); empty for other tiles. */
+    private tileNote(tile: HTMLElement): string {
+        const id = tile.id.match(/^kf_tile_(\d+)$/)?.[1];
+        return id ? this.villageComponent.resourceText(Number(id)) : '';
     }
 
     /**
