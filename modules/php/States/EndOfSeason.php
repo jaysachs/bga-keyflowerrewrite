@@ -29,6 +29,7 @@ namespace Bga\Games\keyflowerrewrite\States;
 
 use Bga\GameFramework\StateType;
 use Bga\Games\keyflowerrewrite\Game;
+use Bga\Games\keyflowerrewrite\Utils\Log;
 
 class EndOfSeason extends AbstractState
 {
@@ -77,6 +78,7 @@ class EndOfSeason extends AbstractState
             ], array_keys($collectedWorkers), $collectedWorkers)
         ]);
 
+        $this->globals->set("PlayersNeedingBoats", array_map(fn ($p) => intval($p['player_id']), $this->game->loadPlayersBasicInfos()));
         return TurnOrderAndUnloadBoats::class;
     }
 }

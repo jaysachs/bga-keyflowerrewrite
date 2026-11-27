@@ -50,17 +50,17 @@ class ScoringAllocation extends AbstractState
     }
 
     #[PossibleAction]
-    public function actAllocateResource(int $active_player_id, int $src_tile_id, int $dest_tile_id, string $restype): void {
+    public function actAllocateResource(int $current_player_id, int $src_tile_id, int $dest_tile_id, string $restype): void {
         // no notification needed
     }
 
     #[PossibleAction]
-    public function actConfirm(int $active_player_id): void {
-        $model = $this->createModel($active_player_id);
+    public function actConfirm(int $current_player_id): void {
+        $model = $this->createModel($current_player_id);
 
         // commit all pending allocations, and notify every player
 
-        $this->gamestate?->setPlayerNonMultiactive($active_player_id, FinalScoring::class);
+        $this->gamestate?->setPlayerNonMultiactive($current_player_id, FinalScoring::class);
     }
 
     public function zombie(int $player_id): mixed {

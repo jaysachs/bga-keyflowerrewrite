@@ -31,9 +31,10 @@ use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\keyflowerrewrite\Game;
 use Bga\Games\keyflowerrewrite\Model\DockTile;
-use Bga\Games\keyflowerrewrite\Model\SkillType;
-use Bga\Games\keyflowerrewrite\Model\TileType;
-use Bga\Games\keyflowerrewrite\Model\WorkerColor;
+use Bga\Games\keyflowerrewrite\Model\Model;
+use Bga\Games\keyflowerrewrite\Model\SkillSet;
+use Bga\Games\keyflowerrewrite\Model\WorkerGroup;
+use InvalidArgumentException;
 
 class SelectBoat extends AbstractState {
     public function __construct(Game $game)
@@ -70,19 +71,45 @@ class SelectBoat extends AbstractState {
         return null;
     }
 
-    #[PossibleAction]
-    public function actSelectBoat(
-        int $active_player_id,
-        int $tile_id): mixed {
+    /** @return array{boat:DockTile,cargo:SkillSet,passengers:WorkerGroup} */
+    private function selectBoat(Model $model, int $boat_id): array {
+        $boat = $model->dock()->boatById($boat_id);
+        if ($boat === null) {
+            throw new InvalidArgumentException("no boat {$boat_id}");
+        }
+        // FIXME: is this check sufficient or do we need explicit tracking of selected boats?
+        if ($boat->cargo()->isEmpty() && $boat->passengers()->isEmpty()) {
+            throw new InvalidArgumentException("boat {$boat->type->value} already selected");
+        }
+        $cargo = $boat->takeAllCargo();
+        $passengers = $boat->takeAllPassengers();
+        $model->village()->workers()->addGroup($passengers);
+        $model->village()->skills->addSet($cargo);
 
+        $model->hackSaveAll();
+
+        return [
+            "boat" => $boat,
+            "cargo" => $cargo,
+            "passengers" => $passengers
+        ];
+    }
+
+    #[PossibleAction]
+    public function actSelectBoat(int $active_player_id, int $tile_id): mixed {
+
+        $model = $this->createModel($active_player_id);
+
+        $data = $this->selectBoat($model, $tile_id);
         // put cargo and passengers from boat into village
 
+        $boat = $data["boat"];
         $this->notify->all('boatSelected', 'Player {$player_name} selected boat {$tile}', [
             'player_id' => $active_player_id,
-            // examples:
-            'tile' => TileType::ALEHOUSE->marshal(),
-            'cargo' => [ SkillType::ANVIL->marshal(), SkillType::PICKAXE->marshal() ],
-            'passengers' => [ WorkerColor::RED->marshal() ]
+            'boat_id' => $boat->id,
+            'tile' => $boat->type->marshal(),
+            'cargo' => $data["cargo"]->marshal(),
+            'passengers' => $data["passengers"]->marshal()
         ]);
 
         return TurnOrderAndUnloadBoats::class;

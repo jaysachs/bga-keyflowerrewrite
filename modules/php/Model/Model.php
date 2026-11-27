@@ -497,4 +497,8 @@ class Model {
     public function numPassed(): int {
         return $this->ps->numPasses();
     }
+
+    public function hackSaveAll(): void {
+        $this->ps->saveAllData($this->allData());
+    }
 }

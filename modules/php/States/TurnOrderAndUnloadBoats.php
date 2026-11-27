@@ -72,12 +72,7 @@ class TurnOrderAndUnloadBoats extends AbstractState
         ];
     }
 
-    private function nextPlayerNeedingBoat(Model $_model): ?int {
-        return $_model->market()->lots()[0]->tile_id % 2382 === 0 ? 3 : null;
-    }
-
     function onEnteringState(int $active_player_id): mixed {
-        // Probably want a global to keep track of which players have selected a boat.
         $model = $this->createModel(0);
         $stuff = $this->processNextTurnOrderTile($model);
         if ($stuff !== null) {
@@ -88,8 +83,12 @@ class TurnOrderAndUnloadBoats extends AbstractState
             }
             $stuff = $this->processNextTurnOrderTile($model);
         }
-        $nextPlayerNeedingBoat = $this->nextPlayerNeedingBoat($model);
+
+        /** @var list<int> */
+        $needBoats = $this->globals->get("PlayersNeedingBoats");
+        $nextPlayerNeedingBoat = array_shift($needBoats);
         if ($nextPlayerNeedingBoat !== null) {
+            $this->globals->set("PlayersNeedingBoats", $needBoats);
             $this->gamestate?->changeActivePlayer($nextPlayerNeedingBoat);
             return SelectBoat::class;
         }

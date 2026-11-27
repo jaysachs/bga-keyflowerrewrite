@@ -41,7 +41,7 @@ class ExpandVillages extends AbstractState
             id: 27,
             type: StateType::MULTIPLE_ACTIVE_PLAYER,
             description: clienttranslate('Players are expanding their villages'),
-            descriptionMyTurn: clienttranslate('Players are expanding their villages'),
+            descriptionMyTurn: clienttranslate('You must place won tiles in your village'),
             updateGameProgression: false,
         );
     }
@@ -52,23 +52,23 @@ class ExpandVillages extends AbstractState
     }
 
     #[PossibleAction]
-    public function actPlaceTile(int $active_player_id, int $tile_id, int $rowcol, int $orientation): void {
+    public function actPlaceTile(int $current_player_id, int $tile_id, int $rowcol, int $orientation): void {
         // no notification needed
     }
 
     #[PossibleAction]
-    public function actReturnTile(int $active_player_id, int $tile_id): void {
+    public function actReturnTile(int $current_player_id, int $tile_id): void {
         // no notification needed
     }
 
     #[PossibleAction]
-    public function actConfirm(int $active_player_id): void {
-        $model = $this->createModel($active_player_id);
+    public function actConfirm(int $current_player_id): void {
+        $model = $this->createModel($current_player_id);
 
         // commit all pending placements, and notify every player
 
         $nextState = $model->season() == Season::WINTER ? ScoringAllocation::class : SeasonSetup::class;
-        $this->gamestate?->setPlayerNonMultiactive($active_player_id, $nextState);
+        $this->gamestate?->setPlayerNonMultiactive($current_player_id, $nextState);
     }
 
     public function zombie(int $player_id): mixed {
