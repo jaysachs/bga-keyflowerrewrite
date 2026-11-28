@@ -14,7 +14,17 @@ export interface TileDescription {
     notes?: string;
 }
 
-export const TILE_DESCRIPTIONS : Record<TileType,TileDescription> = {
+let descriptions: Record<TileType, TileDescription> | undefined;
+
+/**
+ * Each tile's rules, in the player's language. Built on first use: at module level `_()` runs before
+ * BGA has loaded the translations, which logs "No active bundle" for every string.
+ */
+export function tileDescriptions(): Record<TileType, TileDescription> {
+    return descriptions ??= buildDescriptions();
+}
+
+const buildDescriptions = (): Record<TileType, TileDescription> => ({
     home1: {
         summary: _("Allows transporting resources over 1 tile, then upgrading 1 tile."),
         scoring: _("Grants 5 ${points} when upgraded."),
@@ -486,4 +496,4 @@ export const TILE_DESCRIPTIONS : Record<TileType,TileDescription> = {
         summary: _("Determines player order when bidding for the boats. Gives the first player token to the auction winner."),
         scoring: _("At the end of winter, can be added to the player's village, granting 1 ${point} for each neighboring tile.")
     }
-}
+});
