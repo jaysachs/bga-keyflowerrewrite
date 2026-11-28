@@ -95,6 +95,42 @@ class MarketLot {
         return $this->highBid() !== $bid;
     }
 
+    public function removeAllBids(): void {
+        $this->bids = [];
+    }
+
+    /** @return array<int,WorkerGroup> */
+    public function removeLosingBids(): array {
+        $winningBid = $this->highBid();
+        if ($winningBid->isEmpty()) {
+            return [];
+        }
+        $winningPid = 0;
+        $result = [];
+        foreach ($this->bids as $pid => $bid) {
+            if ($bid === $winningBid) {
+                $winningPid = $pid;
+            }
+            else {
+                $result[$pid] = $bid;
+            }
+        }
+        $this->bids = [$winningPid => $winningBid];
+        return $result;
+    }
+
+    public function winningPlayerId(): int {
+        foreach ($this->bids as $pid => $bid) {
+            if ($bid->isEmpty() || $bid->size() == 0) {
+                continue;
+            }
+            if ($this->highBid() === $bid) {
+                return $pid;
+            }
+        }
+        return 0;
+    }
+
     public function highBid(): WorkerGroup {
         /** @var WorkerGroup|null */
         $winner = null;

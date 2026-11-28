@@ -42,4 +42,9 @@ interface PersistentStore {
     public function clearPasses(): void;
     public function incPasses(): void;
     public function numPasses(): int;
+
+    /** @param list<int> $playerIds */
+    public function setPlayersNeedingBoats(array $playerIds): void;
+    /** @return list<int> $playerIds */
+    public function getPlayersNeedingBoats(): array;
 }

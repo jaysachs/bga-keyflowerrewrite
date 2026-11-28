@@ -45,8 +45,7 @@ class NextPlayer extends AbstractState
 
     function onEnteringState(int $active_player_id): mixed {
         if ($this->createModel(0)->numPassed() >= $this->game->getPlayerCount()) {
-            // return EndOfSeason::class;
-            return 99;
+            return EndOfSeason::class;
         }
         $this->game->activeNextPlayer();
         return PlayerTurn::class;

@@ -77,6 +77,18 @@ class TestStore implements PersistentStore {
     {
         $this->passes = 0;
     }
+
+    /** @var list<int> */
+    private array $needBoats = [];
+    public function setPlayersNeedingBoats(array $playerIds): void {
+        $this->needBoats = $playerIds;
+    }
+
+    /** @return list<int> $playerIds */
+    public function getPlayersNeedingBoats(): array {
+        return $this->needBoats;
+    }
+
 }
 
 final class ModelTest extends TestBase {

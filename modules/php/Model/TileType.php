@@ -756,6 +756,13 @@ enum TileType: string implements Marshalable
         return isset($unflipped[$this->value]) ? $unflipped[$this->value] : null;
     }
 
+    public function awardsStartPlayer(): bool {
+        return match ($this) {
+            self::TURN_ORDER_2, self::TURN_ORDER_3, self::TURN_ORDER_4, self::TURN_ORDER_56B => true,
+            default => false
+        };
+    }
+
     public function translatedName(): string
     {
         return match ($this) {
