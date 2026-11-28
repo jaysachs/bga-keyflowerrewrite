@@ -27,6 +27,8 @@ export interface VillageTile {
     rowcol: number;
     orientation: number; // 1-6
     activations: Activations;
+    /** What's on the tile: products made there, and resources moved or sent to it (Home gets the market's). */
+    resources: Resource[];
 }
 
 export type Season = 'spring' | 'summer' | 'fall' | 'winter';
