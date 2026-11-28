@@ -1,5 +1,5 @@
 import { KFGameDatas, KFPlayer, ResourceType, Season, SkillType, TileType, WorkerColor } from "../kfdata";
-import { TileDescription, TILE_DESCRIPTIONS } from "./tiledescs";
+import { TileDescription, tileDescriptions } from "./tiledescs";
 
 /**
  * Names in the player's language, from the server's tables (`gamedatas.translations`). It has no
@@ -18,13 +18,9 @@ export class TranslationComponent {
     }
 
     public tileDescription(tiletype: TileType): TileDescription {
-        const desc = TILE_DESCRIPTIONS[tiletype];
-        return {
-            summary: this.translated(desc?.summary) ,
-            upgrade: this.translated(desc?.upgrade),
-            scoring: this.translated(desc?.scoring),
-            notes: this.translated(desc?.notes)
-        }
+        // Already translated: tileDescriptions() calls _() when it builds them
+        const desc = tileDescriptions()[tiletype];
+        return { summary: desc?.summary ?? '', upgrade: desc?.upgrade ?? '', scoring: desc?.scoring ?? '', notes: desc?.notes ?? '' };
     }
 
     /** A tile's name, e.g. "Keystone quarry". */
